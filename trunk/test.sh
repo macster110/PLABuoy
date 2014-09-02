@@ -1,3 +1,3 @@
 word="nope"
-.extra
+. extra
 echo $word $(echo "hi")
