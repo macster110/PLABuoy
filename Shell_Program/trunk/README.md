@@ -9,8 +9,12 @@ This README file is written in the MarkDown (.md) format. MarkDown's strengths a
 Read for [more information](http://sourceforge.net/p/forge/documentation/markdown_syntax/).
 
 ##Running the script
-type: `./test.sh`
 
-Don't have permission?
+- To run script
+
+1. Open a terminal
+2. type: `./test.sh`
+
+- Don't have permission?
 
 type: `sudo chmod u+x test.sh` and then try again.
