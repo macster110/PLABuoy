@@ -1,3 +1,5 @@
+#!/bin/bash
+
 word="nope"
-. extra
+source extra.sh
 echo $word $(echo "hi")
