@@ -1,6 +1,3 @@
-README
-======
-
 This README is a plain text file that uses the MarkDown (.md) format to add rich text features. For more information read [MarkDown syntax](http://sourceforge.net/p/forge/documentation/markdown_syntax/).
 
 ##Repository Structure
