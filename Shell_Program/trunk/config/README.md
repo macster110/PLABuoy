@@ -19,17 +19,17 @@ Type: `sudo apt-get install rfkill zd1211-firmware hostapd hostap-utils iw dnsma
 (You can copy and paste these commands into a Terminal window, but note that you must use Ctrl+Shift+C
 and Ctrl+Shift+V to Copy/Paste within a Terminal window as Ctrl+C and Ctrl+V do other things.)
 
-##3. Copy Config files to Raspberry Pi
+##3. Copy config files to Raspberry Pi
 The required location for each file is given near the top of each file after a `#?`. E.g. "hostapd.conf":
 
 >   #?PATH="/ect/hostapd/hostapd.conf"
 >
->   interface=wlan0<br>
+>   interface=wlan0
 >   driver=nl80211
 >   ssid=Buoy
 >   channel=1
 >   wpa=2
->   wpa_passphrase=sailingboat
+>   wpa_passphrase=AlwaysChangeTheDefaultPassword
 >   wpa_key_mgmt=WPA-PSK
 >   wpa_pairwise=TKIP
 >   rsn_pairwise=CCMP
