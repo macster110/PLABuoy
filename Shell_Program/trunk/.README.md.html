@@ -468,14 +468,53 @@ function setDocumentScrollTop(ypos)
  </thead> 
  <tbody> 
   <tr> 
-   <td><a href=".config.md.html">config</a></td> 
+   <td><strong>config</strong></td> 
    <td>Instructions and configuration files to turn the Raspberry Pi into a WiFi hotspot and web server</td> 
   </tr> 
   <tr> 
-   <td><strong>serv</strong></td> 
+   <td><strong>server</strong></td> 
    <td>Scripts to be run on the Raspberry Pi web server to generate HTML files from cRio data</td> 
   </tr> 
  </tbody> 
-</table>
+</table> 
+<h2> <a id="user-content-editing-the-code" class="anchor" href="#editing-the-code" aria-hidden="true"><span class="octicon octicon-link"></span></a>Editing the code</h2> 
+<p>You can edit the code using any text editor and SVN client, but it is recommended that you use the <a href="http://www.eclipse.org/downloads/">Eclipse IDE</a> (Choose the basic &quot;Eclipse IDE for Java Developers&quot; package).</p> 
+<p>If using Eclipse you will need to install the following plugins from within Eclipse via &quot;Help --&gt; Eclipse Marketplace&quot; (use the &quot;Install More&quot; option to install them all in one go.):</p> 
+<table> 
+ <thead> 
+  <tr> 
+   <th>Plugin</th> 
+   <th>Purpose</th> 
+  </tr> 
+ </thead> 
+ <tbody> 
+  <tr> 
+   <td>Subversive</td> 
+   <td> <strong>(Required)</strong> SVN Client</td> 
+  </tr> 
+  <tr> 
+   <td>HTML Editor (WTP)</td> 
+   <td>(Recommended) For editing webpages (HTML+CSS+Javascript)</td> 
+  </tr> 
+  <tr> 
+   <td>Markdown Text Editor</td> 
+   <td> <em>(Optional)</em> For editing README.md files</td> 
+  </tr> 
+  <tr> 
+   <td>GFM Viewer</td> 
+   <td> <em>(Optional)</em> GitHub Flavoured Markdown viewer plugin (for displaying README.md files)</td> 
+  </tr> 
+ </tbody> 
+</table> 
+<p>Finally, it is highly recommended that you also install ShellEd shell script editor for writing Bash scripts. Unfortunately this cannot be done via the Eclipse Marketplace. Instead:</p> 
+<ol> 
+ <li>Go to &quot;Help --&gt; Install New Software...&quot;</li> 
+ <li>Select &quot;Work with --&gt; All Available Sites&quot;. After a short wait a list of software should appear under &quot;Name&quot;.</li> 
+ <li>If nothing appears you may have this <a href="http://stackoverflow.com/questions/1965285">bug</a>. Exit Eclipse and delete your &quot;dialog_settings.xml&quot; file (see link).</li> 
+ <li>Once you get the list working, in the filter text box type &quot;ShellEd&quot;. It should appear under &quot;Enide Tools Collection&quot;.</li> 
+ <li>Install &quot;ShellEd&quot;.</li> 
+ <li>If using a Linux machine you can also run the Shell Scripts within Eclipse. You must select the &quot;Bash&quot; interpreter. (Go to: &quot;Window--&gt;Preferences--&gt;Shell Script--&gt;Interpreters--&gt;Search&quot; and select &quot;Bash&quot;.)</li> 
+</ol> 
+<p>Once the necessary plugins are installed (and you have restarted Eclipse) you can add the code to your workspace in Eclipse by going to &quot;File--&gt;Import--&gt;SVN--&gt;Project from SVN--&gt;Create a new repository location&quot; and using the <a href="http://svn.code.sf.net/p/plabuoy/svn-code/Shell_Program">Project URL (HTTP)</a>.</p>
 </body>
 </html>

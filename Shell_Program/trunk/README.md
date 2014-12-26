@@ -17,16 +17,19 @@ Plugin               | Purpose
 Subversive           | **(Required)** SVN Client
 HTML Editor (WTP)    | (Recommended) For editing webpages (HTML+CSS+Javascript)
 Markdown Text Editor | *(Optional)* For editing README.md files
-GFM Viewer           | *(Optional)* GitHub Flavoured Markdown viewer plugin (for displaying README.md files)
+GFM Viewer*          | *(Optional)* GitHub Flavoured Markdown viewer plugin (for displaying README.md files)
 
-Finally, it is highly recommended that you also install ShellEd shell script editor for writing Bash scripts. Unfortunately this cannot be done via the Eclipse Marketplace. Instead:
+**If using GFM Viewer it will fill the directories with invisible HTML files. To avoid this go to: "Window-->Preferences-->GFM Viewer" and tick "Use temp dir".*
+
+It is also highly recommended that you also install ShellEd shell script editor for writing Bash scripts. Unfortunately this cannot be done via the Eclipse Marketplace. Instead:
 
 1. Go to "Help --> Install New Software..."
 2. Select "Work with --> All Available Sites". After a short wait a list of software should appear under "Name".
 3. If nothing appears you may have this [bug](http://stackoverflow.com/questions/1965285). Exit Eclipse and delete your "dialog_settings.xml" file (see link).
 4. Once you get the list working, in the filter text box type "ShellEd". It should appear under "Enide Tools Collection".
-6. Install "ShellEd".
+6. Install "ShellEd" and restart Eclipse.
+7. Make ShellEd the default editor for CGI scripts: "Window-->Preferences-->General-->Editors-->File Associations". Create an entry for "*.cgi" and associate it with "Shell Script Editor".
 7. If using a Linux machine you can also run the Shell Scripts within Eclipse. You must select the "Bash" interpreter.
 (Go to: "Window-->Preferences-->Shell Script-->Interpreters-->Search" and select "Bash".)
 
-Once the necessary plugins are installed (and you have restarted Eclipse) you can add the code to your workspace in Eclipse by going to "File-->Import-->SVN-->Project from SVN" and using the [Project URL (HTTP)](http://svn.code.sf.net/p/plabuoy/svn-code/Shell_Program).
+Once the necessary plugins are installed (and you have restarted Eclipse) you can add the code to your workspace in Eclipse by going to "File-->Import-->SVN-->Project from SVN-->Create a new repository location" and using the [Project URL (HTTP)](http://svn.code.sf.net/p/plabuoy/svn-code/Shell_Program).
