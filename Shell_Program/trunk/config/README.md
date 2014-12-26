@@ -1,7 +1,7 @@
 Configuring the Raspberry Pi WiFi Hotspot
 =========================================
 
-This must be done manually for the time being, but hopefully this will eventually be done automatically via the *configurePi.sh* and *deconfigurePi.sh* scripts."
+This must be done manually for the time being, but hopefully this will eventually be done automatically via the *configurePi.sh* and *deconfigurePi.sh* scripts.
 
 ##1. Initial setup
   1. Install Rasperian - follow [guide](http://www.raspberrypi.org/help/noobs-setup/).
@@ -27,7 +27,7 @@ You can do this via a USB Flash Drive or (if connected via SSH) by typing `sudo 
 >
 >   interface=wlan0
 >   driver=nl80211
->   ssid=Buoy
+>   ssid=PLA-Buoy
 >   channel=1
 >   wpa=2
 >   wpa_passphrase=AlwaysChangeTheDefaultPassword
@@ -47,3 +47,6 @@ This allows the Raspberry Pi's wireless and wired clients to communicate with ea
   1. Type: “sudo nano /etc/sysctl.conf”
   2. Uncomment line `#net.ipv4.ip_forward=1` (i.e. delete the `#` at beginning of the line)
   3. Save and exit.
+  
+##6. Testing.
+Reboot the Raspberry Pi and, using another device (e.g. a smartphone or another computer) see if the WiFi Hotspot exits. If it does it will be called "PLA-Buoy" and have the password you saved in the *hostapd.conf* file. Once connected open up a web browser and navigate to http://buoy.wifi. Hopefully you will reach a webpage saying "It works!". If not, try disconnecting your computer from all network connections other than the WiFi link to the Pi because sometimes computers won't use their WiFi connection if an Ethernet connection is also available.

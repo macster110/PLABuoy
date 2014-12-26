@@ -8,3 +8,5 @@ TODO list:
   - Problem: Config files need to go to restricted directories (owned by root). Solution?: Copy into unrestricted (owned by USER) directory (e.g. $HOME or "/tmp"?) via FTP and then move to restricted directory using SSH.
 
 3. Create template HTML+CSS files. Scripts should access templates and insert content rather than generating an entire page within the script.
+
+4. Set up a testing facility that allows usage without the Compact Rio to check the CGI scripts are working.
