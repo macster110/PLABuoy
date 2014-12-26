@@ -1,8 +1,7 @@
 Configuring the Raspberry Pi WiFi Hotspot
 =========================================
 
-This must be done manually for the time being, but hopefully this will
-eventually be done automatically via the *configurePi.sh* and *deconfigurePi.sh* scripts."
+This must be done manually for the time being, but hopefully this will eventually be done automatically via the *configurePi.sh* and *deconfigurePi.sh* scripts."
 
 ##1. Initial setup
   1. Install Rasperian - follow [guide](http://www.raspberrypi.org/help/noobs-setup/).
@@ -10,17 +9,19 @@ eventually be done automatically via the *configurePi.sh* and *deconfigurePi.sh*
   3. Enable SSH (allows remote control of rPi over network via command line)
     - Boot into Command Line and type `raspi-config`
     - Go to “Advanced” and “Enable SSH”.
-  4. *(Only if needed)* Enable VNC Remote Desktop Client (allows remote control via GUI,
+  4. *(Only if needed)* Enable VNC Remote Desktop Client (this allows remote control via GUI,
         useful if you don’t have a separate monitor for the Pi.)
     - follow this [guide](http://www.raspberrypi.org/documentation/remote-access/vnc/).
-  
+
+Follow the rest of this guide while connected to the Raspberry Pi via SSH. If you can't connect via SSH then do it directly from the Pi but first copy the config files to a USB flash drive and insert it into the Pi. You will need these files in Step 3.
+
 ##2. Install required packages
 Type: `sudo apt-get install rfkill zd1211-firmware hostapd hostap-utils iw dnsmasq apache2 vsftpd ftp`
 (You can copy and paste these commands into a Terminal window, but note that you must use Ctrl+Shift+C
-and Ctrl+Shift+V to Copy/Paste within a Terminal window as Ctrl+C and Ctrl+V do other things.)
+and Ctrl+Shift+V to Copy/Paste within a Terminal window because Ctrl+C and Ctrl+V do other things.)
 
 ##3. Copy config files to Raspberry Pi
-The required location for each file is given near the top of each file after a `#?`. E.g. "hostapd.conf":
+You can do this via a USB Flash Drive or (if connected via SSH) by typing `sudo nano <fullFilePath>` and pasting the contents of the file into the terminal window. The required location for each file is given near the top of each file after a `#?PATH=`. E.g. in "hostapd.conf":
 
 >   #?PATH="/ect/hostapd/hostapd.conf"
 >
@@ -34,7 +35,7 @@ The required location for each file is given near the top of each file after a `
 >   wpa_pairwise=TKIP
 >   rsn_pairwise=CCMP
 
-If a file already exits there with the same name then rename the existing one "hostadp.conf_backup".
+Here the required location is "/etc/hostapd" and the file must be named "hostapd.conf". If a file already exits there with the same name then rename the existing one "hostadp.conf_backup" before adding the new one.
 
 ##4. Make the startup script executeable
 The "pipoint" config file is really a script and therefore requires execute permission to run on startup.

@@ -1,14 +1,16 @@
 Directory Structure
 ===================
 
-Directory   | Contents
-------------|----------------------------
-**config**  | Instructions and configuration files to turn the Raspberry Pi into a WiFi hotspot and web server
-**server**  | Scripts to be run on the Raspberry Pi web server to generate HTML files from cRio data
+Directory  | Contents
+-----------|----------------------------
+**config** | Instructions and configuration files to turn the Raspberry Pi into a WiFi hotspot and web server
+**server** | Scripts to be run on the Raspberry Pi web server to generate HTML files from cRio data
 
 ##Editing the code
 
 You can edit the code using any text editor and SVN client, but it is recommended that you use the [Eclipse IDE](http://www.eclipse.org/downloads/) (Choose the basic "Eclipse IDE for Java Developers" package).
+
+### Setting up Eclipse plugins
 
 If using Eclipse you will need to install the following plugins from within Eclipse via "Help --> Eclipse Marketplace" (use the "Install More" option to install them all in one go.):
 
@@ -19,7 +21,9 @@ HTML Editor (WTP)    | (Recommended) For editing webpages (HTML+CSS+Javascript)
 Markdown Text Editor | *(Optional)* For editing README.md files
 GFM Viewer*          | *(Optional)* GitHub Flavoured Markdown viewer plugin (for displaying README.md files)
 
-**If using GFM Viewer it will fill the directories with invisible HTML files. To avoid this go to: "Window-->Preferences-->GFM Viewer" and tick "Use temp dir".*
+**If using GFM Viewer please go to: "Window-->Preferences-->GFM Viewer" and tick "Use temp dir" to prevent the code directories being filled up with invisible HTML files.*
+
+#### ShellEd Shell Script Editor plugin for Eclipse
 
 It is also highly recommended that you also install ShellEd shell script editor for writing Bash scripts. Unfortunately this cannot be done via the Eclipse Marketplace. Instead:
 
@@ -32,4 +36,6 @@ It is also highly recommended that you also install ShellEd shell script editor 
 7. If using a Linux machine you can also run the Shell Scripts within Eclipse. You must select the "Bash" interpreter.
 (Go to: "Window-->Preferences-->Shell Script-->Interpreters-->Search" and select "Bash".)
 
-Once the necessary plugins are installed (and you have restarted Eclipse) you can add the code to your workspace in Eclipse by going to "File-->Import-->SVN-->Project from SVN-->Create a new repository location" and using the [Project URL (HTTP)](http://svn.code.sf.net/p/plabuoy/svn-code/Shell_Program).
+#### Adding the code to Eclipse
+
+Once the necessary plugins are installed (and you have restarted Eclipse) you can add the code to your workspace in Eclipse by going to "File-->Import-->SVN-->Project from SVN-->Create a new repository location" and using the [Project URL (HTTP)](http://svn.code.sf.net/p/plabuoy/svn-code/Shell_Program). The latest version of the project is always kept in the "trunk" directory. Periodically the contents of "trunk" are copied across to "tags" to create an archive. "branches" are not used for this project (not enough collaborators to see a benefit).
