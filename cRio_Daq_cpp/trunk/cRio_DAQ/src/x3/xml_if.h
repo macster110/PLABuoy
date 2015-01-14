@@ -20,6 +20,9 @@
 //	x3.h  Definitions and prototypes for the X3 API
 //	Last modified: March 2013
 
+#ifndef XML_IF_H_
+#define XML_IF_H_
+
  #ifndef X3DEFS
   #define X3DEFS
   typedef unsigned long	   ulong ;
@@ -32,9 +35,11 @@
  #define  XMLSTARTMESS   "<?xml version=\"1.0\" encoding=\"US-ASCII\" ?>\n"
 
  // xml i/o functions
- FILE     *xml_open(fname,s)
+ FILE     *xml_open(char* fname, char* s);
 
  // xml message creation functions
   int   openxmlfield(char *s, const char *field, const char *arg) ;
  extern int   addxmlfield(char *s, const char *field, const char *arg, const char *value) ;
  extern int   closexmlfield(char *s, const char *field) ;
+
+#endif

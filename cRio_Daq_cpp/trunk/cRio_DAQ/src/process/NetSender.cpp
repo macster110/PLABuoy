@@ -18,32 +18,24 @@
 #include <netinet/in.h>
 #include <error.h>
 
+#include "../x3/x3frame.h"
+
 #define NET_HDR_LEN (24)
 
 #define DATASTARTFLAG (0xFFEEDDCC)
 
-char* ipV4 = "138.251.190.177";
+//char* ipV4 = "138.251.190.177";
+char* ipV4 = "192.168.2.101";
 
 int ipPort = 8013;
 
-/*
- * Types of data defined s ofar for PAMGUARD
- */
-#define NET_PAM_DATA        1
-#define NET_REMOTE_COMMAND  2
-#define NET_SPEED_DATA      3
-#define NET_SYSTEM_DATA     4
-#define NET_PAM_COMMAND     5
-
-#define SYSTEM_GPSDATA       1
-#define SYSTEM_BATTERYDATA   4
-#define SYSTEM_COMPASSDATA  16
 
 
 void *netsendThreadFunction(void *param)
 {
 	NetSender* obj = (NetSender*) param;
 	obj->sendThreadLoop();
+	return NULL;
 }
 
 NetSender::NetSender() : PLAProcess() {
@@ -82,7 +74,7 @@ int NetSender::process(PLABuff* plaBuffer) {
 	PLABuff qData;
 	char* buffer = (char*) malloc(NET_HDR_LEN + plaBuffer->dataBytes);
 	memcpy(buffer+NET_HDR_LEN, plaBuffer->data, plaBuffer->dataBytes);
-	writeSendHeader(buffer, plaBuffer);
+	writeSendHeader(buffer, plaBuffer->dataBytes, NET_AUDIO_SOUND);
 	qData.data = (int16_t*) buffer;
 	qData.dataBytes = plaBuffer->dataBytes + NET_HDR_LEN;
 	qData.nChan = plaBuffer->nChan;
@@ -100,17 +92,18 @@ int NetSender::process(PLABuff* plaBuffer) {
  * Write a standard PAMGaurd data send header into
  * the buffer.
  */
-void NetSender::writeSendHeader(void* pBuff, PLABuff* data) {
+int NetSender::writeSendHeader(void* pBuff, int dataBytes, int32_t dataType2) {
 	int32_t* ints = (int32_t*) pBuff;
 	int16_t* shorts = (int16_t*) pBuff;
-	ints[0] = htonl(DATASTARTFLAG);
-	ints[1] = htonl(data->dataBytes + NET_HDR_LEN);
-	shorts[4] = htons(1);
-	shorts[5] = htons(0);
-	shorts[6] = htons(0);
-	shorts[7] = htons(NET_PAM_DATA);
-	ints[4] = htonl(0);
-	ints[5] = htonl(data->dataBytes);
+	ints[0] = htonl(DATASTARTFLAG); // flag to id start of data incase it gets out of synch.
+	ints[1] = htonl(dataBytes + NET_HDR_LEN); // data + head length
+	shorts[4] = htons(1); // version
+	shorts[5] = htons(0); // stati0n Id 1
+	shorts[6] = htons(0); // station Id 2
+	shorts[7] = htons(NET_AUDIO_DATA); // data type 1
+	ints[4] = htonl(dataType2); // data type 2
+	ints[5] = htonl(dataBytes); // data length
+	return NET_HDR_LEN;
 }
 void NetSender::endProcess() {
 	return;
@@ -186,7 +179,24 @@ bool NetSender::openConnection() {
 
 	socketId = sockfd;
 	printf("Network connection to %s on port %d is open\n", ipV4, ipPort);
-	return true;
+	/*
+	 * Now send through details of how teh x3 compression is working.
+	 */
+	return sendX3Header(socketId);
+
+}
+
+/*
+ * Send X3 header information through to the socket receiver.
+ * This happens immediately after a Network connect has returned success.
+ */
+bool NetSender::sendX3Header(int socketId) {
+	char hData[X3HEADLEN+NET_HDR_LEN];
+	int dataBytes = X3_prepareXMLheader(hData+NET_HDR_LEN, 500000, X3BLOCKSIZE);
+	dataBytes += writeSendHeader(hData, dataBytes, NET_AUDIO_HEADINFO);
+
+	int bytesWrote = send(socketId, hData, dataBytes, MSG_NOSIGNAL);
+	return bytesWrote == dataBytes;
 }
 
 void NetSender::closeConnection() {

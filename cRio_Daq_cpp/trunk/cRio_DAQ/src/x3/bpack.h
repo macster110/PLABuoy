@@ -1,4 +1,6 @@
 // X3 C-API v2.0
+#ifndef BPACK_H_
+#define BPACK_H_
 //	Copyright (C) 2012,2013 Mark Johnson
 //
 // This file is part of the X3 C-API, a low-complexity lossless
@@ -46,3 +48,5 @@ extern short unpack1(BPack *b, int nbits) ;
 extern int   unpackn(short *obuff, BPack *b, int n, int nbits, int stride) ;
 extern int   unpackr(short *obuff, BPack *b, int n, int code, int stride) ;
 extern void  fixsign(short *buff, int n, int nbits, int stride) ;
+
+#endif

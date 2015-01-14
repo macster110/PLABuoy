@@ -20,6 +20,9 @@
 //	x3.h  Definitions and prototypes for the X3 API
 //	Last modified: March 2013
 
+#ifndef X3CMP_H_
+#define X3CMP_H_
+
 #ifndef X3DEFS
 #define X3DEFS
 typedef unsigned long	   ulong ;
@@ -62,3 +65,5 @@ extern int    X3_uncompress(XBuff *obuff, XBuff *ibuff, int N) ;
 
 #define X3_compress_def(out,in)    X3_compress(out,in,X3_DEF_N,NULL) ;
 #define X3_uncompress_def(out,in)  X3_uncompress(out,in,X3_DEF_N) ;
+
+#endif

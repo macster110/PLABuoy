@@ -13,6 +13,12 @@
 
 #include <stdio.h>
 
+#define NET_AUDIO_DATA (10)
+
+#define NET_AUDIO_HEADINFO (1)
+#define NET_AUDIO_SOUND    (2)
+#define NET_AUDIO_X3SOUND  (3)
+
 // Allocate a local buffer for handling frames. This should be larger than the
 // largest allowable frame.
 short    PBUFF[MAXFRAME+X3_HDRLEN] ;
