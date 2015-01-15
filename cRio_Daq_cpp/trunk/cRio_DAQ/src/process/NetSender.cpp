@@ -196,6 +196,8 @@ bool NetSender::sendX3Header(int socketId) {
 	dataBytes += writeSendHeader(hData, dataBytes, NET_AUDIO_HEADINFO);
 
 	int bytesWrote = send(socketId, hData, dataBytes, MSG_NOSIGNAL);
+	printf("Wrote %d bytes %s", bytesWrote, hData+NET_HDR_LEN);
+	printf("\n");
 	return bytesWrote == dataBytes;
 }
 

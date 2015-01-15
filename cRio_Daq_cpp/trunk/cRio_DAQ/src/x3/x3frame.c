@@ -171,7 +171,7 @@ int    X3_getnextframehdr(XHdr *h, FILE *fid)
 }
 
 int X3_prepareXMLheader(char* s, int sampleRate, int blockSize) {
-	strcpy(s, "<X3ARCH PROG=\"x3new.m\" VERSION=\"2.0\" />");
+	strcpy(s, "<X3ARCH PROG=\"x3new.m\" VERSION=\"2.0\">"); // DG remove \ from end
 	char sfs[20] ;
 
 	// assemble the metadata message
@@ -189,6 +189,7 @@ int X3_prepareXMLheader(char* s, int sampleRate, int blockSize) {
 	addxmlfield(s,"T","N=\"3\"","3,8,20") ;
 	closexmlfield(s,"CODEC") ;
 	closexmlfield(s,"CFG") ;
+	closexmlfield(s,"X3ARCH") ;
 	return strlen(s);
 }
 

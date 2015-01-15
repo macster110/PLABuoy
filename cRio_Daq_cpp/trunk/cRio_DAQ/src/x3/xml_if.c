@@ -81,8 +81,17 @@ int   addxmlfield(char *s, const char *field, const char *arg, const char *value
     strcat(s,field) ;
     strcat(s,">") ;
     }
- else
-    strcat(s," />") ;
+ else {
+	 /*
+	  * Changed by DG from single line ending with /> to the four following lines
+	  * or my xml readers don't seem to understand it.
+	  */
+	 //    strcat(s," />") ; // Marks
+	 strcat(s,">") ; // DG four lines.
+	 strcat(s,"</") ;
+	 strcat(s,field) ;
+	 strcat(s,">") ;
+ }
 
  return(0) ;
 }
