@@ -10,6 +10,8 @@
 #include "../x3/x3frame.h"
 #include "../x3/crc16v3.h"
 #include "../Settings.h"
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 #include <stdio.h>
 
@@ -58,7 +60,10 @@ int CompressProcess::process(PLABuff* plaBuffer) {
 	nw += x3frameheader(PBUFF,1,ibuff->nch,ibuff->nsamps,nw,NULL,cd) ;
 	// good to go and write to file.
 	// may need to byte swap here - not 100% sure what Mark was up to in his code.
-
+	short* swapBuff = (short*) PBUFF;
+	for (int i = 0; i < nw; i++) {
+		swapBuff[i] = htons(swapBuff[i]);
+	}
 
 	PLABuff outBuff;
 	outBuff.data = PBUFF;
