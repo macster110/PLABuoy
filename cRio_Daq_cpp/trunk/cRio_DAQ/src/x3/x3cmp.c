@@ -141,7 +141,7 @@ int		x3blkencode(BPack *b, short *ip, int *T, int n, int nch)
 	if(ma <= T[2]) {			 // encode frame with variable-length Rice code
 		int c = (ma > *T) + (ma > *(T+1)) ; // get the code index, 0, 1 or 2;
 		pack1(b,c+1,2) ;         // add 2 bit Rice header to the bit stream
-		packr(b,DBUFF,n,c,nch) ;     // code n words to the bit stream
+		packr(b,DBUFF,n,c,1) ;     // code n words to the bit stream
 		return(0) ;
 	}
 
@@ -151,7 +151,7 @@ int		x3blkencode(BPack *b, short *ip, int *T, int n, int nch)
 	if(nb>=15)
 		packn(b,ip,n,16,nch) ;		     // pack 16 bit integers from source
 	else
-		packn(b,DBUFF,n,nb+1,nch) ;	  // pack nb-bit filtered integers
+		packn(b,DBUFF,n,nb+1,1) ;	  // pack nb-bit filtered integers
 
 	return(0) ;
 }
@@ -178,51 +178,51 @@ int	x3blkdecode(short *op, BPack *b, short last, int n, int nch)
 				nb = (int)(unpack1(b,4)+1) ;	 // get the 4-bit bfp exponent
 			}
 		}
-
-		// now we have the code type, number of bits and block length
-
-		if(d>0)           	          // the block is rice encoded
-			err = unpackr(op,b,n,d-1,nch) ;
-
-		else {										// the block is bfp encoded with word length of nb
-			err = unpackn(op,b,n,nb,nch) ;
-			if(nb==16)                // no filtering needed if pass through coded
-				return(n) ;          // no sign fix needed either IF short is 16 bits
-			// If there are portability concerns, do the fixsign call
-			fixsign(op,n,nb,nch) ;
-		}
-
-		integrate(op,last,n,nch) ;       // run deemphasis filter
-		return(n) ;
 	}
+	// now we have the code type, number of bits and block length
+
+	if(d>0)           	          // the block is rice encoded
+		err = unpackr(op,b,n,d-1,nch) ;
+
+	else {										// the block is bfp encoded with word length of nb
+		err = unpackn(op,b,n,nb,nch) ;
+		if(nb==16)                // no filtering needed if pass through coded
+			return(n) ;          // no sign fix needed either IF short is 16 bits
+		// If there are portability concerns, do the fixsign call
+		fixsign(op,n,nb,nch) ;
+	}
+
+	integrate(op,last,n,nch) ;       // run deemphasis filter
+	return(n) ;
+
 }
 
-	int   sdiffmaxs(short *op, short *ip, int n, int nch)
-	{
-		// De-emphasis filter to reverse the diff in the compressor.
-		// Filters operates in-place.
-		int    k, ma=0 ;
+int   sdiffmaxs(short *op, short *ip, int n, int nch)
+{
+	// De-emphasis filter to reverse the diff in the compressor.
+	// Filters operates in-place.
+	int    k, ma=0 ;
 
-		for(k=0; k<n; k++, ip+=nch) {
-			short c = *ip - *(ip-nch) ;
-			*op++ = c ;
-			ma = MAX(ma,abs(c)) ;
-		}
-
-		return(ma) ;
+	for(k=0; k<n; k++, ip+=nch) {
+		short c = *ip - *(ip-nch) ;
+		*op++ = c ;
+		ma = MAX(ma,abs(c)) ;
 	}
 
+	return(ma) ;
+}
 
-	short   integrate(short *op, short last, int n, int nch)
-	{
-		// De-emphasis filter to reverse the diff in the compressor.
-		// Filters operates in-place.
-		int    k ;
 
-		for(k=0; k<n; k++, op+=nch) {
-			last += *op ;
-			*op = last ;
-		}
+short   integrate(short *op, short last, int n, int nch)
+{
+	// De-emphasis filter to reverse the diff in the compressor.
+	// Filters operates in-place.
+	int    k ;
 
-		return(last) ;
+	for(k=0; k<n; k++, op+=nch) {
+		last += *op ;
+		*op = last ;
 	}
+
+	return(last) ;
+}
