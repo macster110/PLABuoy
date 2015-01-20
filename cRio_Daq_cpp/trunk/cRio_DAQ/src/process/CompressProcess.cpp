@@ -53,6 +53,9 @@ int CompressProcess::process(PLABuff* plaBuffer) {
 		printf("input buffer too large for a single frame\n)") ;
 		return(1) ;
 	}
+//	for (k = 0; k < ibuff->nch*ibuff->nsamps; k++) {
+//		ibuff->data[k] = 7;
+//	}
 
 	nw = X3_compress_def(&pbuff,ibuff) ; // compresses a multi channel buffer, returns len of compressed data.
 	cd = crc16(pbuff.data,nw) ; // get a crc code for the compressed buffer.
@@ -71,9 +74,9 @@ int CompressProcess::process(PLABuff* plaBuffer) {
 	outBuff.soundFrames = plaBuffer->soundFrames;
 	outBuff.dataBytes = nw*2;
 
-	if (++count % 10000 == 0) {
-		printf("Compression count %d: %d bytes to %d\n", count, plaBuffer->dataBytes, outBuff.dataBytes);
-	}
+//	if (++count % 10000 == 0) {
+//		printf("Compression count %d: %d bytes to %d\n", count, plaBuffer->dataBytes, outBuff.dataBytes);
+//	}
 	return forwardData(&outBuff);
 }
 

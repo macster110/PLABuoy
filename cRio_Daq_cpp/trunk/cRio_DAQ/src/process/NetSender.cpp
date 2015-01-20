@@ -111,20 +111,41 @@ void NetSender::endProcess() {
 
 int NetSender::sendThreadLoop() {
 	int calls = 0;
-	openConnection();
+//	openConnection(); // let it happen automatically when first data are sent.
+	PLABuff data;
+	int nDumped;
+	int i;
 	while (1) {
+		if (networkQueue.size() > 30000) {
+			nDumped = 0;
+			while (networkQueue.size() > 20000) {
+//			for (i = 0; i < 1000; i++) {
+				data = networkQueue.front();
+				free(data.data);
+				networkQueue.pop();
+				nDumped++;
+			}
+			if (nDumped) {
+				printf("Dumped %d chunks from data queue, %d remaining\n", nDumped, networkQueue.size());
+				usleep(10000); // sleep for 10 millisecond.
+			}
+		}
 		if (networkQueue.size() == 0) {
-			usleep(10000); // sleep for a millisecond.
+			usleep(10000); // sleep for 10 millisecond.
 			continue;
 		}
-		PLABuff data = networkQueue.front();
+		data = networkQueue.front();
 		if (calls == 0) {
-			printf("Mem loc read from queue = %p\n", (void*) &data);
+			printf("Mem loc read from queue = %p\n", (void*) &data.data);
 		}
-		sendData(&data);
-		free(data.data);
-		networkQueue.pop();
-		//		free(data);
+		if (sendData(&data)) {
+			free(data.data);
+			networkQueue.pop(); // remove from queue.
+		}
+		else {
+			// sleep for a bit to stop it thrashing if no output available.
+			usleep(10000); // sleep for 10 millisecond.
+		}
 		if (++calls % 10000 == 0) {
 			printf("In send thread loop with %d elements in queue\n", networkQueue.size());
 		}
@@ -145,11 +166,12 @@ int NetSender::sendData(PLABuff* data) {
 			bytesWrote = send(socketId, data->data, data->dataBytes, MSG_NOSIGNAL);
 		}
 	}
-	return bytesWrote = data->dataBytes;
+	return bytesWrote == data->dataBytes;
 }
 
 bool NetSender::openConnection() {
 	closeConnection();
+	static int errorCount = 0;
 	if (hostEntity == NULL) {
 		hostEntity = gethostbyname(ipV4);
 		printf ("Network host is %s\n", hostEntity->h_name);
@@ -173,12 +195,16 @@ bool NetSender::openConnection() {
 	if (connect(sockfd,(struct sockaddr *) &sockAddr,sizeof(sockAddr)) < 0) {
 		close(sockfd);
 		sockfd = 0;
-		printf("Unable to make network connection to %s on port %d\n", ipV4, ipPort);
+//		if (errorCount%100 == 0 || errorCount < 5) {
+			printf("Unable to make network connection to %s on port %d\n", ipV4, ipPort);
+//		}
+		errorCount++;
 		return false;
 	}
 
 	socketId = sockfd;
 	printf("Network connection to %s on port %d is open\n", ipV4, ipPort);
+	errorCount = 0;
 	/*
 	 * Now send through details of how teh x3 compression is working.
 	 */

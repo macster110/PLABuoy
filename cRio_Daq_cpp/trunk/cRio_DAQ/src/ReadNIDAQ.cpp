@@ -222,7 +222,7 @@ void read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status, NiFpga_IrqCon
 
 		/*print some info every 5000 counts*/
 		if (count%10000==0){
-			cout << "FIFO Read Loop count = " << count << endl;
+			cout << "FIFO Read Loop count = " << count/1000 << "k" <<endl;
 			//int length=dataBufVec.size();
 			//int length=(sizeof(Fifo_Data)/sizeof(*Fifo_Data));
 			//cout << "cpw = " << cpw << endl;
@@ -297,8 +297,9 @@ void read_Data_Buffer(int channels){
 		 * Don't want to have this while loop going at full pelt so wait for a number of us and then
 		 * try again. Ignore unsigned int warning as samplesInBuff is always positive.
 		 */
+//		samplesInBuff = 0;
 		if (samplesInBuff<READBLOCKSIZE){
-			usleep(2000); //2000us seems to work well for high sample rates.
+			usleep(1000); //2000us seems to work well for high sample rates.
 			continue;
 		}
 
@@ -349,10 +350,10 @@ void read_Data_Buffer(int channels){
 			cpr=bufstart;
 		}
 
-		if (count % 10000 == 0) {
-			printf("Loop %d samples in buffer %d, last read %d samples\n",
-					count, samplesInBuff, toWrite);
-		}
+//		if (count % 10000 == 0) {
+//			printf("Loop %d samples in buffer %d, last read %d samples\n",
+//					count, samplesInBuff, toWrite);
+//		}
 	}
 
 	/**

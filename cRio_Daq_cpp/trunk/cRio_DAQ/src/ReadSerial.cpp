@@ -35,7 +35,7 @@ const int read_size=255;
 /*The number of serial port reads before starting a new file*/
 const int reads_per_file=1000;
 
-bool volatile serial_go=true;
+bool volatile serial_go=false;
 
 /**
  * Open one of the serial ports on the cRio.
@@ -144,7 +144,7 @@ void readSerialPort(Serial_Port port, int n)
 	// NMEA command to output all sentences in case reading serial GPS.
 	write(port.fd, "$PTNLSNM,273F,01*27\r\n", 21);
 
-	while (serial_go && (count<n || n<0) ) {
+	while (serial_go && (count<n || n<0)) {
 		/* loop continuously */
 		/*  read blocks program execution until a line terminating character is
         input, even if more than 255 chars are input. If the number
