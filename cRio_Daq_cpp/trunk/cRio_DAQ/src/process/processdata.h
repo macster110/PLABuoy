@@ -8,8 +8,12 @@
 #ifndef PROCESSDATA_H_
 #define PROCESSDATA_H_
 
+#include "../command/CommandList.h"
 
 #include <stdint.h>
+#include <string>
+
+//using namespace std;
 
 typedef struct {
 	int16_t* data; // pointer to data buffer
@@ -20,13 +24,20 @@ typedef struct {
 
 class PLAProcess;
 
-//extern PLAProcess** plaProcesses;
-
 /*
  * Create the processes
  */
 void processCreate();
 
+/**
+ * Get the number of processes.
+ */
+int getNumProcesses();
+
+/**
+ * Get a process.
+ */
+PLAProcess* getProcess(int iProcess);
 /*
  * Initialise the processes
  */
@@ -48,15 +59,20 @@ void processEnd();
 void processDelete();
 
 /**
+ * Find a process with a given name.
+ */
+class PLAProcess* findProcess(const std::string processName);
+
+/**
  * Make a very simple processing class which can be used for everything.
  * Will have to have a list of downstream process in each unfortunately,
  * but will keep this really simple.
  */
-class PLAProcess {
+class PLAProcess : public CommandList {
 
 public:
 
-	PLAProcess();
+	PLAProcess(std::string processName);
 
 	virtual ~PLAProcess();
 
@@ -76,6 +92,20 @@ public:
 		return sampleRate;
 	}
 
+	const PLAProcess* getParentProcess() const {
+		return parentProcess;
+	}
+
+	void setParentProcess(const PLAProcess* parentProcess) {
+		this->parentProcess = parentProcess;
+	}
+
+	virtual int getModuleConfiguration(char* configData, int configDataLength);
+
+	const std::string& getProcessName() const {
+		return processName;
+	}
+
 protected:
 
 	int forwardData(PLABuff* plaBuffer);
@@ -85,6 +115,8 @@ private:
 	int nChildProcesses;
 	int nChan;
 	int sampleRate;
+	const PLAProcess* parentProcess;
+	std::string processName;
 };
 
 #endif /* PROCESSDATA_H_ */

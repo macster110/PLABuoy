@@ -6,6 +6,7 @@
  */
 
 #include "NetSender.h"
+#include "NetCommands.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -20,12 +21,14 @@
 
 #include "../x3/x3frame.h"
 
+//using namespace std;
+
 #define NET_HDR_LEN (24)
 
 #define DATASTARTFLAG (0xFFEEDDCC)
 
 //char* ipV4 = "138.251.190.177";
-char* ipV4 = "192.168.2.101";
+std::string ipV4 = "192.168.2.101";
 
 int ipPort = 8013;
 
@@ -38,11 +41,16 @@ void *netsendThreadFunction(void *param)
 	return NULL;
 }
 
-NetSender::NetSender() : PLAProcess() {
+NetSender::NetSender() : PLAProcess("netsend") {
 	// launch the thread to connect to and send data to the
 	// other machine.
 	socketId = 0;
 	hostEntity = NULL;
+	queuedBytes = 0;
+	conTimer = new RealTimer();
+
+	addCommand(new SetDestIP(this));
+	addCommand(new SetDestPort(this));
 
 	pthread_t netsendThread;
 	pthread_create(&netsendThread, NULL, netsendThreadFunction, this);
@@ -54,9 +62,20 @@ NetSender::~NetSender() {
 }
 
 
+bool NetSender::setDestinationIp(std::string newIpAddress) {
+	struct hostent* hostEnt = gethostbyname(newIpAddress.c_str());
+	if (hostEnt == NULL) {
+		printf("%s is not a valid ip address. Keeping %s\n", newIpAddress.c_str(), ipV4.c_str());
+		return false;
+	}
+	ipV4 = newIpAddress;
+	closeConnection(); // will open again automatically next time data are sent.
+	return true;
+}
+
 int NetSender::initProcess(int nChan, int sampleRate) {
 	PLAProcess::initProcess(nChan, sampleRate);
-
+	queuedBytes = 0;
 	return 0;
 }
 
@@ -85,6 +104,7 @@ int NetSender::process(PLABuff* plaBuffer) {
 		printf("Mem loc written to queue = %p\n", &qData);
 	}
 	networkQueue.push(qData);
+	queuedBytes += qData.dataBytes;
 	return 0;
 }
 
@@ -114,19 +134,26 @@ int NetSender::sendThreadLoop() {
 //	openConnection(); // let it happen automatically when first data are sent.
 	PLABuff data;
 	int nDumped;
-	int i;
+	RealTimer* msgTimer = new RealTimer();
+	msgTimer->start();
 	while (1) {
-		if (networkQueue.size() > 30000) {
+		if (msgTimer->stop() > 10) {
+			printf("In send thread loop with %d elements (%d Mbytes) in queue\n",
+					networkQueue.size(), (int) (queuedBytes>>20));
+			msgTimer->start();
+		}
+		if (networkQueue.size() > 2000) {
 			nDumped = 0;
-			while (networkQueue.size() > 20000) {
-//			for (i = 0; i < 1000; i++) {
+			while (networkQueue.size() > 1500) {
 				data = networkQueue.front();
 				free(data.data);
+				queuedBytes -= data.dataBytes;
 				networkQueue.pop();
 				nDumped++;
 			}
 			if (nDumped) {
-				printf("Dumped %d chunks from data queue, %d remaining\n", nDumped, networkQueue.size());
+				printf("Dumped %d chunks from data queue, %d (%d MBytes) remaining\n",
+						nDumped, networkQueue.size(), (int) (queuedBytes>>20));
 				usleep(10000); // sleep for 10 millisecond.
 			}
 		}
@@ -135,19 +162,14 @@ int NetSender::sendThreadLoop() {
 			continue;
 		}
 		data = networkQueue.front();
-		if (calls == 0) {
-			printf("Mem loc read from queue = %p\n", (void*) &data.data);
-		}
+
 		if (sendData(&data)) {
 			free(data.data);
+			queuedBytes -= data.dataBytes;
 			networkQueue.pop(); // remove from queue.
 		}
 		else {
-			// sleep for a bit to stop it thrashing if no output available.
 			usleep(10000); // sleep for 10 millisecond.
-		}
-		if (++calls % 10000 == 0) {
-			printf("In send thread loop with %d elements in queue\n", networkQueue.size());
 		}
 	}
 	closeConnection();
@@ -171,12 +193,13 @@ int NetSender::sendData(PLABuff* data) {
 
 bool NetSender::openConnection() {
 	closeConnection();
+	conTimer->start();
 	static int errorCount = 0;
 	if (hostEntity == NULL) {
-		hostEntity = gethostbyname(ipV4);
+		hostEntity = gethostbyname(ipV4.c_str());
 		printf ("Network host is %s\n", hostEntity->h_name);
 		if (hostEntity == NULL) {
-			printf("Unable to look up host name in gethostbyname for %s\n", ipV4);
+			printf("Unable to look up host name in gethostbyname for %s\n", ipV4.c_str());
 			return false;
 		}
 	}
@@ -186,6 +209,18 @@ bool NetSender::openConnection() {
 		printf ("Unable to open socket in NetworkSender->openConnection()\n");
 		return false;
 	}
+	/*
+	 * Set a 10s timeout.
+	 */
+	timeval timeout = {10, 0};
+	if (setsockopt (sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
+            sizeof(timeout)) < 0)
+    printf("setsockopt SO_RCVTIMEO failed\n");
+	if (setsockopt (sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
+            sizeof(timeout)) < 0)
+    printf("setsockopt SO_SNDTIMEO failed\n");
+
+
 	memset(&sockAddr, 0, sizeof(sockaddr_in));
 	sockAddr.sin_family = AF_INET;
 	memcpy((char *)&sockAddr.sin_addr.s_addr,
@@ -195,15 +230,16 @@ bool NetSender::openConnection() {
 	if (connect(sockfd,(struct sockaddr *) &sockAddr,sizeof(sockAddr)) < 0) {
 		close(sockfd);
 		sockfd = 0;
-//		if (errorCount%100 == 0 || errorCount < 5) {
-			printf("Unable to make network connection to %s on port %d\n", ipV4, ipPort);
-//		}
+		if (errorCount%100 == 0 || errorCount < 5) {
+			printf("Unable to make network connection to %s on port %d after %3.2fs\n",
+					ipV4.c_str(), ipPort, conTimer->stop());
+		}
 		errorCount++;
 		return false;
 	}
 
 	socketId = sockfd;
-	printf("Network connection to %s on port %d is open\n", ipV4, ipPort);
+	printf("Network connection to %s on port %d is open\n", ipV4.c_str(), ipPort);
 	errorCount = 0;
 	/*
 	 * Now send through details of how teh x3 compression is working.
@@ -215,10 +251,15 @@ bool NetSender::openConnection() {
 /*
  * Send X3 header information through to the socket receiver.
  * This happens immediately after a Network connect has returned success.
+ *
+ * Ultimately, this should not go straight to the x3 code, but go to a function in
+ * the parent module which can give us an xml string to send to the socket. All
+ * modules should be able to do this, whatever their purpose using the function
+ * int PLAProcess::getModuleConfiguration(char* configData, int configDataLength)
  */
 bool NetSender::sendX3Header(int socketId) {
 	char hData[X3HEADLEN+NET_HDR_LEN];
-	int dataBytes = X3_prepareXMLheader(hData+NET_HDR_LEN, 500000, X3BLOCKSIZE);
+	int dataBytes = X3_prepareXMLheader(hData+NET_HDR_LEN, 500000, 8, X3BLOCKSIZE);
 	dataBytes += writeSendHeader(hData, dataBytes, NET_AUDIO_HEADINFO);
 
 	int bytesWrote = send(socketId, hData, dataBytes, MSG_NOSIGNAL);

@@ -221,7 +221,7 @@ void read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status, NiFpga_IrqCon
 		}
 
 		/*print some info every 5000 counts*/
-		if (count%10000==0){
+		if (count%100000==0){
 			cout << "FIFO Read Loop count = " << count/1000 << "k" <<endl;
 			//int length=dataBufVec.size();
 			//int length=(sizeof(Fifo_Data)/sizeof(*Fifo_Data));

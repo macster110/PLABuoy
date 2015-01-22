@@ -5,7 +5,8 @@
  */
 #include "processdata.h"
 #include "WavFileProcess.h"
-#include "CompressProcess.h";
+#include "X3FileProcess.h"
+#include "CompressProcess.h"
 #include "NetSender.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,7 +16,6 @@ PLAProcess** plaProcesses;
 
 int nChannels = 0;
 
-
 #define NPROCESSES (4)
 
 /*
@@ -23,22 +23,35 @@ int nChannels = 0;
  */
 void processCreate() {
 	plaProcesses = (PLAProcess**) malloc(sizeof(PLAProcess*) * NPROCESSES);
-	plaProcesses[0] = new PLAProcess();
-	plaProcesses[1] = new WavFileProcess();
-	plaProcesses[2] = new CompressProcess();
+	plaProcesses[0] = new PLAProcess("base");
+	plaProcesses[1] = new CompressProcess();
+	plaProcesses[2] = new X3FileProcess();
 	plaProcesses[3] = new NetSender();
 
 	/*
 	 * Add both the wav writing and the compression process to the
 	 * input process.
 	 */
-//	plaProcesses[0]->addChildProcess(plaProcesses[1]);
-	plaProcesses[0]->addChildProcess(plaProcesses[2]);
+	plaProcesses[0]->addChildProcess(plaProcesses[1]);
+	// attach x3 write process to compressor.
+	plaProcesses[1]->addChildProcess(plaProcesses[2]);
 
 	// attach net sender to output of compression.
-	plaProcesses[2]->addChildProcess(plaProcesses[3]);
+	plaProcesses[1]->addChildProcess(plaProcesses[3]);
 }
 
+int getNumProcesses() {
+	return NPROCESSES;
+}
+/**
+ * Get a process.
+ */
+PLAProcess* getProcess(int iProcess) {
+	if (iProcess < 0 || iProcess >= NPROCESSES) {
+		return NULL;
+	}
+	return plaProcesses[iProcess];
+}
 /*
  * Initialise the processes
  */
@@ -84,8 +97,26 @@ void processDelete() {
 	}
 }
 
-PLAProcess::PLAProcess() {
+/**
+ * Find a process with a given name. Return null if nothing found
+ */
+class PLAProcess* findProcess(std::string processName) {
+	if (processName.size() == 0) {
+		return NULL;
+	}
+	for (int i = 0; i < NPROCESSES; i++) {
+		if (plaProcesses[i] == NULL) continue;
+		if (plaProcesses[i]->getProcessName() == processName) {
+			return plaProcesses[i];
+		}
+	}
+	return NULL;
+}
+
+PLAProcess::PLAProcess(const string processName) : CommandList() {
+	this->processName = processName;
 	childProcesses = NULL;
+	parentProcess = NULL;
 	nChildProcesses = 0;
 	nChan = 0;
 	sampleRate = 0;
@@ -94,6 +125,7 @@ PLAProcess::PLAProcess() {
 PLAProcess::~PLAProcess() {
 	if (childProcesses) free(childProcesses);
 }
+
 
 int PLAProcess::initProcess(int nChan, int sampleRate) {
 	this->nChan = nChan;
@@ -121,6 +153,14 @@ void PLAProcess::endProcess() {
 
 }
 
+/**
+ * Get configuration data, ideally in an xml like format for any downstream
+ * modules to use.
+ */
+int PLAProcess::getModuleConfiguration(char* configData, int configDataLength) {
+	return 0;
+}
+
 void PLAProcess::addChildProcess(PLAProcess* childProcess) {
 	if (nChildProcesses == 0) {
 		childProcesses = (PLAProcess**) malloc(sizeof(PLAProcess*));
@@ -129,4 +169,5 @@ void PLAProcess::addChildProcess(PLAProcess* childProcess) {
 		childProcesses = (PLAProcess**) realloc(childProcesses, sizeof(PLAProcess*) * (nChildProcesses+1));
 	}
 	childProcesses[nChildProcesses++] = childProcess;
+	childProcess->setParentProcess(this);
 }

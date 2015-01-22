@@ -9,7 +9,7 @@
 #include "processdata.h"
 #include "../WriteWav.h"
 
-WavFileProcess::WavFileProcess() : PLAProcess() {
+WavFileProcess::WavFileProcess() : PLAProcess("wavrecord") {
 	nCalls = 0;
 }
 

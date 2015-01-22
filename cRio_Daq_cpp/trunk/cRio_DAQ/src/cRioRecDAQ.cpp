@@ -12,6 +12,7 @@
 #include <iostream>
 /*pthread library for running on different threads*/
 #include <pthread.h>
+#include <string.h>
 #include <unistd.h>
 /* Includes high level functions for reading DAQ card*/
 #include "NiFpgaManager.h"
@@ -20,6 +21,8 @@
 /*Useful functions including switching on and off LEDs*/
 #include "Utils.h"
 #include "process/processdata.h"
+//#include "RealTimer.h"
+#include "command/CommandManager.h"
 
 //#include <thread>
 
@@ -30,11 +33,17 @@ void watchdog_thread();
 void get_user_commands();
 void user_command(int command);
 int get_user_input_num();
+std::string get_user_input_string();
 
 /**
- * Inidcator for running the cRio data quisition
+ * Indicator for running the command loop
  */
-bool volatile go=false;
+bool volatile go=true;
+
+/**
+ * flag for continuing to acquire data.
+ */
+volatile bool acquire = false;
 
 /**
  * The user input- number rto specify command for cRio
@@ -53,6 +62,11 @@ int main(int argc, char *argv[]){
 		cout<<"Argument "<<i<<" "<<*argv[i]<<endl;
 	}
 
+
+//	RealTimer* rt = new RealTimer();
+//	printf("System clock has %11.9fs resolution\n", rt->getResolution());
+//	delete(rt);
+
 //	/**Make sure LED's are off**/
 	set_user_LED_status(LED_USER1_OFF);
 	set_user_LED_status(LED_STATUS_OFF);
@@ -68,9 +82,13 @@ int main(int argc, char *argv[]){
 
 
 	/*Only pass one argument to program-correct argc count is therefore supposed to be 2 or just choose the last argument*/
-	if (argc>=2){
-		int argument =*argv[argc-1]-'0';
-		user_command(argument);
+	if (argc>=2) {
+		string allCommands = joinstrings(argc-1, &argv[1]);
+//		printf("All commands: \"%s\"\n", allCommands.c_str());
+
+//		int argument =*argv[argc-1]-'0';
+//		user_command(argument);
+		commandManager->processCommand(allCommands);
 	}
 //	user_command(0);
 
@@ -100,53 +118,82 @@ int main(int argc, char *argv[]){
 void get_user_commands(){
 	/* Enter main loop. Exit if there is an error or the user requests the program to end */
 	int count=0;
+	std::string cmd;
 	while (go || count==0)
 	{
 		/* Generate Menu */
-		printf("\n");
+//		printf("\n");
 		printf("|---------------------------------------------------------------|\n");
-		printf("| Enter 0 start recording                                       |\n");
-		printf("| Enter 1 exit recording                                        |\n");
+//		printf("| Enter 0 start recording                                       |\n");
+//		printf("| Enter 1 exit recording                                        |\n");
+		printf("|             type help for a list of commands                  |\n");
 		printf("|---------------------------------------------------------------|\n");
 
-		UserInput = get_user_input_num();
-
-		printf("You entered: %d\n\n", UserInput);
-
-		if (UserInput >= 0) {
-			user_command(UserInput);
+//		UserInput = get_user_input_num();
+//		if (UserInput >= 0) {
+//			user_command(UserInput);
+//		}
+		while (go) {
+		cmd = get_user_input_string();
+		cmd = trimstring(cmd);
+		if (cmd.size()) break;
 		}
+		string ans = commandManager->processCommand(cmd);
+//		fflush(stdout);
+		printf("Command \"%s\" answered \"%s\"\n", cmd.c_str(), ans.c_str());
+//		fflush(stdout);
 
 		count++;
 	}
+	printf("Leaving terminal control loop\n");
+}
+
+bool start() {
+	if (acquire==true) return false;
+	acquire=true;
+	printf("Initiating cRio recording\n");
+	/*Start recording data from serial port*/
+	//			record_Serial(1,B4800);
+	/**Start FPGA tasks**/
+	FPGA_Tasks_Thread();
+	return true;
+}
+
+bool stop() {
+	if (acquire == false) return false;
+	acquire=false;
+	set_FPGA_go(false);
+	set_serial_go(false);
+	pthread_join(get_FPGA_thread(), NULL);
+	return true;
 }
 
 /**
  * Perform an operation based on command flag.
  */
-void user_command(int command){
-	switch(command)
-	{
-	case 0:
-		if (go==true) return;
-		go=true;
-		printf("Initiating cRio recording\n");
-		/*Start recording data from serial port*/
-		record_Serial(1,B4800);
-		/**Start FPGA tasks**/
-		FPGA_Tasks_Thread();
-		break;
-	case 1:
-		go=false;
-		set_FPGA_go(false);
-		set_serial_go(false);
-		pthread_join(get_FPGA_thread(), NULL);
-		break;
-	default:
-		printf("INVALID INPUT! Please choose an integer between 0 and 4.\n");
-	}
-
-}
+//void user_command(int command){
+//	switch(command)
+//	{
+//	case 0:
+//		if (go==true) return;
+//		go=true;
+//		printf("Initiating cRio recording\n");
+//		/*Start recording data from serial port*/
+//		record_Serial(1,B4800);
+//		/**Start FPGA tasks**/
+//		FPGA_Tasks_Thread();
+//		break;
+//	case 1:
+//		go=false;
+//		set_FPGA_go(false);
+//		set_serial_go(false);
+//		pthread_join(get_FPGA_thread(), NULL);
+//		break;
+//	default:
+//		printf("INVALID INPUT! Please choose an integer between 0 and 4.\n");
+//	}
+//
+//}
 
 
 
@@ -182,6 +229,27 @@ int get_user_input_num()
 
 }
 
+std::string get_user_input_string() {
+	const int slen = 256;
+	static char cmd[slen];
+//	printf("waiting for user nput\n");
+	fgets(cmd, slen-1, stdin);
+//	scanf(cmd, "%s");
+//	printf("have user input\n");
+	int lStr = strlen(cmd);
+	if (lStr > 0 && cmd[lStr-1] == '\n') {
+		cmd[lStr-1] = 0;
+	}
+	if (lStr > 1 && cmd[lStr-1] == '\r') {
+		cmd[lStr-1] = 0;
+	}
+//	printf("\"%s\" %d chars %d\n", cmd, strlen(cmd), (int) cmd[0]);
+	return string(cmd);
+}
+
+void exitTerminalLoop() {
+	go = false;
+}
 /**
  * Entry function for pthread to monitor FPGA
  */
@@ -214,7 +282,7 @@ void watchdog_monitor(){
 	int count=0;
 	int countCheck=erroruSec/countuSecs;
 	int led=0;
-	while(go){
+	while(acquire){
 		usleep(500000); //sleep for half a second
 		if (get_FPGA_Error_Count()>0){
 			printf("Watchdog: FPGA error count>0: %d!\n",get_FPGA_Error_Count());
@@ -239,7 +307,7 @@ void watchdog_monitor(){
 				 * Although this can be achived using FPGA, if it is broken for whatever need to perform a restart using
 				 * OS.
 				 */
-				go=false;
+				acquire=false;
 				set_FPGA_go(false);
 				set_serial_go(false);
 				usleep(500000); //sleep for half a second to allow things to finish up.

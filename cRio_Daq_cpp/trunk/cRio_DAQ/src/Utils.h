@@ -38,6 +38,12 @@ std::string currentDateTime();
  */
 std::string currentDateTime(const char* format);
 
+std::string createFileName(const char* prefix, const char* filetype);
+
+bool checkFolder(const char* folderPath);
+
+bool mkpath( std::string path );
+
 /**
  * Set the STATUS orUSER1 LED on the cRio.
  * @param ledstatus - colour of the LED or LED off. See LED_USER1_GREEN,LED_USER1_YELLOW,LED_USER1_OFF;

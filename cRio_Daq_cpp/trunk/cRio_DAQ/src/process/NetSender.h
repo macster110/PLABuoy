@@ -9,9 +9,11 @@
 #define NETSENDER_H_
 
 #include "processdata.h"
+#include "../RealTimer.h"
 
 #include <queue>
 #include <vector>
+#include <string>
 //#include <string>
 using namespace std;
 /*
@@ -46,6 +48,8 @@ public:
 
 	int sendThreadLoop();
 
+	bool setDestinationIp(std::string newIpAddress);
+
 private:
 	queue<PLABuff> networkQueue;
 
@@ -61,6 +65,10 @@ private:
 	void closeConnection();
 
 	bool sendX3Header(int socketId);
+
+	int64_t queuedBytes;
+
+	RealTimer* conTimer;
 };
 
 #endif /* NETSENDER_H_ */

@@ -170,7 +170,7 @@ int    X3_getnextframehdr(XHdr *h, FILE *fid)
 	return(0) ;
 }
 
-int X3_prepareXMLheader(char* s, int sampleRate, int blockSize) {
+int X3_prepareXMLheader(char* s, int sampleRate, int nChan, int blockSize) {
 	strcpy(s, "<X3ARCH PROG=\"x3new.m\" VERSION=\"2.0\">"); // DG remove \ from end
 	char sfs[20] ;
 
@@ -179,6 +179,8 @@ int X3_prepareXMLheader(char* s, int sampleRate, int blockSize) {
 	openxmlfield(s,"CFG","ID=\"1\" FTYPE=\"WAV\"") ;
 	sprintf(sfs,"%d",sampleRate) ;
 	addxmlfield(s,"FS","UNIT=\"Hz\"",sfs) ;
+	sprintf(sfs,"%d",nChan) ;
+	addxmlfield(s,"NCHAN",NULL,sfs);
 	addxmlfield(s,"SUFFIX",NULL,"wav") ;
 	openxmlfield(s,"CODEC","TYPE=\"X3\" VERS=\"2\"") ;      // name of the encoder
 	sprintf(sfs,"%d",blockSize);
@@ -216,7 +218,7 @@ FILE  *X3_new(char *fname, int fs)
 	// closexmlfield(s,"CFG") ;
 
 	// create the meta frame in a separate function.
-	int xmlLen = X3_prepareXMLheader(s, fs, 20);
+	int xmlLen = X3_prepareXMLheader(s, fs, 8, 20);
 	// pack the metadata frame and write it to the file
 	X3_writemetaframe(fid,s,NULL) ;
 	return(fid) ;

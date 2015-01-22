@@ -84,7 +84,7 @@ extern int X3_getnextframehdr(XHdr *h, FILE *fid);
 extern FILE *X3_new(char *fname, int fs);
 
 // xml message creation functions
-extern int X3_prepareXMLheader(char* s, int sampleRate, int blockSize);
+extern int X3_prepareXMLheader(char* s, int sampleRate, int nChan, int blockSize);
 extern int openxmlfield(char *s, const char *field, const char *arg);
 extern int addxmlfield(char *s, const char *field, const char *arg,
 		const char *value);

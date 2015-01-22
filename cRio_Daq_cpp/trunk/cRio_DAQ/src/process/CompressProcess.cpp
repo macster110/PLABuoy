@@ -25,7 +25,7 @@
 // largest allowable frame.
 short    PBUFF[MAXFRAME+X3_HDRLEN] ;
 
-CompressProcess::CompressProcess() {
+CompressProcess::CompressProcess() : PLAProcess("compress") {
 
 }
 
@@ -62,7 +62,7 @@ int CompressProcess::process(PLABuff* plaBuffer) {
 	// write the header into the X3_HDRLEN (10) bytes at the start of the buffer
 	nw += x3frameheader(PBUFF,1,ibuff->nch,ibuff->nsamps,nw,NULL,cd) ;
 	// good to go and write to file.
-	// may need to byte swap here - not 100% sure what Mark was up to in his code.
+	// need to byte swap here - not 100% sure what Mark was up to in his code.
 	short* swapBuff = (short*) PBUFF;
 	for (int i = 0; i < nw; i++) {
 		swapBuff[i] = htons(swapBuff[i]);
