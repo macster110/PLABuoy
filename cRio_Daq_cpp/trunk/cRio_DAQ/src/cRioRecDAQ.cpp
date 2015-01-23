@@ -15,7 +15,7 @@
 #include <string.h>
 #include <unistd.h>
 /* Includes high level functions for reading DAQ card*/
-#include "NiFpgaManager.h"
+//#include "NiFpgaManager.h"
 ///*Includes high level functions for reading Serial port */
 #include "ReadSerial.h"
 /*Useful functions including switching on and off LEDs*/
@@ -23,9 +23,13 @@
 #include "process/processdata.h"
 //#include "RealTimer.h"
 #include "command/CommandManager.h"
+#include "Settings.h"
+
+#include "daq/FPGADaqSystem.h"
 
 //#include <thread>
 
+DAQSystem* daqSystem;
 
 /*Define some functions*/
 void watchdog_monitor();
@@ -62,7 +66,7 @@ int main(int argc, char *argv[]){
 		cout<<"Argument "<<i<<" "<<*argv[i]<<endl;
 	}
 
-
+	daqSystem = new FPGADaqSystem();
 //	RealTimer* rt = new RealTimer();
 //	printf("System clock has %11.9fs resolution\n", rt->getResolution());
 //	delete(rt);
@@ -149,23 +153,31 @@ void get_user_commands(){
 }
 
 bool start() {
-	if (acquire==true) return false;
+	if (acquire==true) {
+		printf("Daq system is already running\n");
+		return false;
+	}
 	acquire=true;
 	printf("Initiating cRio recording\n");
+	processInit(NCHANNELS, SAMPLERATE);
 	/*Start recording data from serial port*/
 	//			record_Serial(1,B4800);
 	/**Start FPGA tasks**/
-	FPGA_Tasks_Thread();
-	return true;
+	daqSystem->prepare();
+	return daqSystem->start();
+//	FPGA_Tasks_Thread();
+//	return true;
 }
 
 bool stop() {
 	if (acquire == false) return false;
 	acquire=false;
-	set_FPGA_go(false);
-	set_serial_go(false);
-	pthread_join(get_FPGA_thread(), NULL);
-	return true;
+	bool ans = daqSystem->stop();
+//	set_FPGA_go(false);
+//	set_serial_go(false);
+//	pthread_join(get_FPGA_thread(), NULL);
+	processEnd();
+	return ans;
 }
 
 /**
@@ -194,9 +206,6 @@ bool stop() {
 //	}
 //
 //}
-
-
-
 
 /**
  * Function to get an input integer from the stream.
@@ -282,10 +291,11 @@ void watchdog_monitor(){
 	int count=0;
 	int countCheck=erroruSec/countuSecs;
 	int led=0;
+	return;
 	while(acquire){
 		usleep(500000); //sleep for half a second
-		if (get_FPGA_Error_Count()>0){
-			printf("Watchdog: FPGA error count>0: %d!\n",get_FPGA_Error_Count());
+		if (daqSystem->getErrorCount()>0){
+			printf("Watchdog: FPGA error count>0: %d!\n",daqSystem->getErrorCount());
 			led=1;
 		}
 		else{
@@ -300,21 +310,22 @@ void watchdog_monitor(){
 
 		if (count%countCheck==0 ){
 			printf(currentDateTime().c_str());
-			printf(" Watchdog: Checking error count. Total Errors = %d\n", get_FPGA_Error_Count());
-			if (get_FPGA_Error_Count()>errorThreshold){
+			printf(" Watchdog: Checking error count. Total Errors = %d\n", daqSystem->getErrorCount());
+			if (daqSystem->getErrorCount()>errorThreshold){
 				/*
 				 * Gone over the max number of errors allowed in error period. Restart the cRio.
 				 * Although this can be achived using FPGA, if it is broken for whatever need to perform a restart using
 				 * OS.
 				 */
-				acquire=false;
-				set_FPGA_go(false);
-				set_serial_go(false);
+//				acquire=false;
+//				set_FPGA_go(false);
+//				set_serial_go(false);
+				stop();
 				usleep(500000); //sleep for half a second to allow things to finish up.
 				system("/sbin/reboot");
 //				NiFpga_WriteBool(session_FPGA, NiFpga_NI_9222_Anologue_DAQ2_FPGA_ControlBool_SystemReset,true);
 			}
-			reset_FPGA_Error_Count(); //return the error count to zero.
+			daqSystem->resetErrorCount(); //return the error count to zero.
 		}
 
 	}

@@ -8,6 +8,7 @@
 #ifndef SETTINGS_H_
 #define SETTINGS_H_
 
+#define SAMPLERATE (500000)
 /*
  * Number of channels for acquisition.
  */

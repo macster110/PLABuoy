@@ -19,7 +19,7 @@ using namespace std;
 /**
  * The sample rate in micro-seconds.
  */
-const unsigned int Sample_Rate_us = 2;
+//const unsigned int Sample_Rate_us = 2;
 
 /**
  * Create the buffer that will hold samples form the FPGA. The FIFO executes very very fast and hence
@@ -60,6 +60,15 @@ void read_Data_Buffer(int channels);
  * @return NiFpga_Status error status specific to DAQ recordings.
  */
 NiFpga_Status get_Status_DAQ();
+
+/*
+ * Start the readout thread for the main buffer read.
+ */
+bool startBufferRead();
+/*
+ * Stop the readout thread for the main buffer read.
+ */
+bool stopBufferRead();
 
 #endif
 

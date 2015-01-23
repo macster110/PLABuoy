@@ -14,4 +14,6 @@ bool start();
 
 bool stop();
 
+extern class DAQSystem* daqSystem;
+
 #endif /* CRIORECDAQ_H_ */
