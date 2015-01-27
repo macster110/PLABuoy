@@ -33,8 +33,11 @@ void processCreate() {
 	 * input process.
 	 */
 	plaProcesses[0]->addChildProcess(plaProcesses[1]);
+
+#ifndef WINDOWS
 	// attach x3 write process to compressor.
 	plaProcesses[1]->addChildProcess(plaProcesses[2]);
+#endif
 
 	// attach net sender to output of compression.
 	plaProcesses[1]->addChildProcess(plaProcesses[3]);

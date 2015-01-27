@@ -11,9 +11,10 @@
 #include <stdlib.h>
 #include <iostream>
 /*pthread library for running on different threads*/
-#include <pthread.h>
+#include "mythread.h"
 #include <string.h>
 #include <unistd.h>
+#include <stdio.h>
 /* Includes high level functions for reading DAQ card*/
 //#include "NiFpgaManager.h"
 ///*Includes high level functions for reading Serial port */
@@ -21,11 +22,16 @@
 /*Useful functions including switching on and off LEDs*/
 #include "Utils.h"
 #include "process/processdata.h"
-//#include "RealTimer.h"
+#include "RealTimer.h"
 #include "command/CommandManager.h"
 #include "Settings.h"
 
+#include "daq/SimulatedDaq.h"
+#ifdef WINOWS
+#include "daq/DaqMxSystem.h"
+#else
 #include "daq/FPGADaqSystem.h"
+#endif
 
 using namespace std;
 //#include <thread>
@@ -36,7 +42,7 @@ DAQSystem* daqSystem;
 void watchdog_monitor();
 void watchdog_thread();
 void get_user_commands();
-void user_command(int command);
+//void user_command(int command);
 int get_user_input_num();
 std::string get_user_input_string();
 
@@ -62,19 +68,30 @@ pthread_t user_input_thread;
 
 int main(int argc, char *argv[]){
 
-	cout<<"Number of arguments "<<argc<<endl;
-	for (int i=0; i<argc ; i++){
-		cout<<"Argument "<<i<<" "<<*argv[i]<<endl;
-	}
+//	cout<<"Number of arguments "<<argc<<endl;
+//	for (int i=0; i<argc ; i++){
+//		cout<<"Argument "<<i<<" "<<*argv[i]<<endl;
+//	}
 
+#ifdef WINDOWS
+	daqSystem = new SimulatedDaq();
+//	daqSystem = new DaqMxSystem();
+#else
 	daqSystem = new FPGADaqSystem();
+#endif
 //	RealTimer* rt = new RealTimer();
 //	printf("System clock has %11.9fs resolution\n", rt->getResolution());
+//	rt->start();
+//	for (int i = 0; i < 10; i++) {
+//		myusleep(1000000);
+//		printf("tic %d, time %4.5f\n", i, rt->stop());
+//		fflush(stdout);
+//	}
 //	delete(rt);
 
 //	/**Make sure LED's are off**/
-	set_user_LED_status(LED_USER1_OFF);
-	set_user_LED_status(LED_STATUS_OFF);
+//	set_user_LED_status(LED_USER1_OFF);
+//	set_user_LED_status(LED_STATUS_OFF);
 
 	// create the data processes.
 	processCreate();
@@ -108,8 +125,8 @@ int main(int argc, char *argv[]){
 //	testWavWrite();
 
 	/**Make sure LED's are off**/
-	set_user_LED_status(LED_USER1_OFF);
-	set_user_LED_status(LED_STATUS_OFF);
+//	set_user_LED_status(LED_USER1_OFF);
+//	set_user_LED_status(LED_STATUS_OFF);
 
 	// clean up processes.
 	processDelete();
@@ -293,7 +310,7 @@ void watchdog_monitor(){
 	int led=0;
 	return;
 	while(acquire){
-		usleep(500000); //sleep for half a second
+		myusleep(500000); //sleep for half a second
 		if (daqSystem->getErrorCount()>0){
 			printf("Watchdog: FPGA error count>0: %d!\n",daqSystem->getErrorCount());
 			led=1;
@@ -321,7 +338,7 @@ void watchdog_monitor(){
 //				set_FPGA_go(false);
 //				set_serial_go(false);
 				stop();
-				usleep(500000); //sleep for half a second to allow things to finish up.
+				myusleep(500000); //sleep for half a second to allow things to finish up.
 				system("/sbin/reboot");
 //				NiFpga_WriteBool(session_FPGA, NiFpga_NI_9222_Anologue_DAQ2_FPGA_ControlBool_SystemReset,true);
 			}

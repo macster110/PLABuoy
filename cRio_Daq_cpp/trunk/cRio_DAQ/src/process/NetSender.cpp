@@ -166,11 +166,11 @@ int NetSender::sendThreadLoop() {
 			if (nDumped) {
 				printf("Dumped %d chunks from data queue, %d (%d MBytes) remaining\n",
 						nDumped, networkQueue.size(), (int) (queuedBytes>>20));
-				usleep(10000); // sleep for 10 millisecond.
+				myusleep(10000); // sleep for 10 millisecond.
 			}
 		}
 		if (networkQueue.size() == 0) {
-			usleep(10000); // sleep for 10 millisecond.
+			myusleep(10000); // sleep for 10 millisecond.
 			continue;
 		}
 		data = networkQueue.front();
@@ -181,7 +181,7 @@ int NetSender::sendThreadLoop() {
 			networkQueue.pop(); // remove from queue.
 		}
 		else {
-			usleep(10000); // sleep for 10 millisecond.
+			myusleep(10000); // sleep for 10 millisecond.
 		}
 	}
 	closeConnection();

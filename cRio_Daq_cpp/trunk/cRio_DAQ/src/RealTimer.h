@@ -23,7 +23,7 @@ public:
 	RealTimer();
 	virtual ~RealTimer();
 	void start();
-	float stop();
+	double stop();
 	float getResolution();
 private:
 	struct timeval startTime;

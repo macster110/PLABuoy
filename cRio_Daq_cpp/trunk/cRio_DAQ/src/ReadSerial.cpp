@@ -151,7 +151,7 @@ void readSerialPort(Serial_Port port, int n)
         of characters read is smaller than the number of chars available,
         subsequent reads will return the remaining chars. res will be set
         to the actual number of characters actually read */
-		usleep(10000);
+		myusleep(10000);
 
 		res = read(port.fd, buf, read_size);
 

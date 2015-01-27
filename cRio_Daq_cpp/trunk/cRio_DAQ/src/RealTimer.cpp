@@ -12,7 +12,7 @@
 
 RealTimer::RealTimer() {
 #ifdef WINDOWS
-	timeResolution = 1./CLOCKS_PER_SEC;
+	timeResolution = CLOCKS_PER_SEC;
 #else
 	struct timespec timeRes;
 //	clock_getres(CLOCK_REALTIME, &timeRes);
@@ -32,13 +32,13 @@ void RealTimer::start() {
 	gettimeofday(&startTime, 0);
 #endif
 }
-float RealTimer::stop() {
+double RealTimer::stop() {
 #ifdef WINDOWS
-	return ((float) (clock() - winTickCount)) * timeResolution;
+	return ((double) (clock() - winTickCount)) / timeResolution;
 #else
 	timeval endTime;
 	gettimeofday(&endTime, 0);
-	return (float) (endTime.tv_sec-startTime.tv_sec) + (float) (endTime.tv_usec-startTime.tv_usec)/1.0e6;
+	return (double) (endTime.tv_sec-startTime.tv_sec) + (double) (endTime.tv_usec-startTime.tv_usec)/1.0e6;
 #endif
 }
 float RealTimer::getResolution() {

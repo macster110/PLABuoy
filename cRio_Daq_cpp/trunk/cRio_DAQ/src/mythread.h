@@ -8,6 +8,9 @@
 #ifndef MYTHREAD_H_
 #define MYTHREAD_H_
 
+#include <stdint.h>
+extern void myusleep(uint32_t micros);
+
 /**
  * Definitions enabling code to create a threading system which can build for both Linux and Windows
  * Since each system uses a quite different set of functions and references to threads, some of
@@ -41,6 +44,7 @@ unsigned long __stdcall starterName (void* threadData) { \
 		threadReturnVal = (int) WaitForSingleObject(threadHandle, INFINITE);
 
 #else
+// Linux
 
 #include <pthread.h>
 

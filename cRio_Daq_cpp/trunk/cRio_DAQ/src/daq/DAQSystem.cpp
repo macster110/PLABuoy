@@ -146,7 +146,7 @@ void DAQSystem::read_Data_Buffer(){
 		}
 		//		samplesInBuff = 0;
 		if (samplesInBuff<READBLOCKSIZE){
-			usleep(10000); //2000us seems to work well for high sample rates.
+			myusleep(10000); //2000us seems to work well for high sample rates.
 			continue;
 		}
 

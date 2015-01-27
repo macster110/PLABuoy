@@ -254,7 +254,7 @@ void FPGADaqSystem::read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status
 			 * The 500ms value seems to let if have a kip about one time in three indicating
 			 * that it couldn't sleep much more.
 			 */
-			usleep(500);
+			myusleep(500);
 			weeKips++;
 		}
 
@@ -352,7 +352,7 @@ bool FPGADaqSystem::stopSystem() {
 		errorCount_FPGA++;
 	}
 
-	usleep(500000); //sleep for half a second
+	myusleep(500000); //sleep for half a second
 	return true;
 }
 
