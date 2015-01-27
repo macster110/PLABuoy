@@ -10,6 +10,7 @@
 
 #include "DAQSystem.h"
 #include "../NiFpga.h"
+#include "../mythread.h"
 
 #include <pthread.h>
 
@@ -33,6 +34,8 @@ public:
 
 	void run_FPGA_tasks();
 
+	void read_FIFO_threadFunction();
+
 	NiFpga_Status prepare_FPGA();
 
 	void read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status, NiFpga_IrqContext *irqContext);
@@ -49,9 +52,11 @@ public:
 	NiFpga_IrqContext get_IrqContext_FPGA();
 private:
 	/* this variable is our reference to the second thread */
-	pthread_t read_FIFO_thread;/*The status of the DAQ portion of the FPGA*/
+	THREADID read_FIFO_thread;/*The status of the DAQ portion of the FPGA*/
+	THREADHANDLE read_fifo_thread_handle;
 	/*thread on which FPGA tasks run*/
-	pthread_t fpga_task_thread;
+	THREADID fpga_task_thread;
+	THREADHANDLE fpga_task_thread_handle;
 
 	NiFpga_Status status_DAQ;
 

@@ -215,10 +215,10 @@ int record_Serial(int port, speed_t baudRate){
 	/*create thread to read serial port data*/
 	pthread_t read_serial_thread;
 	/**launch thread*/
-	if(pthread_create(&read_serial_thread, NULL, serial_Read_thread_function, ptr_port)){
-		fprintf(stderr, "Error creating thread to read data serial data\n");
-		return 1;  ;
-	}
+//	if(pthread_create(&read_serial_thread, NULL, serial_Read_thread_function, ptr_port)){
+//		fprintf(stderr, "Error creating thread to read data serial data\n");
+//		return 1;  ;
+//	}
 
 //	//TEMP- debug only
 //	pthread_join(read_serial_thread,NULL);

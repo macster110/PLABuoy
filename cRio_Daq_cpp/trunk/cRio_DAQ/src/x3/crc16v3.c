@@ -53,7 +53,11 @@ unsigned int	CRCtab[256] = {
 0x6e17,0x7e36,0x4e55,0x5e74,0x2e93,0x3eb2,0x0ed1,0x1ef0
 } ;
 
-/* compute CRC16 checksum over bytes of 16-bit wide data */
+/*
+ * compute CRC16 checksum over bytes of 16-bit wide data
+ * Note that NW is the number of 16 bit words, bot bytes !
+ *
+ */
 
 unsigned int crc16(short *vec, int n)
 {

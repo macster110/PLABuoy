@@ -7,7 +7,12 @@
 
 #ifndef REALTIMER_H_
 #define REALTIMER_H_
+#ifdef WINDOWS
+#include "time.h"
+#include "Winsock2.h"
+#else
 #include <sys/time.h>
+#endif
 
 /**
  * Simple timer that returns a time difference in
@@ -21,7 +26,8 @@ public:
 	float stop();
 	float getResolution();
 private:
-	timeval startTime;
+	struct timeval startTime;
+	int winTickCount;
 	float timeResolution;
 };
 

@@ -13,11 +13,15 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <pthread.h>
+#include "../mythread.h"
+#ifdef WINDOWS
+#include "Winsock2.h"
+#else
 #include <netdb.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <error.h>
+#endif
 
 #include "../x3/x3frame.h"
 
@@ -33,13 +37,19 @@ std::string ipV4 = "192.168.2.101";
 int ipPort = 8013;
 
 
+#ifdef WINDOWS
+	int sendFlags = 0;
+#else
+	int sendFlags = MSG_NOSIGNAL;
+#endif
 
-void *netsendThreadFunction(void *param)
-{
-	NetSender* obj = (NetSender*) param;
-	obj->sendThreadLoop();
-	return NULL;
-}
+DECLARETHREAD(netsendThreadFunction, NetSender, sendThreadLoop)
+//void *netsendThreadFunction(void *param)
+//{
+//	NetSender* obj = (NetSender*) param;
+//	obj->sendThreadLoop();
+//	return NULL;
+//}
 
 NetSender::NetSender() : PLAProcess("netsend") {
 	// launch the thread to connect to and send data to the
@@ -52,8 +62,10 @@ NetSender::NetSender() : PLAProcess("netsend") {
 	addCommand(new SetDestIP(this));
 	addCommand(new SetDestPort(this));
 
-	pthread_t netsendThread;
-	pthread_create(&netsendThread, NULL, netsendThreadFunction, this);
+//	pthread_t netsendThread;
+//	pthread_create(&netsendThread, NULL, netsendThreadFunction, this);
+	bool threadState;
+	STARTTHREAD(netsendThreadFunction, this, netsendThread, netSendThreadHandle, threadState)
 
 }
 
@@ -181,11 +193,11 @@ int NetSender::sendThreadLoop() {
  * open.
  */
 int NetSender::sendData(PLABuff* data) {
-	int bytesWrote = send(socketId, data->data, data->dataBytes, MSG_NOSIGNAL);
+	int bytesWrote = send(socketId, (char*) data->data, data->dataBytes, sendFlags);
 	if (bytesWrote <= 0) {
 		// try to open and send again
 		if (openConnection()) {
-			bytesWrote = send(socketId, data->data, data->dataBytes, MSG_NOSIGNAL);
+			bytesWrote = send(socketId, (char*) data->data, data->dataBytes, sendFlags);
 		}
 	}
 	return bytesWrote == data->dataBytes;
@@ -262,7 +274,7 @@ bool NetSender::sendX3Header(int socketId) {
 	int dataBytes = X3_prepareXMLheader(hData+NET_HDR_LEN, 500000, 8, X3BLOCKSIZE);
 	dataBytes += writeSendHeader(hData, dataBytes, NET_AUDIO_HEADINFO);
 
-	int bytesWrote = send(socketId, hData, dataBytes, MSG_NOSIGNAL);
+	int bytesWrote = send(socketId, hData, dataBytes, sendFlags);
 	printf("Wrote %d bytes %s", bytesWrote, hData+NET_HDR_LEN);
 	printf("\n");
 	return bytesWrote == dataBytes;

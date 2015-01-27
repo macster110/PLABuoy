@@ -9,6 +9,7 @@
 #define DAQSYSTEM_H_
 #include <string>
 #include <stdint.h>
+#include "../mythread.h"
 
 #define DAQ_STATUS_IDLE    1
 #define DAQ_STATUS_RUNNING 2
@@ -31,7 +32,7 @@ public:
 
 	bool stop();
 
-	void read_Data_Buffer(int nChannels);
+	void read_Data_Buffer();
 
 	virtual int getStatus() = 0;
 
@@ -65,7 +66,9 @@ protected:
 private:
 	std::string name;
 
-	pthread_t write_data_thread;
+	THREADID write_data_thread;
+
+	THREADHANDLE write_thread_handle;
 
 	bool createBuffer();
 

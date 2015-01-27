@@ -14,7 +14,6 @@
 #include <vector>
 /*Sound file library installed on cRio through opkg package manager*/
 #include <iterator>
-#include <sndfile.hh>
 /*Needed to get the system time. */
 #include <time.h>
 /*math*/
@@ -28,6 +27,9 @@
 #include "Utils.h"
 /*for creating folder*/
 #include <sys/stat.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sndfile.hh>
 
 using namespace std;
 
@@ -104,7 +106,7 @@ int create_Sound_File(int channels, int SR)
 	string desiredFolder = folderString();
 	if (desiredFolder != currentFolder) {
 		string fullPath = wav_location+"/"+desiredFolder;
-		mkdir(fullPath.c_str(), 0x777);
+		mkpath(fullPath);
 		currentFolder = desiredFolder;
 	}
 

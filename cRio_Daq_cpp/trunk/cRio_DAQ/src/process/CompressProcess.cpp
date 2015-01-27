@@ -10,8 +10,12 @@
 #include "../x3/x3frame.h"
 #include "../x3/crc16v3.h"
 #include "../Settings.h"
+#ifdef WINDOWS
+#include "Winsock2.h"
+#else
 #include <sys/socket.h>
 #include <netinet/in.h>
+#endif
 
 #include <stdio.h>
 

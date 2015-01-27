@@ -11,6 +11,7 @@
 
 #include "../Utils.h"
 #include "../x3/x3frame.h"
+#include "../x3/crc16v3.h"
 #include "../RealTimer.h"
 
 #include <string>
@@ -79,8 +80,11 @@ FILE* X3FileProcess::openFile() {
 	FILE* aFile = fopen(fileName.c_str(),"wb") ;
 	fprintf(aFile,X3_FILE_KEY);
 	char hData[X3HEADLEN];
-	int dataBytes = X3_prepareXMLheader(hData, 500000, 8, X3BLOCKSIZE);
-	fwrite(aFile, dataBytes, 1, aFile);
+	int dataBytes = X3_prepareXMLheader(hData+X3_HDRLEN*2, 500000, 8, X3BLOCKSIZE);
+	int nw = (dataBytes+1)>>1;
+	int cd = crc16((short*) (hData+X3_HDRLEN*2), nw);
+	nw += x3frameheader((short*) hData,0,0,0,nw,NULL,cd) ;
+	fwrite(aFile, 2, nw, aFile);
 	uncompressedBytes = compressedBytes = 0;
 	printf("Opened new x3 file %s\n", fileName.c_str());
 	openFileName = fileName;

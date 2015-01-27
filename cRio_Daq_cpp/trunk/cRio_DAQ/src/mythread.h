@@ -8,35 +8,64 @@
 #ifndef MYTHREAD_H_
 #define MYTHREAD_H_
 
+/**
+ * Definitions enabling code to create a threading system which can build for both Linux and Windows
+ * Since each system uses a quite different set of functions and references to threads, some of
+ * the functions have parameters which may be annoyingly redundant for each system.
+ * The functions are designed only to work with classes, The function created by the
+ * DECLARETHREAD should be places at the top of a cpp file. It is passed a pointer back to the
+ * class and will call straight back into it.
+ *
+ */
+#ifdef CRIO
+#undef WINDOWS
+#endif
+
 #ifdef WINDOWS
 #include <windows.h>
-#else
-#include <pthread.h>
-#endif
+
+typedef HANDLE THREADHANDLE;
+typedef DWORD THREADID;
 
 #define DECLARETHREAD(starterName, className, functionName) \
 unsigned long __stdcall starterName (void* threadData) { \
 	className* classReference = (className*) threadData; \
-	return classReference->functionName(); \
+	classReference->functionName(); \
+	return 0; \
 }
+#define STARTTHREAD(starterName, classPointer, threadId, threadHandle, threadState) \
+	threadHandle = CreateThread(NULL, 0, starterName, (void*)classPointer, 0, &threadId); \
+	threadState = (threadHandle != 0);
 
-#define STARTTHREAD(starterName, classPointer, threadId) \
-	HANDLE winthread = CreateThread(NULL, 0, starterName, (void*)classPointer, 0, &threadId); \
-	return (winthread != 0);
+#define WAITFORTHREAD(threadId, threadHandle, threadReturnVal) \
+		threadReturnVal = (int) WaitForSingleObject(threadHandle, INFINITE);
 
 #else
+
 #include <pthread.h>
+
+typedef int THREADHANDLE;
+typedef pthread_t THREADID;
+
 #define DECLARETHREAD(starterName, className, functionName) \
 void* starterName (void* threadData) { \
 	className* classReference = (className*) threadData; \
-	return (void*) classReference->functionName(); \
+	classReference->functionName(); \
+	return NULL; \
 }
 
-#define STARTTHREAD(starterName, classPointer, threadId) \
+#define STARTTHREAD(starterName, classPointer, threadId, threadHandle, threadState) \
 	int err; \
 	err = pthread_create(&threadId, NULL , starterName, (void*) classPointer); \
-	return (err == 0);
+	threadHandle = 0; \
+	threadState = (err == 0);
+
+#define WAITFORTHREAD(threadId, threadHandle, threadReturnVal) \
+		void* hiddenRetVal; \
+		pthread_join(threadId, &hiddenRetVal); \
+		threadReturnVal = (int) hiddenRetVal;
 
 
+#endif
 
 #endif /* MYTHREAD_H_ */

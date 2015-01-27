@@ -7,11 +7,17 @@
 
 #include "RealTimer.h"
 
+//#include "Winsock2.h"
+
 
 RealTimer::RealTimer() {
-	timespec timeRes;
+#ifdef WINDOWS
+	timeResolution = 1./CLOCKS_PER_SEC;
+#else
+	struct timespec timeRes;
 //	clock_getres(CLOCK_REALTIME, &timeRes);
 	timeResolution = (float) timeRes.tv_sec + (float) timeRes.tv_nsec/1.0e9;
+#endif
 }
 
 RealTimer::~RealTimer() {
@@ -20,14 +26,20 @@ RealTimer::~RealTimer() {
 
 
 void RealTimer::start() {
-//	clock_gettime(CLOCK_REALTIME, &startTime);
+#ifdef WINDOWS
+	winTickCount = clock();
+#else
 	gettimeofday(&startTime, 0);
+#endif
 }
 float RealTimer::stop() {
+#ifdef WINDOWS
+	return ((float) (clock() - winTickCount)) * timeResolution;
+#else
 	timeval endTime;
-//	clock_gettime(CLOCK_REALTIME, &endTime);
 	gettimeofday(&endTime, 0);
 	return (float) (endTime.tv_sec-startTime.tv_sec) + (float) (endTime.tv_usec-startTime.tv_usec)/1.0e6;
+#endif
 }
 float RealTimer::getResolution() {
 	return timeResolution;

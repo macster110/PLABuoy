@@ -10,6 +10,7 @@
 
 #include "processdata.h"
 #include "../RealTimer.h"
+#include "../mythread.h"
 
 #include <queue>
 #include <vector>
@@ -69,6 +70,10 @@ private:
 	int64_t queuedBytes;
 
 	RealTimer* conTimer;
+
+	THREADID netsendThread;
+	THREADHANDLE netSendThreadHandle;
+
 };
 
 #endif /* NETSENDER_H_ */

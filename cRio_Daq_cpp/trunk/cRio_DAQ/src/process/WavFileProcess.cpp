@@ -8,6 +8,9 @@
 #include "WavFileProcess.h"
 #include "processdata.h"
 #include "../WriteWav.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <sndfile.h>
 
 WavFileProcess::WavFileProcess() : PLAProcess("wavrecord") {
 	nCalls = 0;

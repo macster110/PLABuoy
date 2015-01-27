@@ -13,6 +13,7 @@
 
 #include "../NIFpgaManager.h"
 #include "../Settings.h"
+#include "../mythread.h"
 #include <string>
 #include <unistd.h>
 #include <iosfwd>
@@ -26,28 +27,30 @@ using namespace std;
 /**
  * Entry function for pthread for user input
  */
-void *FPGA_input_function(void *param)
-{
-	((FPGADaqSystem*) param)->run_FPGA_tasks();
-	return NULL;
-}
+//void *FPGA_input_function(void *param)
+//{
+//	((FPGADaqSystem*) param)->run_FPGA_tasks();
+//	return NULL;
+//}
+DECLARETHREAD(FPGA_input_function, FPGADaqSystem, run_FPGA_tasks)
 
 /*Entry function for pthread to read FIFO*/
-void *FIFO_thread_function(void *param)
-{
-	FPGADaqSystem* fpgaDaqSystem = ((FPGADaqSystem*) param);
-	NiFpga_Session session_FPGA=fpgaDaqSystem->get_Session_FPGA();
-	NiFpga_IrqContext irqContext_FPGA=fpgaDaqSystem->get_IrqContext_FPGA();
-	/*Holds any errors flagged up. Reset error to zero. Important, otherwise we just carry any previous errors and hit an 'infinite error loop' until system resets.*/
-	NiFpga_Status status_DAQ=0;
-	/*Merge with error from FPGA manager just in case something has been flagged up there*/
-	status_DAQ=NiFpga_MergeStatus(&status_DAQ, fpgaDaqSystem->get_Status_FPGA());
-	printf("start to read_FIFO_Data .....\n");
-	fpgaDaqSystem->read_FIFO_Data(session_FPGA, &status_DAQ, &irqContext_FPGA);
-	printf("Completed read_FIFO_Data .....\n");
-
-	return NULL;
-}
+//void *FIFO_thread_function(void *param)
+//{
+//	FPGADaqSystem* fpgaDaqSystem = ((FPGADaqSystem*) param);
+//	NiFpga_Session session_FPGA=fpgaDaqSystem->get_Session_FPGA();
+//	NiFpga_IrqContext irqContext_FPGA=fpgaDaqSystem->get_IrqContext_FPGA();
+//	/*Holds any errors flagged up. Reset error to zero. Important, otherwise we just carry any previous errors and hit an 'infinite error loop' until system resets.*/
+//	NiFpga_Status status_DAQ=0;
+//	/*Merge with error from FPGA manager just in case something has been flagged up there*/
+//	status_DAQ=NiFpga_MergeStatus(&status_DAQ, fpgaDaqSystem->get_Status_FPGA());
+//	printf("start to read_FIFO_Data .....\n");
+//	fpgaDaqSystem->read_FIFO_Data(session_FPGA, &status_DAQ, &irqContext_FPGA);
+//	printf("Completed read_FIFO_Data .....\n");
+//
+//	return NULL;
+//}
+DECLARETHREAD(FIFO_thread_function, FPGADaqSystem, read_FIFO_threadFunction)
 
 FPGADaqSystem::FPGADaqSystem() : DAQSystem("FPGA Daq") {
 	status_DAQ = 0;
@@ -71,13 +74,16 @@ bool FPGADaqSystem::prepareSystem() {
 }
 
 bool FPGADaqSystem::startSystem() {
-	if(pthread_create(&fpga_task_thread, NULL, FPGA_input_function, this)){
-		fprintf(stderr, "FPGA monitor: creating input thread\n");
-		return false;
-	}
-	else {
-		return true;
-	}
+	bool threadState;
+	STARTTHREAD(FPGA_input_function, this, fpga_task_thread, fpga_task_thread_handle, threadState);
+	return threadState;
+//	if(pthread_create(&fpga_task_thread, NULL, FPGA_input_function, this)){
+//		fprintf(stderr, "FPGA monitor: creating input thread\n");
+//		return false;
+//	}
+//	else {
+//		return true;
+//	}
 }
 
 void FPGADaqSystem::run_FPGA_tasks()
@@ -114,6 +120,19 @@ void FPGADaqSystem::run_FPGA_tasks()
 
 		break;
 	}
+}
+
+void FPGADaqSystem::read_FIFO_threadFunction() {
+	NiFpga_Session session_FPGA=get_Session_FPGA();
+	NiFpga_IrqContext irqContext_FPGA=get_IrqContext_FPGA();
+	/*Holds any errors flagged up. Reset error to zero. Important, otherwise we just carry any previous errors and hit an 'infinite error loop' until system resets.*/
+	NiFpga_Status status_DAQ=0;
+	/*Merge with error from FPGA manager just in case something has been flagged up there*/
+	status_DAQ=NiFpga_MergeStatus(&status_DAQ, get_Status_FPGA());
+	printf("start to read_FIFO_Data .....\n");
+	read_FIFO_Data(session_FPGA, &status_DAQ, &irqContext_FPGA);
+	printf("Completed read_FIFO_Data .....\n");
+
 }
 NiFpga_Status FPGADaqSystem::prepare_FPGA()
 {
@@ -289,17 +308,20 @@ void FPGADaqSystem::record_DAQ()
 
 
 //	int thread_var1 = 0, thread_var2 = 0;
-
+	bool threadState;
+	STARTTHREAD(FIFO_thread_function, this, read_FIFO_thread, read_fifo_thread_handle, threadState)
 	/**Create thread to read FIFO data*/
-	if(pthread_create(&read_FIFO_thread, NULL, FIFO_thread_function, this)){
-		fprintf(stderr, "Error creating thread to read data from FIFO\n");
-		return;
-	}
+//	if(pthread_create(&read_FIFO_thread, NULL, FIFO_thread_function, this)){
+//		fprintf(stderr, "Error creating thread to read data from FIFO\n");
+//		return;
+//	}
 	printf("FIFO thread has initialised...\n");
 
 
 	/*Wait for both threads to finish before closing up*/
-	pthread_join(read_FIFO_thread, NULL);
+//	pthread_join(read_FIFO_thread, NULL);
+	int retVal;
+	WAITFORTHREAD(read_FIFO_thread, read_fifo_thread_handle, retVal)
 
 }
 

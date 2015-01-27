@@ -9,6 +9,8 @@
 /*#ifndef WRITEWAV_H_ */
 #define WRITEWAV_H_
 /*Sound file library installed on cRio through opkg package manager*/
+#include <stdio.h>
+#include <stdlib.h>
 #include <sndfile.h> // was sndfile.hh !!
 #include <fstream> // needed for string
 

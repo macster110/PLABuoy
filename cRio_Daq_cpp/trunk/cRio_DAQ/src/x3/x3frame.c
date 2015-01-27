@@ -170,6 +170,10 @@ int    X3_getnextframehdr(XHdr *h, FILE *fid)
 	return(0) ;
 }
 
+/**
+ * Write an x3 file header, complete with it's own smaller header (10 words)
+ * and return the total number of bytes written.
+ */
 int X3_prepareXMLheader(char* s, int sampleRate, int nChan, int blockSize) {
 	strcpy(s, "<X3ARCH PROG=\"x3new.m\" VERSION=\"2.0\">"); // DG remove \ from end
 	char sfs[20] ;
@@ -192,6 +196,8 @@ int X3_prepareXMLheader(char* s, int sampleRate, int nChan, int blockSize) {
 	closexmlfield(s,"CODEC") ;
 	closexmlfield(s,"CFG") ;
 	closexmlfield(s,"X3ARCH") ;
+
+
 	return strlen(s);
 }
 
@@ -249,7 +255,10 @@ FILE  *X3_open(char *fname)
 	return(fid) ;
 }
 
-
+/**
+ * Write an x3 header into data,
+ * return the number of word16's written (always 10 = 20 bytes).
+ */
 int     x3frameheader(short *pb, int id, int nch, int ns, int nw, short *T, short cd)
 {
 	short   *pt = pb ;

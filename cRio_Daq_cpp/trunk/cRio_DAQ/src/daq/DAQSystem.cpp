@@ -8,27 +8,29 @@
 #include "DAQSystem.h"
 #include "../Settings.h"
 #include "../process/processdata.h"
+#include "../mythread.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
 /*pthread library for running on different threads*/
-#include <pthread.h>
 #include <unistd.h>
 
-/*Entry function for pthread to write FIFO data*/
-void *read_Buffer_thread_function(void *param)
-{
-	/*Acquire the number of channels from the FPGA*/
-	//	DAQSystem* daqSystem = (DAQSystem*) param;
-	//	int16_t channels = 0;
-	//	 NiFpga_ReadI16(daqSystem->get_Session_FPGA(),
-	//			NiFpga_NI_9222_Anologue_DAQ2_FPGA_IndicatorI16_ChassisTemperature,
-	//			&channels);
-	//	printf("Acquired number of channels from FPGA...%d\n",channels);
-	((DAQSystem*) param)->read_Data_Buffer(NCHANNELS);
+///*Entry function for pthread to write FIFO data*/
+//void *read_Buffer_thread_function(void *param)
+//{
+//	/*Acquire the number of channels from the FPGA*/
+//	//	DAQSystem* daqSystem = (DAQSystem*) param;
+//	//	int16_t channels = 0;
+//	//	 NiFpga_ReadI16(daqSystem->get_Session_FPGA(),
+//	//			NiFpga_NI_9222_Anologue_DAQ2_FPGA_IndicatorI16_ChassisTemperature,
+//	//			&channels);
+//	//	printf("Acquired number of channels from FPGA...%d\n",channels);
+//	((DAQSystem*) param)->read_Data_Buffer(NCHANNELS);
+//
+//	return NULL;
+//}
 
-	return NULL;
-}
+DECLARETHREAD(read_Buffer_thread_function, DAQSystem, read_Data_Buffer)
 
 
 /*Number of samples to Aquire from FIFO on each loop iteration*/
@@ -37,6 +39,8 @@ const unsigned int Number_Acquire = READBLOCKSIZE;
 DAQSystem::DAQSystem(std::string name) {
 	this->name = name;
 	dataBufVec = NULL;
+	bufend = bufstart = NULL;
+	write_data_thread = 0;
 	bufferSize=READBUFFERLENGTH; //5MSample buffer
 }
 
@@ -56,7 +60,10 @@ bool DAQSystem::start() {
 	/**Create thread to read data from FIFO buffer and save data to .wav file*/
 
 	printf("Buffer Read thread is initialising...\n");
-	if(pthread_create(&write_data_thread, NULL, read_Buffer_thread_function, this)){
+	bool threadState;
+	STARTTHREAD(read_Buffer_thread_function, this, write_data_thread, write_thread_handle, threadState)
+	if (!threadState) {
+//	if(pthread_create(&write_data_thread, NULL, read_Buffer_thread_function, this)){
 		printf("Error creating thread to read data buffer\n");
 		return false;
 	}
@@ -67,7 +74,9 @@ bool DAQSystem::start() {
 
 bool DAQSystem::stop() {
 	daq_go = false;
-	pthread_join(write_data_thread, NULL);
+	int threadReturn;
+	WAITFORTHREAD(write_data_thread, write_thread_handle, threadReturn)
+//	pthread_join(write_data_thread, NULL);
 	return stopSystem();
 }
 
@@ -77,6 +86,7 @@ bool DAQSystem::createBuffer()
 	bufstart=dataBufVec;
 	bufend=dataBufVec+bufferSize;
 	samplesInBuff = 0;
+	return dataBufVec != NULL;
 }
 
 bool DAQSystem::deleteBuffer()
@@ -93,8 +103,8 @@ bool DAQSystem::deleteBuffer()
  * Begin a loop to constantly acquire data from buffer and process (save to file, queue for transmission, etc).
  * @param[in] channels. The number of channels contained as interleaved samples in the data buffer.
  */
-void DAQSystem::read_Data_Buffer(int channels){
-
+void DAQSystem::read_Data_Buffer(){
+	int channels = 8;
 	/*Need to represent sample rate as no. samples per second*/
 	//	int SR=(1./(double)Sample_Rate_us) *1000*1000;
 
@@ -108,7 +118,7 @@ void DAQSystem::read_Data_Buffer(int channels){
 	/**
 	 * Currently seems to read data in variable block sizes. Will be slightly
 	 * nicer for network ops if block size is kept constant. For an open stream,
-	 * TCP will break the data into packets by itself, so it doens't really
+	 * TCP will break the data into packets by itself, so it doesn't really
 	 * matter what we do here. PAMGuard likes
 	 * data unit packets of about .1s, which would be 50000 samples at this rate
 	 * which is considerably larger than Mark typically compressed as a block, which

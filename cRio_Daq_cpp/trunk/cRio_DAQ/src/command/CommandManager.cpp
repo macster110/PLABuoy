@@ -14,7 +14,7 @@
 using namespace std;
 
 CommandManager::CommandManager() : CommandList() {
-	pthread_mutex_init(&commandLock, NULL);
+//	pthread_mutex_init(&commandLock, NULL);
 	addCommand(new HelpCommand());
 	addCommand(new PingCommand());
 	addCommand(new StartCommand());

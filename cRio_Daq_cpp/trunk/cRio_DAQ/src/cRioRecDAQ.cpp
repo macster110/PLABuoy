@@ -17,7 +17,7 @@
 /* Includes high level functions for reading DAQ card*/
 //#include "NiFpgaManager.h"
 ///*Includes high level functions for reading Serial port */
-#include "ReadSerial.h"
+//#include "ReadSerial.h"
 /*Useful functions including switching on and off LEDs*/
 #include "Utils.h"
 #include "process/processdata.h"
@@ -27,6 +27,7 @@
 
 #include "daq/FPGADaqSystem.h"
 
+using namespace std;
 //#include <thread>
 
 DAQSystem* daqSystem;
@@ -128,10 +129,9 @@ void get_user_commands(){
 		/* Generate Menu */
 //		printf("\n");
 		printf("|---------------------------------------------------------------|\n");
-//		printf("| Enter 0 start recording                                       |\n");
-//		printf("| Enter 1 exit recording                                        |\n");
 		printf("|             type help for a list of commands                  |\n");
 		printf("|---------------------------------------------------------------|\n");
+		fflush(stdout);
 
 //		UserInput = get_user_input_num();
 //		if (UserInput >= 0) {
@@ -274,10 +274,10 @@ void *watchdog_thread_function(void *param)
 void watchdog_thread(){
 	pthread_t watchdog_monitor_thread;
 	int thread_var1 = 0;
-	if(pthread_create(&watchdog_monitor_thread, NULL, watchdog_thread_function, &thread_var1)){
-			fprintf(stderr, "Watchdog: creating watchdog thread\n");
-			return;
-	}
+//	if(pthread_create(&watchdog_monitor_thread, NULL, watchdog_thread_function, &thread_var1)){
+//			fprintf(stderr, "Watchdog: creating watchdog thread\n");
+//			return;
+//	}
 }
 
 
