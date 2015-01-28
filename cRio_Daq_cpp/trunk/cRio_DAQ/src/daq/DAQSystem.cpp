@@ -75,7 +75,11 @@ bool DAQSystem::start() {
 bool DAQSystem::stop() {
 	daq_go = false;
 	int threadReturn;
+//	printf("Wait for daq loop to complete *********************\n");
+//	fflush(stdout);
 	WAITFORTHREAD(write_data_thread, write_thread_handle, threadReturn)
+//	printf("Dq loop has sompleted ***************************e\n");
+//	fflush(stdout);
 //	pthread_join(write_data_thread, NULL);
 	return stopSystem();
 }
@@ -146,7 +150,7 @@ void DAQSystem::read_Data_Buffer(){
 		}
 		//		samplesInBuff = 0;
 		if (samplesInBuff<READBLOCKSIZE){
-			myusleep(10000); //2000us seems to work well for high sample rates.
+			myusleep(10000); //10000us seems to work well for high sample rates.
 			continue;
 		}
 
@@ -157,7 +161,7 @@ void DAQSystem::read_Data_Buffer(){
 		 * toWrite is the number of samples to read until we reach the end of the array. Once the end of the ring buffer has been reached
 		 * we reset the cpr pointer and go round the loop again to grab the data from the buffer.
 		 */
-		int toEnd=bufend-cpr;
+//		int toEnd=bufend-cpr;
 		// change so it's always reading 1024 samples
 		toWrite = READBLOCKSIZE;
 		//		toWrite=samplesInBuff;
@@ -179,9 +183,13 @@ void DAQSystem::read_Data_Buffer(){
 		 *
 		 */
 		if (getStatus() == DAQ_STATUS_RUNNING){
+//			printf("processData %d samples at 0x%x\n", toWrite, cpr);
+//			fflush(stdout);
 			error = processData(cpr, toWrite);
 		}
 		else{
+//			printf("processEnd\n");
+//			fflush(stdout);
 			processEnd();
 		}
 

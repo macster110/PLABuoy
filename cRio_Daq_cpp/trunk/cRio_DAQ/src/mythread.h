@@ -31,7 +31,7 @@ typedef HANDLE THREADHANDLE;
 typedef DWORD THREADID;
 
 #define DECLARETHREAD(starterName, className, functionName) \
-unsigned long __stdcall starterName (void* threadData) { \
+DWORD __stdcall starterName (void* threadData) { \
 	className* classReference = (className*) threadData; \
 	classReference->functionName(); \
 	return 0; \

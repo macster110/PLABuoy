@@ -29,6 +29,7 @@
 #include "daq/SimulatedDaq.h"
 #ifdef WINOWS
 #include "daq/DaqMxSystem.h"
+#include "winsock.h"
 #else
 #include "daq/FPGADaqSystem.h"
 #endif
@@ -72,6 +73,21 @@ int main(int argc, char *argv[]){
 //	for (int i=0; i<argc ; i++){
 //		cout<<"Argument "<<i<<" "<<*argv[i]<<endl;
 //	}
+	// initialise winsock straight awa if it's Windows
+	#ifdef WINDOWS
+	WORD wVersionRequested;
+	WSADATA wsaData;
+	int err;
+
+	wVersionRequested = MAKEWORD( 2, 0 );
+
+	err = WSAStartup( wVersionRequested, &wsaData );
+	if ( err != 0 ) {
+		/* Tell the user that we couldn't find a usable */
+		/* WinSock DLL.                                  */
+		return false;
+	}
+#endif
 
 #ifdef WINDOWS
 	daqSystem = new SimulatedDaq();
@@ -82,8 +98,8 @@ int main(int argc, char *argv[]){
 //	RealTimer* rt = new RealTimer();
 //	printf("System clock has %11.9fs resolution\n", rt->getResolution());
 //	rt->start();
-//	for (int i = 0; i < 10; i++) {
-//		myusleep(1000000);
+//	for (int i = 0; i < 100; i++) {
+//		myusleep(10000);
 //		printf("tic %d, time %4.5f\n", i, rt->stop());
 //		fflush(stdout);
 //	}

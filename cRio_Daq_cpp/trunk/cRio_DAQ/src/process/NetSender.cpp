@@ -32,7 +32,11 @@
 #define DATASTARTFLAG (0xFFEEDDCC)
 
 //char* ipV4 = "138.251.190.177";
+#ifdef WINDOWS
+std::string ipV4 = "localhost";
+#else
 std::string ipV4 = "192.168.2.101";
+#endif
 
 int ipPort = 8013;
 

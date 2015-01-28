@@ -30,30 +30,35 @@ SimulatedDaq::~SimulatedDaq() {
 void* SimulatedDaq::simThread(){
 
 	uint64_t samplesAcquired = 0;
-	uint64_t expectedSamples;
+	uint64_t expectedSamples = 0;
 	short* p = bufstart;
 	short nextVal = 0;
 	short valStep = 1;
 	simTimer->start();
 	daq_go = true;
-	printf("Enter simulation loop buf Start %0xX, Buff end %0xX\n", bufstart, bufend);
-	fflush(stdout);
 	samplesInBuff = 0;
+	int count = 0;
 	while (daq_go) {
 		expectedSamples = (uint64_t) (simTimer->stop() * 500000);
-//		if (expectedSamples < samplesAcquired) {
-			myusleep(20000);
-//			continue;
-//		}
-		printf("Simulate more data Acquired = %ld, expected %ld\n", (int) samplesAcquired, (int)expectedSamples);
+		if (expectedSamples < samplesAcquired) {
+			myusleep(1000);
+			continue;
+		}
+//			printf("In simulate loop\n");
+		if (count++ % 10000 == 0) {
+		printf("Simulate more data at t=%3.1fs Acquired = %ld, expected %ld\n", simTimer->stop(),
+				(int) samplesAcquired, (int)expectedSamples);
+		fflush(stdout);
+		}
+//		myusleep(20000);
 		for (int i = 0; i < BUFFERBLOCKSAMPLES; i++, p++, nextVal += valStep) {
 			*p = nextVal;
 		}
 		samplesInBuff += BUFFERBLOCKSAMPLES;
 		samplesAcquired += (BUFFERBLOCKSAMPLES / NCHANNELS);
-//		if (p >= bufend) {
+		if (p >= bufend) {
 			p = bufstart;
-//		}
+		}
 
 	}
 	printf("LEave simulation loop\n");
@@ -80,7 +85,16 @@ bool SimulatedDaq::startSystem(){
 	bool threadState;
 	daq_go = true;
 	printf("Call to start simulation thread\n");
+	fflush(stdout);
 	STARTTHREAD(SimThreadStarter, this, simThreadId, simThreadHandle, threadState)
+	if (threadState) {
+		printf("Simulatoin thread launched ok\n");
+	}
+	else {
+		printf("Simulatoin thread failed ok\n");
+
+	}
+	fflush(stdout);
 	return threadState;
 }
 
