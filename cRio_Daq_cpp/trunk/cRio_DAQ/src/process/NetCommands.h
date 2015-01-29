@@ -8,7 +8,7 @@
 #ifndef NETCOMMANDS_H_
 #define NETCOMMANDS_H_
 
-#include "../command/Command.h";
+#include "../command/Command.h"
 class NetSender;
 
 class SetDestIP : public Command {

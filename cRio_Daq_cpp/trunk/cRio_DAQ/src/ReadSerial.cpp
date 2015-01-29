@@ -9,6 +9,7 @@
  *Author: Jamie Maculay
  */
 #include "ReadSerial.h"
+#include "mythread.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
