@@ -1,4 +1,4 @@
-package main;
+package layout;
 
 /**
  * Pane which holds controls to start/stop hydrophone position calculation and open general settings. 

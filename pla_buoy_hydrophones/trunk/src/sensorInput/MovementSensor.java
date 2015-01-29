@@ -33,7 +33,6 @@ public interface MovementSensor {
 	 * @return the x,y,z position relative to 0,0,0 of the hydrophone array
 	 */
 	double[] getReferencePosition();
-		
 	
 
 }
