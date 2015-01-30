@@ -9,7 +9,7 @@ import sensorInput.MovementSensor;
  * @author Jamie Macaulay
  *
  */
-public class LinerFlexibleModel implements HydrophoneModel {
+public class LinearFlexibleModel implements HydrophoneModel {
 
 	@Override
 	public void getHydrophonePositions(ArrayList<Hydrophone> hydrophones,

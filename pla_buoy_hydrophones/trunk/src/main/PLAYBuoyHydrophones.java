@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import layout.MainPane;
  
 public class PLAYBuoyHydrophones extends Application {
     public static void main(String[] args) {
@@ -15,20 +16,14 @@ public class PLAYBuoyHydrophones extends Application {
     
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("Hello World!");
-        Button btn = new Button();
-        btn.setText("Say 'Hello World'");
-        btn.setOnAction(new EventHandler<ActionEvent>() {
- 
-            @Override
-            public void handle(ActionEvent event) {
-                System.out.println("Hello World!");
-            }
-        });
+        primaryStage.setTitle("Hydrophone Movement Reconstruction");
         
+        HydrophoneModelControl hydrophoneModelControl=new HydrophoneModelControl(); 
+      
+
         StackPane root = new StackPane();
-        root.getChildren().add(btn);
-        primaryStage.setScene(new Scene(root, 300, 250));
+        root.getChildren().add(new MainPane(hydrophoneModelControl));
+        primaryStage.setScene(new Scene(root, 500, 900));
         primaryStage.show();
     }
 }

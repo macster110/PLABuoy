@@ -5,6 +5,6 @@ package hydrophoneModelling;
  * @author Jamie Macaulay
  *
  */
-public class RigidModel extends LinerFlexibleModel {
+public class RigidModel extends LinearFlexibleModel {
 
 }
