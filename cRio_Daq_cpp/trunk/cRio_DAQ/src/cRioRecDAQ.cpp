@@ -73,7 +73,9 @@ int main(int argc, char *argv[]){
 //	for (int i=0; i<argc ; i++){
 //		cout<<"Argument "<<i<<" "<<*argv[i]<<endl;
 //	}
-	// initialise winsock straight awa if it's Windows
+	printf("Current time = %s\n", currentDateTime().c_str());
+
+	// initialise winsock straight away if it's Windows
 	#ifdef WINDOWS
 	WORD wVersionRequested;
 	WSADATA wsaData;

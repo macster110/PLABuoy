@@ -9,6 +9,7 @@
 #define COMPRESSPROCESS_H_
 
 #include "processdata.h"
+#include "../Utils.h"
 
 class CompressProcess : public PLAProcess {
 public:
@@ -21,6 +22,8 @@ public:
 	int process(PLABuff* plaBuffer);
 
 	void endProcess();
+private:
+	void packtimeval(struct timeval timeVal, short* packedTime);
 };
 
 #endif /* COMPRESSPROCESS_H_ */

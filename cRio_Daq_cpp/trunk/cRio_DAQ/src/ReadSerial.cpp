@@ -116,7 +116,9 @@ int open_File(Serial_Port volatile *port){
 	filename+="_port_";
 //	filename+=port->port; //causes error
 //	filename+="_";
-	filename+=currentDateTime("%Y%m%d_%H%M%S");
+	timeval tv;
+	gettimeofday(&tv, 0);
+	filename+=currentDateTime(tv, "%Y%m%d_%H%M%S");
 	filename+=".txt";
 	port->f= fopen(filename.c_str(), "w");
 	if (port->f  == NULL)

@@ -21,8 +21,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-
-
 using namespace std;
 
 const string wav_location="/u";
@@ -49,15 +47,17 @@ string folderString() {
 }
 
 string currentDateTime(){
-	return currentDateTime("%Y%m%d_%H%M%S_%%06u");
-}
-
-string currentDateTime(const char* format)
-{
-
 	timeval tv;
 	gettimeofday(&tv, 0);
+	return currentDateTime(tv, "%Y%m%d_%H%M%S_%%06u");
+}
 
+string currentDateTime(timeval timeStamp){
+	return currentDateTime(timeStamp, "%Y%m%d_%H%M%S_%%06u");
+}
+
+string currentDateTime(timeval tv, const char* format)
+{
 	struct tm  *tm;
 	tm = localtime(&tv.tv_sec);
 
@@ -69,6 +69,8 @@ string currentDateTime(const char* format)
 
 	return buf;
 }
+
+
 
 void set_user_LED_status(int ledstatus){
 
@@ -141,13 +143,14 @@ void set_user_LED_status(int ledstatus){
 
 }
 
-std::string createFileName(const char* prefix, const char* filetype) {
+std::string createFileName(const char* prefix, const char* filetype, timeval timeStamp) {
 	string desiredFolder = wav_location + "/" + folderString();
 //	printf("out folder = %s\n", desiredFolder.c_str());
 	if (!checkFolder(desiredFolder.c_str())) {
 		printf("Error - folder %s doens't exist and cannot be created\n", desiredFolder.c_str());
 	}
-	string dateTime=currentDateTime();
+//	string dateTime=currentDateTime();
+	string dateTime = currentDateTime(timeStamp);
 	/*Create a new out file name based on the system time*/
 	string outfilename=(desiredFolder+"/"+prefix+"_"+dateTime+filetype);
 //	}
@@ -210,4 +213,20 @@ bool mkpath( std::string path )
 		bSuccess = true;
 	}
 	return bSuccess;
+}
+
+/**
+ * Add a number of microseconds to a timeval.
+ */
+timeval addMicroseconds(timeval oldTime, uint64_t microseconds) {
+	timeval newVal = oldTime;
+	int32_t newSecs = microseconds / 1000000;
+	int32_t newMics = microseconds % 1000000;
+	newVal.tv_sec += newSecs;
+	newVal.tv_usec += newMics;
+	while (newVal.tv_usec >= 1000000) {
+		newVal.tv_sec += 1;
+		newVal.tv_usec -= 1000000;
+	}
+	return newVal;
 }

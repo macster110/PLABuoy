@@ -35,14 +35,21 @@ void CommandManager::listAllCommands() {
 	// now work through the modules, listing all commands for each module.
 	for (int m = 0; m < getNumProcesses(); m++) {
 		PLAProcess* aProcess = getProcess(m);
+		std::string procState = aProcess->isEnabled() ? "Enabled" : "Disabled";
 		int n = aProcess->getnCommands();
 		if (n == 0) {
-			printf("Process %s has no optional commands\n", aProcess->getProcessName().c_str());
+			printf("Process %s (%s) has no optional commands\n", aProcess->getProcessName().c_str(), procState.c_str());
 		}
 		else {
-			printf("Process %s has the following commands: \n", aProcess->getProcessName().c_str());
+			printf("Process %s (%s) has the following commands: \n", aProcess->getProcessName().c_str(), procState.c_str());
 			for (int i = 0; i < n; i++) {
-				printf("       %s\n", aProcess->getCommand(i)->getName().c_str());
+				std::string hint = aProcess->getCommand(i)->getHint();
+				if (hint.length() > 0) {
+					printf("       %s - %s\n", aProcess->getCommand(i)->getName().c_str(), hint.c_str());
+				}
+				else {
+					printf("       %s\n", aProcess->getCommand(i)->getName().c_str());
+				}
 			}
 		}
 	}

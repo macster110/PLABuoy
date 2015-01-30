@@ -68,7 +68,7 @@ bool DAQSystem::start() {
 		return false;
 	}
 	printf("Buffer Read thread has initialised...\n");
-
+	gettimeofday(&daqStart, 0);
 	return startSystem();
 }
 
@@ -119,6 +119,7 @@ void DAQSystem::read_Data_Buffer(){
 	/*Pointer for the current read location of the buffer.*/
 	int16_t* cpr=bufstart;
 	printf("Read loop beginning \n");
+	uint64_t totalSamples = 0;
 	/**
 	 * Currently seems to read data in variable block sizes. Will be slightly
 	 * nicer for network ops if block size is kept constant. For an open stream,
@@ -185,7 +186,7 @@ void DAQSystem::read_Data_Buffer(){
 		if (getStatus() == DAQ_STATUS_RUNNING){
 //			printf("processData %d samples at 0x%x\n", toWrite, cpr);
 //			fflush(stdout);
-			error = processData(cpr, toWrite);
+			error = processData(cpr, toWrite, addMicroseconds(daqStart, totalSamples / SAMPLERATE));
 		}
 		else{
 //			printf("processEnd\n");

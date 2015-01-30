@@ -10,6 +10,7 @@
 #include <string>
 #include <stdint.h>
 #include "../mythread.h"
+#include "../Utils.h"
 
 #define DAQ_STATUS_IDLE    1
 #define DAQ_STATUS_RUNNING 2
@@ -62,6 +63,8 @@ protected:
 	int volatile samplesInBuff;
 
 	volatile bool daq_go;
+
+	timeval daqStart;
 
 private:
 	std::string name;

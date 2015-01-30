@@ -30,9 +30,9 @@ public:
 private:
 	FILE* x3File;
 	int64_t compressedBytes, uncompressedBytes;
-	bool checkFile();
+	bool checkFile(timeval timeStamp);
 	bool needNewFile();
-	FILE* openFile();
+	FILE* openFile(timeval timeStamp);
 	void closeFile();
 	class RealTimer* repTimer;
 	std::string openFileName;

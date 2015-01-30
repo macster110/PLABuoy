@@ -8,7 +8,7 @@
 #include "Command.h"
 #include <string>
 
-Command::Command(const PLAProcess* plaProcess, std::string name) {
+Command::Command(PLAProcess* plaProcess, std::string name) {
 	this->name = name;
 	this->plaProcess = plaProcess;
 }

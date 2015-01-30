@@ -26,6 +26,7 @@
 #include <string.h>
 #include "x3cmp.h"
 
+
 #ifndef X3DEFS
 #define X3DEFS
 typedef unsigned long ulong;
@@ -89,6 +90,7 @@ extern int openxmlfield(char *s, const char *field, const char *arg);
 extern int addxmlfield(char *s, const char *field, const char *arg,
 		const char *value);
 extern int closexmlfield(char *s, const char *field);
+
 
 #ifdef __cplusplus
 }

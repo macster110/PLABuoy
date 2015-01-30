@@ -114,6 +114,7 @@ int NetSender::process(PLABuff* plaBuffer) {
 	qData.dataBytes = plaBuffer->dataBytes + NET_HDR_LEN;
 	qData.nChan = plaBuffer->nChan;
 	qData.soundFrames = plaBuffer->soundFrames;
+	qData.timeStamp = plaBuffer->timeStamp;
 
 	if (first) {
 		first = false;

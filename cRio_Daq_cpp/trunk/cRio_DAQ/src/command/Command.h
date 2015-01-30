@@ -14,7 +14,7 @@ class PLAProcess;
 
 class Command {
 public:
-	Command(const PLAProcess* plaProcess, const std::string name);
+	Command(PLAProcess* plaProcess, const std::string name);
 	virtual ~Command();
 
 	virtual std::string execute(std::string command) = 0;
@@ -23,17 +23,21 @@ public:
 		return true;
 	}
 
+	virtual std::string getHint() {
+		return "";
+	}
+
 	const std::string& getName() const {
 		return name;
 	}
 
-	const PLAProcess* getPlaProcess() const {
+	PLAProcess* getPlaProcess() const {
 		return plaProcess;
 	}
 
 private:
 	std::string name;
-	const PLAProcess* plaProcess;
+	PLAProcess* plaProcess;
 };
 
 #endif /* COMMAND_H_ */

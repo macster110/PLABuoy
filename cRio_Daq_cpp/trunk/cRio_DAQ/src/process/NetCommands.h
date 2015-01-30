@@ -16,6 +16,9 @@ public:
 	SetDestIP(NetSender* netSender);
 	virtual ~SetDestIP() {};
 	std::string execute(std::string command);
+	std::string getHint() {
+		return "Set the network address data should send to";
+	}
 };
 
 class SetDestPort : public Command {
@@ -23,6 +26,9 @@ public:
 	SetDestPort(NetSender* netSender);
 	virtual ~SetDestPort() {};
 	std::string execute(std::string command);
+	std::string getHint() {
+		return "Set the network port data should send to";
+	}
 };
 
 #endif /* NETCOMMANDS_H_ */

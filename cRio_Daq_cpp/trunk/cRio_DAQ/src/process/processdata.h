@@ -9,7 +9,7 @@
 #define PROCESSDATA_H_
 
 #include "../command/CommandList.h"
-
+#include "../utils.h"
 #include <stdint.h>
 #include <string>
 
@@ -20,7 +20,10 @@ typedef struct {
 	int16_t nChan; // number of channels of audio data
 	int16_t soundFrames; // number of audio frames
 	int16_t dataBytes; // data bytes = 2*nChan*soundFrames for raw audio.
+	struct timeval timeStamp;
 } PLABuff;
+
+
 
 class PLAProcess;
 
@@ -46,7 +49,7 @@ bool processInit(int nChan, int sampleRate);
 /*
  * Send data to the processes
  */
-bool processData(int16_t* data, int nSamples);
+bool processData(int16_t* data, int nSamples, struct timeval daqTime);
 
 /*
  * End the processes
@@ -106,6 +109,14 @@ public:
 		return processName;
 	}
 
+	bool isEnabled() const {
+		return enabled;
+	}
+
+	void setEnabled(bool enabled) {
+		this->enabled = enabled;
+	}
+
 protected:
 
 	int forwardData(PLABuff* plaBuffer);
@@ -117,6 +128,7 @@ private:
 	int sampleRate;
 	const PLAProcess* parentProcess;
 	std::string processName;
+	bool enabled;
 };
 
 #endif /* PROCESSDATA_H_ */

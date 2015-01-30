@@ -8,6 +8,8 @@
 #include "X3FileProcess.h"
 #include "CompressProcess.h"
 #include "NetSender.h"
+#include "../command/ProcessEnable.h"
+#include "../Utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -72,13 +74,14 @@ bool processInit(int nChan, int sampleRate) {
  * Data always arrive here as raw - so pack into a PLABuff structure
  * to send off into the rest of the processing system.
  */
-bool processData(int16_t* data, int nSamples) {
+bool processData(int16_t* data, int nSamples, timeval daqTime) {
 
 	PLABuff plaBuff;
 	plaBuff.data = data;
 	plaBuff.nChan = nChannels;
 	plaBuff.soundFrames = nSamples / nChannels;
 	plaBuff.dataBytes = sizeof(int16_t) * nSamples;
+	plaBuff.timeStamp = daqTime;
 	return plaProcesses[0]->process(&plaBuff);
 }
 
@@ -118,11 +121,13 @@ class PLAProcess* findProcess(std::string processName) {
 
 PLAProcess::PLAProcess(const string processName) : CommandList() {
 	this->processName = processName;
+	enabled = true;
 	childProcesses = NULL;
 	parentProcess = NULL;
 	nChildProcesses = 0;
 	nChan = 0;
 	sampleRate = 0;
+	addCommand(new ProcessEnable(this));
 }
 
 PLAProcess::~PLAProcess() {
@@ -147,7 +152,9 @@ int PLAProcess::process(PLABuff* plaBuffer) {
 int PLAProcess::forwardData(PLABuff* plaBuffer) {
 	int errors = 0;
 	for (int i = 0; i < nChildProcesses; i++) {
-		errors += childProcesses[i]->process(plaBuffer);
+		if (childProcesses[i]->isEnabled()) {
+			errors += childProcesses[i]->process(plaBuffer);
+		}
 	}
 	return errors;
 }

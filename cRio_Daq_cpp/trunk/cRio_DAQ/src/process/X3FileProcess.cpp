@@ -44,7 +44,7 @@ int X3FileProcess::process(PLABuff* plaBuffer) {
 	int nBytes = plaBuffer->soundFrames*plaBuffer->nChan*sizeof(short);
 	compressedBytes += plaBuffer->dataBytes;
 	uncompressedBytes += nBytes;
-	if (!checkFile()) return 0;
+	if (!checkFile(plaBuffer->timeStamp)) return 0;
 	fwrite(plaBuffer->data, plaBuffer->dataBytes, 1, x3File);
 	if (repTimer->stop() > 10) {
 		repTimer->start();
@@ -62,10 +62,10 @@ void X3FileProcess::endProcess() {
 	closeFile();
 }
 
-bool X3FileProcess::checkFile() {
+bool X3FileProcess::checkFile(timeval timeStamp) {
 	if (needNewFile()) {
 		closeFile();
-		x3File = openFile();
+		x3File = openFile(timeStamp);
 	}
 	return x3File != NULL;
 }
@@ -75,8 +75,8 @@ bool X3FileProcess::needNewFile() {
 	return false;
 }
 
-FILE* X3FileProcess::openFile() {
-	string fileName = createFileName("PLA", ".x3a");
+FILE* X3FileProcess::openFile(timeval timeStamp) {
+	string fileName = createFileName("PLA", ".x3a", timeStamp);
 	FILE* aFile = fopen(fileName.c_str(),"wb") ;
 	fprintf(aFile,X3_FILE_KEY);
 	char hData[X3HEADLEN];
