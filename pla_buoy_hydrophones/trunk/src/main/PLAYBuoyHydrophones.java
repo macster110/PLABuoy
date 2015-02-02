@@ -16,11 +16,11 @@ public class PLAYBuoyHydrophones extends Application {
     
     @Override
     public void start(Stage primaryStage) {
+    	
         primaryStage.setTitle("Hydrophone Movement Reconstruction");
         
         HydrophoneModelControl hydrophoneModelControl=new HydrophoneModelControl(); 
-      
-
+     
         StackPane root = new StackPane();
         root.getChildren().add(new MainPane(hydrophoneModelControl));
         primaryStage.setScene(new Scene(root, 500, 900));

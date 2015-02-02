@@ -3,7 +3,9 @@ package dataUnits;
 import sensorInput.MovementSensor;
 import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -12,15 +14,14 @@ import javafx.collections.ObservableList;
 public class Array  {
 	
 	/**
-	 * A rigid array 
+	 * Enum of array types
+	 * RIGID_ARRAY-A rigid array 
+	 * LINEAR_FILEXIBLE_ARRAY - a flexible linear array, e.g. towed array or vertical array. 
 	 */
-	public final static int RIGID_ARRAY=0; 
+	public enum ArrayType {
+		RIGID_ARRAY, LINEAR_FILEXIBLE_ARRAY
+	}
 	
-	/**
-	 * A linear flexible array 
-	 */
-	public final static int LINEAR_FILEXIBLE_ARRAY=1;
-
 	/**
 	 * The hydrophones associated with the array. 
 	 */
@@ -35,7 +36,7 @@ public class Array  {
 	/**
 	 * The array type 
 	 */
-    private final IntegerProperty arrayTypeProperty= new SimpleIntegerProperty(0);
+    private ObjectProperty<ArrayType> arrayType = new SimpleObjectProperty<ArrayType>(ArrayType.RIGID_ARRAY);
     
     /**
      * The name of the array 
@@ -43,15 +44,22 @@ public class Array  {
     private final StringProperty arrayNameProperty= new SimpleStringProperty("");
 
     
+    /**
+     * Create a new array. 
+     */
+    public Array(){
+    
+    }
     
     /**
      * Create a new array. 
      */
-    public Array(String name, int type){
+    public Array(String name, ArrayType type){
     	arrayNameProperty.setValue(name);
-    	arrayTypeProperty.setValue(type);
+    	arrayType.setValue(type);
     }
-    
+
+ 
     
 	public ObservableList<Hydrophone> getHydrophones() {
 		return hydrophones;
@@ -62,15 +70,17 @@ public class Array  {
 		return movementSensors;
 	}
 
-	public IntegerProperty getArrayType() {
-		return arrayTypeProperty;
-	}
-
-
-	public StringProperty getNameProperty() {
+	public StringProperty nameProperty() {
 		// TODO Auto-generated method stub
 		return arrayNameProperty;
 	}
+
+	public ObjectProperty<ArrayType> arrayTypeProperty() {
+		return arrayType;
+	}
+	
+	
+
  
 
 }
