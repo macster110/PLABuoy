@@ -55,6 +55,7 @@ private:
 	queue<PLABuff> networkQueue;
 
 	int socketId;
+
 	struct hostent* hostEntity;
 
 	int sendData(PLABuff* data);
@@ -73,6 +74,8 @@ private:
 
 	THREADID netsendThread;
 	THREADHANDLE netSendThreadHandle;
+
+	int nSends;
 
 };
 

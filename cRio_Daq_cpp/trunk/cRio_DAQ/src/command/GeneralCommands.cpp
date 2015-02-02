@@ -6,8 +6,13 @@
  */
 
 #include "GeneralCommands.h"
+
+#include <stdio.h>
+#include "stdlib.h"
+
 #include "CommandManager.h"
 #include "../CRioRecDAQ.h"
+#include "../Reporter.h"
 
 StartCommand::StartCommand() : Command(NULL, "start") {
 
@@ -41,6 +46,27 @@ PingCommand::PingCommand() : Command(NULL, "ping") {
 }
 std::string PingCommand::execute(std::string command) {
 	return "ping";
+}
+
+VerboseCommand::VerboseCommand() : Command(NULL, "verbose") {
+
+}
+std::string VerboseCommand::execute(std::string command) {
+	// get the second word out of the command and hope it's a number
+	int nW = countWords(command);
+	if (nW < 2) {
+		return "Invalid verbose command";
+	}
+	std::string w2 = nthword(command, 1);
+	if (w2.size() < 1) {
+		return "Invalid verbose command " + command;
+	}
+//	return "Set verbose level to " + w2;
+	int v = atoi(w2.c_str());
+	reporter->setVerbosity(v);
+	char ans[50];
+	sprintf(ans, "Set verbose level to %d", v);
+	return ans;
 }
 
 HelpCommand::HelpCommand() : Command(NULL, "help") {

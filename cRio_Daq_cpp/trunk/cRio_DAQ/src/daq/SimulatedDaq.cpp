@@ -14,6 +14,8 @@
 #include "../mythread.h"
 #include <unistd.h> // for usleep
 
+#include "../Reporter.h"
+
 DECLARETHREAD(SimThreadStarter, SimulatedDaq, simThread)
 
 #define BUFFERBLOCKSAMPLES 4096
@@ -46,9 +48,8 @@ void* SimulatedDaq::simThread(){
 		}
 //			printf("In simulate loop\n");
 		if (count++ % 10000 == 0) {
-		printf("Simulate more data at t=%3.1fs Acquired = %ld, expected %ld\n", simTimer->stop(),
+			reporter->report(4, "Simulate more data at t=%3.1fs Acquired = %ld, expected %ld\n", simTimer->stop(),
 				(int) samplesAcquired, (int)expectedSamples);
-		fflush(stdout);
 		}
 //		myusleep(20000);
 		for (int i = 0; i < BUFFERBLOCKSAMPLES; i++, p++, nextVal += valStep) {
@@ -61,7 +62,7 @@ void* SimulatedDaq::simThread(){
 		}
 
 	}
-	printf("LEave simulation loop\n");
+	reporter->report(4, "Leave simulation loop\n");
 
 	return NULL;
 }

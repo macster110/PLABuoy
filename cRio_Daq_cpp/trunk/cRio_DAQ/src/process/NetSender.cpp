@@ -6,6 +6,9 @@
  */
 
 #include "NetSender.h"
+
+#include <errno.h>
+
 #include "NetCommands.h"
 
 #include <stdio.h>
@@ -14,6 +17,7 @@
 #include <unistd.h>
 #include <string.h>
 #include "../mythread.h"
+#include "../Reporter.h"
 #ifdef WINDOWS
 #include "Winsock2.h"
 #else
@@ -42,9 +46,9 @@ int ipPort = 8013;
 
 
 #ifdef WINDOWS
-	int sendFlags = 0;
+int sendFlags = 0;
 #else
-	int sendFlags = MSG_NOSIGNAL;
+int sendFlags = MSG_NOSIGNAL;
 #endif
 
 DECLARETHREAD(netsendThreadFunction, NetSender, sendThreadLoop)
@@ -62,12 +66,12 @@ NetSender::NetSender() : PLAProcess("netsend") {
 	hostEntity = NULL;
 	queuedBytes = 0;
 	conTimer = new RealTimer();
-
+	nSends = 0;
 	addCommand(new SetDestIP(this));
 	addCommand(new SetDestPort(this));
 
-//	pthread_t netsendThread;
-//	pthread_create(&netsendThread, NULL, netsendThreadFunction, this);
+	//	pthread_t netsendThread;
+	//	pthread_create(&netsendThread, NULL, netsendThreadFunction, this);
 	bool threadState;
 	STARTTHREAD(netsendThreadFunction, this, netsendThread, netSendThreadHandle, threadState)
 
@@ -81,7 +85,7 @@ NetSender::~NetSender() {
 bool NetSender::setDestinationIp(std::string newIpAddress) {
 	struct hostent* hostEnt = gethostbyname(newIpAddress.c_str());
 	if (hostEnt == NULL) {
-		printf("%s is not a valid ip address. Keeping %s\n", newIpAddress.c_str(), ipV4.c_str());
+		reporter->report(0, "%s is not a valid ip address. Keeping %s\n", newIpAddress.c_str(), ipV4.c_str());
 		return false;
 	}
 	ipV4 = newIpAddress;
@@ -148,14 +152,14 @@ void NetSender::endProcess() {
 
 int NetSender::sendThreadLoop() {
 	int calls = 0;
-//	openConnection(); // let it happen automatically when first data are sent.
+	//	openConnection(); // let it happen automatically when first data are sent.
 	PLABuff data;
 	int nDumped;
 	RealTimer* msgTimer = new RealTimer();
 	msgTimer->start();
 	while (1) {
 		if (msgTimer->stop() > 10) {
-			printf("In send thread loop with %d elements (%d Mbytes) in queue\n",
+			reporter->report(2, "In send thread loop with %d elements (%d Mbytes) in queue\n",
 					networkQueue.size(), (int) (queuedBytes>>20));
 			msgTimer->start();
 		}
@@ -169,7 +173,7 @@ int NetSender::sendThreadLoop() {
 				nDumped++;
 			}
 			if (nDumped) {
-				printf("Dumped %d chunks from data queue, %d (%d MBytes) remaining\n",
+				reporter->report(1, "Dumped %d chunks from data queue, %d (%d MBytes) remaining\n",
 						nDumped, networkQueue.size(), (int) (queuedBytes>>20));
 				myusleep(10000); // sleep for 10 millisecond.
 			}
@@ -199,13 +203,21 @@ int NetSender::sendThreadLoop() {
  */
 int NetSender::sendData(PLABuff* data) {
 	int bytesWrote = send(socketId, (char*) data->data, data->dataBytes, sendFlags);
+	if (bytesWrote != data->dataBytes) {
+		reporter->report(0, "TCP write failed %d bytes written on port %d with error %d: %s\n",
+				bytesWrote, socketId, errno, strerror(errno));
+	}
 	if (bytesWrote <= 0) {
 		// try to open and send again
 		if (openConnection()) {
 			bytesWrote = send(socketId, (char*) data->data, data->dataBytes, sendFlags);
 		}
 	}
-	return bytesWrote == data->dataBytes;
+	if (bytesWrote == data->dataBytes) {
+		nSends ++;
+		return true;
+	}
+	return false;
 }
 
 bool NetSender::openConnection() {
@@ -216,14 +228,14 @@ bool NetSender::openConnection() {
 		hostEntity = gethostbyname(ipV4.c_str());
 		printf ("Network host is %s\n", hostEntity->h_name);
 		if (hostEntity == NULL) {
-			printf("Unable to look up host name in gethostbyname for %s\n", ipV4.c_str());
+			reporter->report(0, "Unable to look up host name in gethostbyname for %s\n", ipV4.c_str());
 			return false;
 		}
 	}
 	sockaddr_in sockAddr;
 	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd <= 0) {
-		printf ("Unable to open socket in NetworkSender->openConnection()\n");
+		reporter->report(0, "Unable to open socket in NetworkSender->openConnection()\n");
 		return false;
 	}
 	/*
@@ -231,11 +243,11 @@ bool NetSender::openConnection() {
 	 */
 	timeval timeout = {10, 0};
 	if (setsockopt (sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
-            sizeof(timeout)) < 0)
-    printf("setsockopt SO_RCVTIMEO failed\n");
+			sizeof(timeout)) < 0)
+		reporter->report(0, "setsockopt SO_RCVTIMEO failed\n");
 	if (setsockopt (sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
-            sizeof(timeout)) < 0)
-    printf("setsockopt SO_SNDTIMEO failed\n");
+			sizeof(timeout)) < 0)
+		reporter->report(0, "setsockopt SO_SNDTIMEO failed\n");
 
 
 	memset(&sockAddr, 0, sizeof(sockaddr_in));
@@ -248,7 +260,7 @@ bool NetSender::openConnection() {
 		close(sockfd);
 		sockfd = 0;
 		if (errorCount%100 == 0 || errorCount < 5) {
-			printf("Unable to make network connection to %s on port %d after %3.2fs\n",
+			reporter->report(0, "Unable to make network connection to %s on port %d after %3.2fs\n",
 					ipV4.c_str(), ipPort, conTimer->stop());
 		}
 		errorCount++;
@@ -256,11 +268,13 @@ bool NetSender::openConnection() {
 	}
 
 	socketId = sockfd;
-	printf("Network connection to %s on port %d is open\n", ipV4.c_str(), ipPort);
+	//	printf("Network connection to %s on port %d is open\n", ipV4.c_str(), ipPort);
+	reporter->report(0, "Network connection %d to %s on port %d is open\n", socketId, ipV4.c_str(), ipPort);
 	errorCount = 0;
 	/*
 	 * Now send through details of how teh x3 compression is working.
 	 */
+	nSends = 0;
 	return sendX3Header(socketId);
 
 }
@@ -280,13 +294,13 @@ bool NetSender::sendX3Header(int socketId) {
 	dataBytes += writeSendHeader(hData, dataBytes, NET_AUDIO_HEADINFO);
 
 	int bytesWrote = send(socketId, hData, dataBytes, sendFlags);
-	printf("Wrote %d bytes %s", bytesWrote, hData+NET_HDR_LEN);
-	printf("\n");
+	reporter->report(0, "Wrote %d bytes %s\n", bytesWrote, hData+NET_HDR_LEN);
 	return bytesWrote == dataBytes;
 }
 
 void NetSender::closeConnection() {
 	if (socketId == 0) return;
+	reporter->report(0, "Closing TCP socket %d after %d packets\n", socketId, nSends);
 	close(socketId);
 	socketId = 0;
 }

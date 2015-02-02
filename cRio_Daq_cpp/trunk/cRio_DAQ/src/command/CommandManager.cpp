@@ -17,6 +17,7 @@ CommandManager::CommandManager() : CommandList() {
 //	pthread_mutex_init(&commandLock, NULL);
 	addCommand(new HelpCommand());
 	addCommand(new PingCommand());
+	addCommand(new VerboseCommand());
 	addCommand(new StartCommand());
 	addCommand(new StopCommand());
 	addCommand(new ExitCommand());
@@ -30,7 +31,13 @@ void CommandManager::listAllCommands() {
 	printf("List of available general commands: \n");
 	int n = getnCommands();
 	for (int i = 0; i < n; i++) {
-		printf("       %s\n", getCommand(i)->getName().c_str());
+		std::string ahint = getCommand(i)->getHint();
+		if (ahint.length() > 0) {
+			printf("       %s - %s\n", getCommand(i)->getName().c_str(), ahint.c_str());
+		}
+		else {
+			printf("       %s\n", getCommand(i)->getName().c_str());
+		}
 	}
 	// now work through the modules, listing all commands for each module.
 	for (int m = 0; m < getNumProcesses(); m++) {

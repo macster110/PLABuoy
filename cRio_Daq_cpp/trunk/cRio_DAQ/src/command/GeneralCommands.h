@@ -39,6 +39,16 @@ public:
 	}
 };
 
+class VerboseCommand : public Command {
+public:
+	VerboseCommand();
+	virtual ~VerboseCommand() {};
+	std::string execute(std::string command);
+	std::string getHint() {
+		return "Set verboseness of printed output - high number = lots of printing !";
+	}
+};
+
 class HelpCommand : public Command {
 public:
 	HelpCommand();

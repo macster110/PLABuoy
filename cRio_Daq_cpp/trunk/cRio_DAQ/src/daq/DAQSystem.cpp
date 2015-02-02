@@ -15,6 +15,8 @@
 /*pthread library for running on different threads*/
 #include <unistd.h>
 
+#include "../Reporter.h"
+
 ///*Entry function for pthread to write FIFO data*/
 //void *read_Buffer_thread_function(void *param)
 //{
@@ -59,15 +61,15 @@ bool DAQSystem::start() {
 	daq_go = true;
 	/**Create thread to read data from FIFO buffer and save data to .wav file*/
 
-	printf("Buffer Read thread is initialising...\n");
+	reporter->report(3, "Buffer Read thread is initialising...\n");
 	bool threadState;
 	STARTTHREAD(read_Buffer_thread_function, this, write_data_thread, write_thread_handle, threadState)
 	if (!threadState) {
 //	if(pthread_create(&write_data_thread, NULL, read_Buffer_thread_function, this)){
-		printf("Error creating thread to read data buffer\n");
+		reporter->report(0, "Error creating thread to read data buffer\n");
 		return false;
 	}
-	printf("Buffer Read thread has initialised...\n");
+	reporter->report(3, "Buffer Read thread has initialised...\n");
 	gettimeofday(&daqStart, 0);
 	return startSystem();
 }
@@ -118,7 +120,7 @@ void DAQSystem::read_Data_Buffer(){
 	int error=0;
 	/*Pointer for the current read location of the buffer.*/
 	int16_t* cpr=bufstart;
-	printf("Read loop beginning \n");
+	reporter->report(1, "Read loop beginning \n");
 	uint64_t totalSamples = 0;
 	/**
 	 * Currently seems to read data in variable block sizes. Will be slightly
@@ -146,7 +148,7 @@ void DAQSystem::read_Data_Buffer(){
 		 * try again. Ignore unsigned int warning as samplesInBuff is always positive.
 		 */
 		if (count++ % 100000 == 0) {
-			printf("Loop %d samples in buffer %d, last read %d samples\n",
+			reporter->report(3, "Loop %d samples in buffer %d, last read %d samples\n",
 					count, samplesInBuff, toWrite);
 		}
 		//		samplesInBuff = 0;
@@ -206,7 +208,7 @@ void DAQSystem::read_Data_Buffer(){
 
 	}
 
-	printf("LEave the read buffer thread function ...\n");
+	reporter->report(1, "Leave the read buffer thread function ...\n");
 
 	/**
 	 * If an error is flagged in the FIFO thread then PRINT OUT STATEMENT
