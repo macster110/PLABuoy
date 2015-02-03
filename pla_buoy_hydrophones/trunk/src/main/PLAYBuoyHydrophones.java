@@ -1,13 +1,10 @@
 package main;
 
 import javafx.application.Application;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import layout.MainPane;
+import layout.MainView;
  
 public class PLAYBuoyHydrophones extends Application {
     public static void main(String[] args) {
@@ -19,11 +16,12 @@ public class PLAYBuoyHydrophones extends Application {
     	
         primaryStage.setTitle("Hydrophone Movement Reconstruction");
         
-        HydrophoneModelControl hydrophoneModelControl=new HydrophoneModelControl(); 
+        //create the primary control class; 
+        ArrayModelControl.create(); 
      
         StackPane root = new StackPane();
-        root.getChildren().add(new MainPane(hydrophoneModelControl));
-        primaryStage.setScene(new Scene(root, 500, 900));
+        root.getChildren().add(new MainView(ArrayModelControl.getInstance()));
+        primaryStage.setScene(new Scene(root, 1000, 900));
         primaryStage.show();
     }
 }

@@ -26,9 +26,12 @@ abstract class TablePane<T> extends BorderPane {
     /**
    	 * Holds all data units.
    	 */
-   	ObservableList<T> data = FXCollections.observableArrayList();
-    
-	public TablePane(){
+   	ObservableList<T> data;
+
+	private TableButtonPane buttonPane;
+   
+	public TablePane(ObservableList<T> data){
+   		this.data=data; 
 		table = new TableView<T>();
         this.setCenter(createArrayPane());
 	}
@@ -47,46 +50,54 @@ abstract class TablePane<T> extends BorderPane {
 		    row.setOnMouseClicked(event -> {
 		        if (event.getClickCount() == 2 && (! row.isEmpty()) ) {
 		            T rowData = row.getItem();
-		            editArray(rowData);
+		            editData(rowData);
 		        }
 		    });
 		    return row ;
 		});
 		
-		table.getItems().setAll(data);
-
-
+		table.setItems(data);
+	
 	    //create pane holding add, edit and remove controls
-        TableButtonPane buttonPane=new TableButtonPane(Orientation.VERTICAL); 
+        buttonPane=new TableButtonPane(Orientation.VERTICAL); 
         buttonPane.getAddButton().setOnAction((event)->{
-        	createNewArray();
+        	createNewData();
         });
         
         buttonPane.getSettingsButton().setOnAction((event)->{
-        	editArray(table.getSelectionModel().getSelectedItem());
+        	editData(table.getSelectionModel().getSelectedItem());
         });
         
         buttonPane.getDeleteButton().setOnAction((event)->{
-        	deleteArray(table.getSelectionModel().getSelectedItem());
+        	deleteData(table.getSelectionModel().getSelectedItem());
         });
         
         arrayPane.setCenter(table);
         arrayPane.setRight(buttonPane);
         
+    	
+        //make sure table resized with pane to stop blank column
+        getTableView().setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
 		return arrayPane;
 	}
 	
-	private void createNewArray(){
+	protected void createNewData(){
 		Dialog<T> arrayDialog=createSettingsDialog(null); 
 		arrayDialog.showAndWait();
+		//add new result to table 
+		if (arrayDialog.getResult()!=null){
+			data.add(arrayDialog.getResult()); 
+		}
+	
 	}
 	
-	private void editArray(T data){
+	protected void editData(T data){
 		Dialog<T> arrayDialog=createSettingsDialog(data); 
 		arrayDialog.showAndWait();
 	}
 	
-	private void deleteArray(T data){
+	protected void deleteData(T data){
 		table.getItems().remove(data);
 	}
 
@@ -97,9 +108,22 @@ abstract class TablePane<T> extends BorderPane {
 	 */
 	abstract Dialog<T> createSettingsDialog(T data);
 
+	/**
+	 * Get the table
+	 * @return the table. 
+	 */
 	public TableView<T> getTableView() {
 		return table;
+	}	
+	
+	/**
+	 * Get the pane which holds, add, edit and delete buttons for the table. 
+	 * @return pane containing control buttons for the pane. 
+	 */
+	public TableButtonPane getButtonPane() {
+		return buttonPane;
 	}
+
 		
 
 }
