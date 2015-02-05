@@ -1,14 +1,14 @@
 package main;
 
-import sensorInput.MovementSensor;
+import main.ArrayManager.ArrayType;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import dataUnits.Array;
-import dataUnits.Array.ArrayType;
+import dataUnits.movementSensors.MovementSensor;
 import dataUnits.Hydrophone;
 
 /**
- * Holds all information for modelling hydrophones
+ * Holds all information and functions for modelling hydrophone positions. 
  * @author Jamie Macaulay
  *
  */
@@ -17,30 +17,40 @@ public class ArrayModelControl {
 	private static ArrayModelControl arrayControlInstance; 
 	
 	/**
-	 * Holds all array components. This list contains one non editable array. The 'master array' is the attachment point for all other arrays. It's a rigid array centered on (0,0,0)
-	 */
-	ObservableList<Array> arrays = FXCollections.observableArrayList();
-	
-	/**
-	 * All hydrophones within the different arrays
+	 * All hydrophones within the different arrays. No need to have a manager for hydrophones as there's only one type of hydrophone. 
 	 */
 	ObservableList<Hydrophone> hydrophones = FXCollections.observableArrayList();
-
+	
 	/**
-	 * All sensors attached to the  arrays. 
+	 * The reference array. Sits at 0,0,0 and can't be deleted
 	 */
-	ObservableList<MovementSensor> sensors = FXCollections.observableArrayList();
-
+	private Array referenceArray;
+	
+	/**
+	 * Manages different types of arrays
+	 */
+	private ArrayManager arrayManager; 
+	
+	
+	/**
+	 * Manages different types of sensors. 
+	 */
+	private SensorManager sensorManager; 
 	
 	public ArrayModelControl(){
 		arrayControlInstance=this; 
-		//create a non delteable reference array. 
-		Array mainArray=new Array(); 
-		mainArray.nameProperty().setValue("Reference Array");
-		mainArray.arrayTypeProperty().setValue(ArrayType.RIGID_ARRAY);
-		mainArray.parentArrayProperty().setValue(null);
 		
-		arrays.add(mainArray);
+		//create sensor and array managers. 
+		arrayManager=new ArrayManager(); 
+		sensorManager=new SensorManager(); 
+		
+		//create a non delteable reference array. 
+		referenceArray=new Array(); 
+		referenceArray.nameProperty().setValue("Reference Array");
+		referenceArray.arrayTypeProperty().setValue(ArrayType.RIGID_ARRAY);
+		referenceArray.parentArrayProperty().setValue(null);
+	
+		arrayManager.getArrayList().add(referenceArray);
 		
 	} 
 	
@@ -50,6 +60,7 @@ public class ArrayModelControl {
 	public void runModel(){
 		
 	}
+
 	
 	/**
 	 * Check whether a hydrophone channel is already used by another hydrophone.
@@ -68,7 +79,7 @@ public class ArrayModelControl {
 	 * @return a list iof all current arrays
 	 */
 	public ObservableList<Array> getArrays() {
-		return arrays;
+		return arrayManager.getArrayList();
 	}
 
 	/**
@@ -84,7 +95,7 @@ public class ArrayModelControl {
 	 * @return a list of all current movement sensors. 
 	 */
 	public ObservableList<MovementSensor> getSensors() {
-		return sensors;
+		return sensorManager.getSensorList();
 	}
 	
 	public static ArrayModelControl getInstance(){
@@ -96,6 +107,14 @@ public class ArrayModelControl {
 			new  ArrayModelControl(); 
 		}
 		
+	}
+
+	public Array getReferenceArray() {
+		return referenceArray;
+	}
+
+	public SensorManager getSensorManager() {
+		return sensorManager;
 	}
 	
 

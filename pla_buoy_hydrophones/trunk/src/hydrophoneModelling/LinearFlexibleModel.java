@@ -2,7 +2,7 @@ package hydrophoneModelling;
 
 import java.util.ArrayList;
 
-import sensorInput.MovementSensor;
+import dataUnits.movementSensors.MovementSensor;
 
 /**
  * Models a linear arrays with movement sensor located at different points along the array. e.g. free hanging vertical array. 

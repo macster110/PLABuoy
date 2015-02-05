@@ -132,7 +132,6 @@ public class Hydrophone {
 	}
 
 	public ObjectProperty<Array> parentArrayProperty() {
-		// TODO Auto-generated method stub
 		return parentArray;
 	}
 
