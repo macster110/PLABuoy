@@ -26,6 +26,7 @@
 #include "command/CommandManager.h"
 #include "Settings.h"
 
+#include "command/UDPCommands.h"
 #include "daq/SimulatedDaq.h"
 #ifdef WINOWS
 #include "daq/DaqMxSystem.h"
@@ -120,17 +121,16 @@ int main(int argc, char *argv[]){
 	 */
 	watchdog_thread();
 
+	/**
+	 * Create and launch the UDP command browser.
+	 */
+	udpCommands = new UDPCommands();
 
-	/*Only pass one argument to program-correct argc count is therefore supposed to be 2 or just choose the last argument*/
+	/*Send single long command string to the command manager. */
 	if (argc>=2) {
 		string allCommands = joinstrings(argc-1, &argv[1]);
-//		printf("All commands: \"%s\"\n", allCommands.c_str());
-
-//		int argument =*argv[argc-1]-'0';
-//		user_command(argument);
 		commandManager->processCommand(allCommands);
 	}
-//	user_command(0);
 
 	/*Wait for commands on main thread;*/
 	get_user_commands();
@@ -145,7 +145,7 @@ int main(int argc, char *argv[]){
 	/**Make sure LED's are off**/
 //	set_user_LED_status(LED_USER1_OFF);
 //	set_user_LED_status(LED_STATUS_OFF);
-
+	udpCommands->stopUDPThread(true);
 	// clean up processes.
 	processDelete();
 

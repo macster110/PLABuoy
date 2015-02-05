@@ -77,6 +77,8 @@ private:
 
 	int nSends;
 
+	int64_t dataWritten;
+
 };
 
 #endif /* NETSENDER_H_ */

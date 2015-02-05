@@ -67,6 +67,7 @@ NetSender::NetSender() : PLAProcess("netsend") {
 	queuedBytes = 0;
 	conTimer = new RealTimer();
 	nSends = 0;
+	dataWritten = 0;
 	addCommand(new SetDestIP(this));
 	addCommand(new SetDestPort(this));
 
@@ -215,6 +216,7 @@ int NetSender::sendData(PLABuff* data) {
 	}
 	if (bytesWrote == data->dataBytes) {
 		nSends ++;
+		dataWritten += bytesWrote;
 		return true;
 	}
 	return false;
@@ -275,6 +277,7 @@ bool NetSender::openConnection() {
 	 * Now send through details of how teh x3 compression is working.
 	 */
 	nSends = 0;
+	dataWritten = 0;
 	return sendX3Header(socketId);
 
 }
@@ -300,7 +303,7 @@ bool NetSender::sendX3Header(int socketId) {
 
 void NetSender::closeConnection() {
 	if (socketId == 0) return;
-	reporter->report(0, "Closing TCP socket %d after %d packets\n", socketId, nSends);
+	reporter->report(0, "Closing TCP socket %d after %d packets / %dMBytes\n", socketId, nSends, (int) (dataWritten>>20));
 	close(socketId);
 	socketId = 0;
 }
