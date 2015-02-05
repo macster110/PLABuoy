@@ -16,7 +16,7 @@ import javafx.scene.layout.Pane;
  *
  * @param <T> - type of data yunit
  */
-abstract class TablePane<T> extends BorderPane {
+public abstract class TablePane<T> extends BorderPane {
 
 	/**
 	 * The table to hold data of type T. 
@@ -82,7 +82,7 @@ abstract class TablePane<T> extends BorderPane {
 		return arrayPane;
 	}
 	
-	protected void createNewData(){
+	public void createNewData(){
 		Dialog<T> arrayDialog=createSettingsDialog(null); 
 		arrayDialog.showAndWait();
 		//add new result to table 
@@ -92,12 +92,12 @@ abstract class TablePane<T> extends BorderPane {
 	
 	}
 	
-	protected void editData(T data){
+	public void editData(T data){
 		Dialog<T> arrayDialog=createSettingsDialog(data); 
 		arrayDialog.showAndWait();
 	}
 	
-	protected void deleteData(T data){
+	public void deleteData(T data){
 		table.getItems().remove(data);
 	}
 
@@ -106,7 +106,7 @@ abstract class TablePane<T> extends BorderPane {
 	 * @param data - data to edit. null to  create a new instance of data
 	 * @return dialog to change data settigns. 
 	 */
-	abstract Dialog<T> createSettingsDialog(T data);
+	public abstract Dialog<T> createSettingsDialog(T data);
 
 	/**
 	 * Get the table

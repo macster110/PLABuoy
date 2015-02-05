@@ -1,6 +1,9 @@
 package layout;
 
 
+import layout.arrays.ArrayPane;
+import layout.hydrophones.HydrophonePane;
+import layout.movementSensors.SensorPane;
 import main.ArrayModelControl;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
