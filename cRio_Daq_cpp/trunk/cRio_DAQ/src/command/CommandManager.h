@@ -17,7 +17,7 @@ public:
 	CommandManager();
 	virtual ~CommandManager();
 
-	std::string processCommand(std::string command);
+	std::string processCommand(std::string command, struct sockaddr_in* udpSock);
 
 	void listAllCommands();
 

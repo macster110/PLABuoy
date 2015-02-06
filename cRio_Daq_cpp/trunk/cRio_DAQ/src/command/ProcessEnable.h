@@ -16,7 +16,7 @@ public:
 	ProcessEnable(PLAProcess* plaProcess);
 	virtual ~ProcessEnable();
 
-	std::string execute(std::string command);
+	std::string execute(std::string command, struct sockaddr_in* udpSock);
 
 	std::string getHint() {
 		return "Enable / Disable the process";

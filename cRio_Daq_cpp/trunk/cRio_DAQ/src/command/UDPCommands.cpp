@@ -23,6 +23,8 @@
 #include <pthread.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #endif
 
 
@@ -49,16 +51,34 @@ UDPCommands::~UDPCommands() {
 	stopUDPThread();
 }
 
+
+/**
+ * Can't actually stop and start the thread here since it will
+ * end up in a locked state if this port change is called from
+ * the udp thread. Instead, just close and open the connection
+ * on the new port.
+ *
+ * It seems that UDP sockets can't really be unbound, so this prevents us from
+ * rebinding to a port that's already been used - so set udpport once, then
+ * don't mess with it !
+ */
 bool UDPCommands::setUDPPort(int portId) {
 	if (this->portId == portId && updThreadId) {
 		return true;
 	}
 	this->portId = portId;
-	return startUDPThread();
+	closeConnection();
+	return openConnection();
 }
 
+/**
+ * have to NOT wait for an old thread to close since
+ * if we do, it locks then a call to change the port comes in
+ * since the function calling this will be in the same thread as
+ * the one we're trying to kill.
+ */
 bool UDPCommands::startUDPThread() {
-	stopUDPThread();
+	stopUDPThread(false);
 	thread_run = true;
 	bool threadOk;
 	STARTTHREAD(udpThreadStart, this, updThreadId, udpThreadHandle, threadOk);
@@ -70,7 +90,7 @@ void UDPCommands::stopUDPThread(bool wait) {
 		int retVal;
 		thread_run = false;
 		if (udpSocket > 0) {
-			close(udpSocket);
+			closeConnection();
 		}
 		if (wait) {
 			WAITFORTHREAD(updThreadId, udpThreadHandle, retVal);
@@ -79,35 +99,56 @@ void UDPCommands::stopUDPThread(bool wait) {
 	updThreadId = 0;
 	udpThreadHandle = 0;
 }
-int UDPCommands::udpThread() {
+
+bool UDPCommands::openConnection() {
+
+	reporter->report(0, "Prepare for UDP commands on port %d\n", portId);
 
 	udpSocket = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP );
-	if (udpSocket <= 0) {
-		reporter->report(0, "Unable to open UDP control socket\n");
-	}
-	struct sockaddr_in serv_addr, cli_addr;
+		if (udpSocket <= 0) {
+			reporter->report(0, "Unable to open UDP control socket\n");
+		}
+		struct sockaddr_in serv_addr;
 
-	memset((char *) &serv_addr, 0, sizeof(serv_addr));
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = htonl(0);
-	serv_addr.sin_port = htons(portId);
-	if (bind(udpSocket, (struct sockaddr *) &serv_addr,
-			sizeof(serv_addr)) < 0) {
-		return false;
-	}
+		memset((char *) &serv_addr, 0, sizeof(serv_addr));
+		serv_addr.sin_family = AF_INET;
+		serv_addr.sin_addr.s_addr = htonl(0);
+		serv_addr.sin_port = htons(portId);
+		if (bind(udpSocket, (struct sockaddr *) &serv_addr,
+				sizeof(serv_addr)) < 0) {
+			reporter->report(0, "Unable to bind udp port %d\n", portId);
+			close(udpSocket);
+			udpSocket = 0;
+			return false;
+		}
 
-//	struct timeval tv;
-//	tv.tv_sec = 1;
-//	tv.tv_usec = 0;
-	int tOut = 1000;
-	if (setsockopt(udpSocket, SOL_SOCKET, SO_RCVTIMEO, (char*) &tOut, sizeof(int)) < 0) {
-	    perror("Error");
-	}
+	//	struct timeval tv;
+	//	tv.tv_sec = 1;
+	//	tv.tv_usec = 0;
+		int tOut = 1000;
+		if (setsockopt(udpSocket, SOL_SOCKET, SO_RCVTIMEO, (char*) &tOut, sizeof(int)) < 0) {
+		    perror("Error");
+		}
 
+
+		reporter->report(0, "Wait for UDP commands on port %d\n", portId);
+		return udpSocket > 0;
+
+}
+void UDPCommands::closeConnection() {
+	if (udpSocket) {
+		close(udpSocket);
+		udpSocket = 0;
+	}
+}
+int UDPCommands::udpThread() {
+
+	openConnection();
+
+	struct sockaddr_in cli_addr;
+	socklen_t clientlen = sizeof(cli_addr);
 	char rxBuffer[UDP_RX_BUFF_LEN + 10];
 	int received, sent;
-
-	socklen_t clientlen = sizeof(cli_addr);
 
 	while (thread_run) {
 
@@ -119,8 +160,12 @@ int UDPCommands::udpThread() {
 //			break;
 		}
 		else {
+//			char str[INET_ADDRSTRLEN];
+//		inet_ntop( AF_INET, ntohl(cli_addr.sin_addr), str, INET_ADDRSTRLEN );
 			rxBuffer[received] = 0; // null terminate the data in case it's text.
-			std::string retCmd = commandManager->runCommand(rxBuffer);
+			reporter->report(1, "UDP Command %s sent from %s\n", rxBuffer, inet_ntoa(cli_addr.sin_addr));
+
+			std::string retCmd = commandManager->processCommand(std::string(rxBuffer), &cli_addr);
 			sent = sendto(udpSocket, retCmd.c_str(), retCmd.length(), 0,
 					(struct sockaddr *) &cli_addr,
 					sizeof(cli_addr));

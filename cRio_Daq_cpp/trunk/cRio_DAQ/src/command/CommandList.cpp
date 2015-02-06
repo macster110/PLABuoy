@@ -18,7 +18,7 @@ CommandList::~CommandList() {
 	// TODO Auto-generated destructor stub
 }
 
-std::string CommandList::runCommand(std::string command) {
+std::string CommandList::runCommand(std::string command, struct sockaddr_in* udpSock) {
 	Command* aCommand = findCommand(command);
 	if (aCommand == NULL) {
 		return "Unknown command \"" + command + "\"";
@@ -27,8 +27,9 @@ std::string CommandList::runCommand(std::string command) {
 		return "Command \"" + command + "\" cannot be executed";
 	}
 	else {
-		return aCommand->execute(command);
+		return aCommand->execute(command, udpSock);
 	}
+	return "";
 }
 
 void CommandList::addCommand(Command* command) {

@@ -51,6 +51,8 @@ public:
 
 	bool setDestinationIp(std::string newIpAddress);
 
+	bool setDestinationPort(int portId);
+
 private:
 	queue<PLABuff> networkQueue;
 

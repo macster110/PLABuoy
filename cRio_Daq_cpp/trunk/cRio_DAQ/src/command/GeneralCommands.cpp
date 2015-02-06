@@ -13,11 +13,12 @@
 #include "CommandManager.h"
 #include "../CRioRecDAQ.h"
 #include "../Reporter.h"
+#include "UDPCommands.h"
 
 StartCommand::StartCommand() : Command(NULL, "start") {
 
 }
-std::string StartCommand::execute(std::string command) {
+std::string StartCommand::execute(std::string command, struct sockaddr_in* udpSock) {
 
 	bool ok = start();
 	if (ok) {
@@ -30,7 +31,7 @@ std::string StartCommand::execute(std::string command) {
 StopCommand::StopCommand() : Command(NULL, "stop") {
 
 }
-std::string StopCommand::execute(std::string command) {
+std::string StopCommand::execute(std::string command, struct sockaddr_in* udpSock) {
 
 	bool ok = stop();
 	if (ok) {
@@ -44,14 +45,14 @@ std::string StopCommand::execute(std::string command) {
 PingCommand::PingCommand() : Command(NULL, "ping") {
 
 }
-std::string PingCommand::execute(std::string command) {
+std::string PingCommand::execute(std::string command, struct sockaddr_in* udpSock) {
 	return "ping";
 }
 
 VerboseCommand::VerboseCommand() : Command(NULL, "verbose") {
 
 }
-std::string VerboseCommand::execute(std::string command) {
+std::string VerboseCommand::execute(std::string command, struct sockaddr_in* udpSock) {
 	// get the second word out of the command and hope it's a number
 	int nW = countWords(command);
 	if (nW < 2) {
@@ -72,7 +73,7 @@ std::string VerboseCommand::execute(std::string command) {
 HelpCommand::HelpCommand() : Command(NULL, "help") {
 
 }
-std::string HelpCommand::execute(std::string command) {
+std::string HelpCommand::execute(std::string command, struct sockaddr_in* udpSock) {
 	commandManager->listAllCommands();
 //	exitTerminalLoop();
 	return "Help";
@@ -81,8 +82,32 @@ std::string HelpCommand::execute(std::string command) {
 ExitCommand::ExitCommand() : Command(NULL, "exit") {
 
 }
-std::string ExitCommand::execute(std::string command) {
+std::string ExitCommand::execute(std::string command, struct sockaddr_in* udpSock) {
 	stop();
 	exitTerminalLoop();
 	return "exit";
+}
+
+UDPPortCommand::UDPPortCommand() : Command(NULL, "udpport") {
+
+}
+std::string UDPPortCommand::execute(std::string command, struct sockaddr_in* udpSock) {
+	// look for an integer in the second word.
+	int nW = countWords(command);
+	if (nW < 2) {
+		return "Invalid port id";
+	}
+	std::string w2 = nthword(command, 1);
+	if (w2.size() < 1) {
+		return "Invalid port id " + command;
+	}
+//	return "Set verbose level to " + w2;
+	int p = atoi(w2.c_str());
+	if (p <= 0) {
+		return "Invalid port id " + command;
+	}
+
+	udpCommands->setUDPPort(p);
+
+	return "UDP Port set to  " + command;
 }

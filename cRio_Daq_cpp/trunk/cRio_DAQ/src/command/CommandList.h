@@ -19,7 +19,7 @@ public:
 	CommandList();
 	virtual ~CommandList();
 	void addCommand(Command* command);
-	std::string runCommand(std::string command);
+	std::string runCommand(std::string command, struct sockaddr_in* udpSock = NULL);
 	Command* findCommand(std::string commandName);
 	Command* getCommand(int iCommand);
 	int getnCommands();

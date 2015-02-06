@@ -21,6 +21,7 @@ CommandManager::CommandManager() : CommandList() {
 	addCommand(new StartCommand());
 	addCommand(new StopCommand());
 	addCommand(new ExitCommand());
+	addCommand(new UDPPortCommand());
 }
 
 CommandManager::~CommandManager() {
@@ -66,7 +67,7 @@ void CommandManager::listAllCommands() {
  * Process a command. Do inside a lock to make sure that
  * competing commands are executed one at a time.
  */
-std::string CommandManager::processCommand(std::string command) {
+std::string CommandManager::processCommand(std::string command, struct sockaddr_in* udpSock) {
 //	pthread_mutex_lock( &commandLock );
 	string returnedString;
 	command = trimstring(command);
@@ -89,7 +90,7 @@ std::string CommandManager::processCommand(std::string command) {
 				returnedString += ",";
 			}
 			string subString = command.substr(prevCom, comPos-prevCom);
-			returnedString += processCommand(subString);
+			returnedString += processCommand(subString, udpSock);
 //			printf("Process sub command \"%s\"\n", subString.c_str());
 			prevCom = comPos+1;
 			if (prevCom >= command.size()) break;
@@ -117,10 +118,10 @@ std::string CommandManager::processCommand(std::string command) {
 		string cmd = command.substr(command.find(' '),string::npos);
 		cmd = trimstring(cmd);
 //		printf("Send rest of command ... \"%s\"\n", cmd.c_str());
-		return process->runCommand(cmd);
+		return process->runCommand(cmd, udpSock);
 	}
 	else {
-		return this->runCommand(command);
+		return this->runCommand(command, udpSock);
 	}
 
 	return "unknown command";

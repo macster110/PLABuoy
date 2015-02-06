@@ -18,6 +18,8 @@ public:
 	bool setUDPPort(int portId);
 	bool startUDPThread();
 	void stopUDPThread(bool wait = true);
+	bool openConnection();
+	void closeConnection();
 	int udpThread();
 
 private:

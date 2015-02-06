@@ -129,7 +129,7 @@ int main(int argc, char *argv[]){
 	/*Send single long command string to the command manager. */
 	if (argc>=2) {
 		string allCommands = joinstrings(argc-1, &argv[1]);
-		commandManager->processCommand(allCommands);
+		commandManager->processCommand(allCommands, NULL);
 	}
 
 	/*Wait for commands on main thread;*/
@@ -177,7 +177,7 @@ void get_user_commands(){
 		cmd = trimstring(cmd);
 		if (cmd.size()) break;
 		}
-		string ans = commandManager->processCommand(cmd);
+		string ans = commandManager->processCommand(cmd, NULL);
 //		fflush(stdout);
 		printf("Command \"%s\" answered \"%s\"\n", cmd.c_str(), ans.c_str());
 //		fflush(stdout);

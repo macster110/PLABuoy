@@ -17,7 +17,13 @@ public:
 	Command(PLAProcess* plaProcess, const std::string name);
 	virtual ~Command();
 
-	virtual std::string execute(std::string command) = 0;
+	/**
+	 * Alternate version of execute which will be called from the udp command receiver.
+	 * It includes the sending sock add so that commands which wish to can
+	 * extract the inet address. Be default it's ignored and the command
+	 * passes through to the simpler version
+	 */
+	virtual std::string execute(std::string command, struct sockaddr_in* udpSock) = 0;
 
 	virtual bool canExecute(std::string command) {
 		return true;

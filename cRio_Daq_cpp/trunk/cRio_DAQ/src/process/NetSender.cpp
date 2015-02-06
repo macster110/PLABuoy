@@ -94,6 +94,12 @@ bool NetSender::setDestinationIp(std::string newIpAddress) {
 	return true;
 }
 
+bool NetSender::setDestinationPort(int portId) {
+	ipPort = portId;
+	closeConnection(); // will open again automatically next time data are sent.
+	return true;
+}
+
 int NetSender::initProcess(int nChan, int sampleRate) {
 	PLAProcess::initProcess(nChan, sampleRate);
 	queuedBytes = 0;
@@ -203,8 +209,9 @@ int NetSender::sendThreadLoop() {
  * open.
  */
 int NetSender::sendData(PLABuff* data) {
+	static int errors;
 	int bytesWrote = send(socketId, (char*) data->data, data->dataBytes, sendFlags);
-	if (bytesWrote != data->dataBytes) {
+	if (bytesWrote != data->dataBytes && (errors++ < 2 || errors%200 == 0)) {
 		reporter->report(0, "TCP write failed %d bytes written on port %d with error %d: %s\n",
 				bytesWrote, socketId, errno, strerror(errno));
 	}
@@ -218,6 +225,7 @@ int NetSender::sendData(PLABuff* data) {
 		nSends ++;
 		dataWritten += bytesWrote;
 		return true;
+		errors = 0;
 	}
 	return false;
 }
@@ -306,4 +314,5 @@ void NetSender::closeConnection() {
 	reporter->report(0, "Closing TCP socket %d after %d packets / %dMBytes\n", socketId, nSends, (int) (dataWritten>>20));
 	close(socketId);
 	socketId = 0;
+	hostEntity = NULL;
 }

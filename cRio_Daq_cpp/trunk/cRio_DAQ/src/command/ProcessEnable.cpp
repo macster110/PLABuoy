@@ -20,7 +20,7 @@ ProcessEnable::~ProcessEnable() {
 	// TODO Auto-generated destructor stub
 }
 
-std::string ProcessEnable::execute(std::string command) {
+std::string ProcessEnable::execute(std::string command, struct sockaddr_in* udpSock) {
 	// search the string for true or false and act accordingly
 	if (command.find("true") >= 0) {
 		getPlaProcess()->setEnabled(true);
