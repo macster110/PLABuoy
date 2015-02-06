@@ -4,6 +4,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.TableColumn;
 import layout.MainView;
 import layout.TablePane;
+import main.ArrayModelControl;
 import dataUnits.Hydrophone;
 
 public class HydrophonePane extends TablePane<Hydrophone> {
@@ -32,13 +33,13 @@ public class HydrophonePane extends TablePane<Hydrophone> {
 		
 		
 		TableColumn<Hydrophone,Number> xValError = new TableColumn<Hydrophone,Number>("x error (m)");
-		xValError.setCellValueFactory(cellData -> cellData.getValue().xPosProperty());
+		xValError.setCellValueFactory(cellData -> cellData.getValue().xErrProperty());
 
 		TableColumn<Hydrophone,Number> yValError = new TableColumn<Hydrophone,Number>("y error (m)");
-		yValError.setCellValueFactory(cellData -> cellData.getValue().yPosProperty());
+		yValError.setCellValueFactory(cellData -> cellData.getValue().yErrProperty());
 
 		TableColumn<Hydrophone,Number> zValError = new TableColumn<Hydrophone,Number>("z error (m)");
-		zValError.setCellValueFactory(cellData -> cellData.getValue().zPosProperty());
+		zValError.setCellValueFactory(cellData -> cellData.getValue().zErrProperty());
 		
 		TableColumn errorColumn=new TableColumn("Errors"); 
 		errorColumn.getColumns().addAll(xValError, yValError, zValError);
@@ -52,6 +53,7 @@ public class HydrophonePane extends TablePane<Hydrophone> {
 	public Dialog<Hydrophone> createSettingsDialog(Hydrophone data) {
 		if (data==null) {
 			Hydrophone newHydrophone=new Hydrophone(0, 0, 0); 
+			newHydrophone.setParentArray(ArrayModelControl.getInstance().getReferenceArray());
 			return HydrophoneDialog.createDialog(newHydrophone);
 		}
 		else return HydrophoneDialog.createDialog(data);

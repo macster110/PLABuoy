@@ -37,13 +37,13 @@ public class InclinometerSensor extends AbstractMovementSensor {
 	}
 
 	@Override
-	void loadData(long time1, long time2) {
+	public void loadData(long time1, long time2) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	Pane getSettingsPane() {
+	public Pane getSettingsPane() {
 		// TODO Auto-generated method stub
 		return null;
 	}

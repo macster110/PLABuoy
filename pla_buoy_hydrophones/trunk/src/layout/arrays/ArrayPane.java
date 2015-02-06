@@ -91,7 +91,6 @@ public class ArrayPane extends TablePane<Array> {
 		else return ArrayDialog.createDialog(data);
 	}
 	
-
 }
 	
 //	private class ButtonCell extends TableCell<Array, Boolean> {

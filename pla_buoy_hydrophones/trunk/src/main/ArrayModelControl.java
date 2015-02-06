@@ -44,7 +44,7 @@ public class ArrayModelControl {
 		arrayManager=new ArrayManager(); 
 		sensorManager=new SensorManager(); 
 		
-		//create a non delteable reference array. 
+		//create a non deleteable reference array. 
 		referenceArray=new Array(); 
 		referenceArray.nameProperty().setValue("Reference Array");
 		referenceArray.arrayTypeProperty().setValue(ArrayType.RIGID_ARRAY);
@@ -69,7 +69,7 @@ public class ArrayModelControl {
 	 */
 	public boolean checkHydrophoneChannels(int channel){
 		for (int i=0; i<hydrophones.size(); i++ ){
-			if (hydrophones.get(i).equals(channel)) return true; 
+			if (hydrophones.get(i).channelProperty().get()== channel) return true; 
 		}
 		return false; 
 	}

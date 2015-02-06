@@ -75,13 +75,13 @@ public abstract class AbstractMovementSensor implements MovementSensor {
 	 * @param time1 - start time in millis to load data from. 
 	 * @param time2 - end time in millis to load data to.
 	 */
-	abstract void loadData(long time1, long time2);
+	public abstract void loadData(long time1, long time2);
 	
 	/**
 	 * Get pane with GUI to allow users to change sensor settings
 	 * @return pane with GUI to allow users to change settings of sensor. 
 	 */
-	abstract Pane getSettingsPane();
+	public abstract Pane getSettingsPane();
 	
 	
 	@Override

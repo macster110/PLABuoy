@@ -1,5 +1,6 @@
 package layout.arrays;
 
+import layout.ParentArrayComboBox;
 import main.ArrayModelControl;
 import dataUnits.Array;
 import main.ArrayManager.ArrayType;
@@ -152,27 +153,8 @@ public class ArrayDialog extends Dialog<Array>{
 
 		Label parentArrayLabel=new Label("Parent Array");
 		parentArrayLabel.setPadding(new Insets(sectionPadding,0,0,0));
-		attachmentComboBox = new ComboBox<Array>();
-		attachmentComboBox.setItems(ArrayModelControl.getInstance().getArrays());
-		//need to convert from object to name. 
-		attachmentComboBox.setConverter(new StringConverter<Array>() {
-            @Override
-            public String toString(Array user) {
-              if (user == null){
-                return null;
-              } else {
-                return user.nameProperty().getValue();
-              }
-            }
-
-          @Override
-          public Array fromString(String userId) {
-              return null;
-          }
-		});
-		attachmentComboBox.setMaxWidth(Double.MAX_VALUE);
-		HBox.setHgrow(attachmentComboBox, Priority.ALWAYS);
-		
+		attachmentComboBox = new ParentArrayComboBox();
+	
 		//attachment point 
 		Label attachmentLabel=new Label("Attachment Point"); 
 		attachmentLabel.setPadding(new Insets(sectionPadding,0,0,0));
@@ -181,7 +163,7 @@ public class ArrayDialog extends Dialog<Array>{
 		yPos=new TextField();
 		zPos=new TextField();
 		arrayPos.setSpacing(10);
-		arrayPos.getChildren().addAll(new Label("x"), xPos, new Label("y"), yPos, new Label("z"), zPos);
+		arrayPos.getChildren().addAll(new Label("x (m)"), xPos, new Label("y (m)"), yPos, new Label("z (m)"), zPos);
 		
 		mainControls.getChildren().addAll(nameLabel, nameField, arrayTypeLabel, arrayType, 
 				parentArrayLabel, attachmentComboBox, arrayOrientationLabel, orientationComboBox, attachmentLabel, arrayPos); 

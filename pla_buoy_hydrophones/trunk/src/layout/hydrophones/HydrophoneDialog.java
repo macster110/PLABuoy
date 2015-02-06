@@ -1,5 +1,6 @@
 package layout.hydrophones;
 
+import layout.ParentArrayComboBox;
 import main.ArrayModelControl;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -195,26 +196,7 @@ public class HydrophoneDialog  extends Dialog<Hydrophone>{
 		
 		Label parentArrayLabel=new Label("Parent Array");
 		parentArrayLabel.setPadding(new Insets(sectionPadding,0,0,0));
-		parentArrayComboBox = new ComboBox<Array>();
-		parentArrayComboBox.setItems(ArrayModelControl.getInstance().getArrays());
-		//need to convert from object to name. 
-		parentArrayComboBox.setConverter(new StringConverter<Array>() {
-            @Override
-            public String toString(Array user) {
-              if (user == null){
-                return null;
-              } else {
-                return user.nameProperty().getValue();
-              }
-            }
-
-          @Override
-          public Array fromString(String userId) {
-              return null;
-          }
-		});
-		parentArrayComboBox.setMaxWidth(Double.MAX_VALUE);
-		HBox.setHgrow(parentArrayComboBox, Priority.ALWAYS);
+		parentArrayComboBox = new ParentArrayComboBox();
 		
 		//attachment point 
 		Label hydrophonePosLable=new Label("Hydrophone Position"); 

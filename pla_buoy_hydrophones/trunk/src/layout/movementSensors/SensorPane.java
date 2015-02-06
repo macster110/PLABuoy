@@ -59,7 +59,7 @@ public class SensorPane extends TablePane<MovementSensor> {
 	public Dialog<MovementSensor> createSettingsDialog(MovementSensor data) {
 		if (data==null) {
 			//create a new open tag sensor as a default. 
-			return SensorDialog.createDialog(ArrayModelControl.getInstance().getSensorManager().createNewSensor(SensorType.Open_TAG));
+			return SensorDialog.createDialog(ArrayModelControl.getInstance().getSensorManager().createNewSensor(SensorType.OPEN_TAG));
 		}
 		else return SensorDialog.createDialog(data);
 	}

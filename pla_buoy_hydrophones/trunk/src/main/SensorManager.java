@@ -1,5 +1,7 @@
 package main;
 
+import main.SensorManager.SensorType;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import dataUnits.movementSensors.MovementSensor;
@@ -18,12 +20,12 @@ public class SensorManager {
 	ObservableList<MovementSensor> sensors = FXCollections.observableArrayList();
 	
 	/**
-	 * The types of sensor. Available. 
+	 * The types of sensor AVAILABLE
 	 * @author Jamie Macaulay
 	 *
 	 */
 	public enum SensorType {
-		Open_TAG
+		OPEN_TAG
 	}; 
 	
 	/**
@@ -32,7 +34,7 @@ public class SensorManager {
 	 */
 	public MovementSensor createNewSensor(SensorType type){
 		switch(type){
-		case Open_TAG:
+		case OPEN_TAG:
 			return new OpenTagSensor(); 
 		default:
 			break;
@@ -46,6 +48,18 @@ public class SensorManager {
 	 */
 	public ObservableList<MovementSensor> getSensorList(){
 		return sensors;
+	}
+
+	/**
+	 * Get the enum type for a sensor class. 
+	 * @param movementSensor - the sensor class to find type for. 
+	 * @return the type of sensor. Null if not a sensor class. 
+	 */
+	public SensorType getSensorType(
+			MovementSensor movementSensor) {
+		if (movementSensor instanceof OpenTagSensor) return SensorType.OPEN_TAG;
+		
+		return null;
 	}
 
 }
