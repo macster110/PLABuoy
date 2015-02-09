@@ -48,7 +48,8 @@ public class HydrophoneDialog  extends Dialog<Hydrophone>{
 	public enum ErrorType {NO_ERROR, POS_FIELD, ERROR_FIELD, CHANNEL_ALREADY_USED}; 
 	
 	public HydrophoneDialog(){
-		
+		this.initOwner(ArrayModelControl.getInstance().getPrimaryStage());
+
 		this.setTitle("Hydrophone Dialog");
 		this.getDialogPane().setContent(createDialogPane());
 		this.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);

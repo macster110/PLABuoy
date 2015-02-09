@@ -29,7 +29,7 @@ public class ArrayDialog extends Dialog<Array>{
 	private TextField yPos;
 	private TextField xPos;
 	private TextField zPos;
-	private ComboBox<Array> attachmentComboBox;
+	private ComboBox<Array> parentArrayComboBox;
 	private ComboBox<ArrayType> arrayType;
 	private TextField nameField;
 	
@@ -41,7 +41,8 @@ public class ArrayDialog extends Dialog<Array>{
 	
 	//create the dialog
 	public ArrayDialog(){
-		
+		this.initOwner(ArrayModelControl.getInstance().getPrimaryStage());
+
 		this.setTitle("Array Dialog");
 		this.getDialogPane().setContent(createDialogPane());
 		this.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
@@ -98,7 +99,7 @@ public class ArrayDialog extends Dialog<Array>{
 		arrayType.setValue(array.arrayTypeProperty().getValue());
 		
 		//attachmentComboBox.setItems(ArrayModelControl.getInstance().getArrays());
-		attachmentComboBox.setValue(array.parentArrayProperty().getValue());
+		parentArrayComboBox.setValue(array.parentArrayProperty().getValue());
 		
 		orientationComboBox.setValue(array.orientationProperty().getValue());
 		
@@ -153,7 +154,7 @@ public class ArrayDialog extends Dialog<Array>{
 
 		Label parentArrayLabel=new Label("Parent Array");
 		parentArrayLabel.setPadding(new Insets(sectionPadding,0,0,0));
-		attachmentComboBox = new ParentArrayComboBox();
+		parentArrayComboBox = new ParentArrayComboBox();
 	
 		//attachment point 
 		Label attachmentLabel=new Label("Attachment Point"); 
@@ -166,7 +167,7 @@ public class ArrayDialog extends Dialog<Array>{
 		arrayPos.getChildren().addAll(new Label("x (m)"), xPos, new Label("y (m)"), yPos, new Label("z (m)"), zPos);
 		
 		mainControls.getChildren().addAll(nameLabel, nameField, arrayTypeLabel, arrayType, 
-				parentArrayLabel, attachmentComboBox, arrayOrientationLabel, orientationComboBox, attachmentLabel, arrayPos); 
+				parentArrayLabel, parentArrayComboBox, arrayOrientationLabel, orientationComboBox, attachmentLabel, arrayPos); 
 		
 		mainPane.setCenter(mainControls);
 				

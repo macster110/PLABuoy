@@ -1,5 +1,6 @@
 package dataUnits.movementSensors;
 
+import main.SensorManager.SensorType;
 import dataUnits.Array;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
@@ -40,7 +41,7 @@ public interface MovementSensor {
 	 * The type of sensor. e.g. Open Tag, IS Inclinometer, Hemisphere vector GPS vs100
 	 * @return the type of sensor. 
 	 */
-	public StringProperty sensorTypeProperty();
+	public ObjectProperty<SensorType> sensorTypeProperty();
 	
 	/**
 	 * The array the sensor belongs to. 
@@ -114,7 +115,7 @@ public interface MovementSensor {
 	 * Loads data for sensor. Called before every movement simulation. 
 	 * @return true if successful data load. False otherwise. 
 	 */
-	public boolean loadData(); 
+	public boolean loadData();
 
 	
 

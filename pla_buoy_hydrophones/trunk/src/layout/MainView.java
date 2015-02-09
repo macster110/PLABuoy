@@ -1,15 +1,16 @@
 package layout;
 
 
-import layout.arrays.ArrayPane;
-import layout.hydrophones.HydrophonePane;
-import layout.movementSensors.SensorPane;
+import layout.arrays.ArrayTablePane;
+import layout.hydrophones.HydrophoneTablePane;
+import layout.movementSensors.SensorTablePane;
 import main.ArrayModelControl;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+import javafx.stage.Stage;
 
 /**
  * The main pane holds all controls for modelling program. 
@@ -18,11 +19,20 @@ import javafx.scene.text.Font;
  */
 public class MainView extends BorderPane {
 	
-	ArrayModelControl arrayModelControl;
+	/**
+	 *Reference to the a ArrayModelControl. 
+	 */
+	private ArrayModelControl arrayModelControl;
+	
+	/**
+	 * The primary stage. 
+	 */
+	private Stage primaryStage;
 
-	public MainView (ArrayModelControl arrayModelControl){
+	public MainView (ArrayModelControl arrayModelControl, Stage primaryStage){
 		
 		this.arrayModelControl=arrayModelControl; 
+		this.primaryStage=primaryStage; 
 		
 		VBox sensorBox=new VBox(); 
 		sensorBox.setPadding(new Insets(10,0,0,0));
@@ -40,15 +50,23 @@ public class MainView extends BorderPane {
 		sensorLabel.setFont(new Font("Ubuntu", 20));
 
 		
-		ArrayPane arrayPane=new ArrayPane(this); 
-		HydrophonePane hydrophonePane=new HydrophonePane(this); 
-		SensorPane sensorPane=new SensorPane(this); 
+		ArrayTablePane arrayPane=new ArrayTablePane(this); 
+		HydrophoneTablePane hydrophonePane=new HydrophoneTablePane(this); 
+		SensorTablePane sensorPane=new SensorTablePane(this); 
 		
 		sensorBox.getChildren().addAll(arrayLabel, arrayPane, hydrophoneLabel, hydrophonePane, sensorLabel, sensorPane);
 		sensorBox.setSpacing(10);
 		
 		this.setLeft(sensorBox);
 		
+	}
+	
+	/**
+	 * Get the primary stage for the application
+	 * @return the primary stage. 
+	 */
+	public Stage getPrimaryStage() {
+		return primaryStage;
 	}
 	
 	/**

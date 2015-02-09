@@ -2,14 +2,18 @@ package dataUnits.movementSensors;
 
 import java.io.File;
 
-import javafx.scene.layout.Pane;
+import layout.movementSensors.OpenTagPane;
+import main.SensorManager.SensorType;
 
 public class OpenTagSensor extends AbstractMovementSensor {
 	
-	public File dataPath=null;  
+	private File dataPath=null;  
+	
+	private SensorPane otSensorPane; 
 
 	public OpenTagSensor() {
-		super("", "Open Tag");
+		super("", SensorType.OPEN_TAG);
+		otSensorPane=new OpenTagPane(); 
 	}
 
 	@Override
@@ -25,7 +29,7 @@ public class OpenTagSensor extends AbstractMovementSensor {
 	}
 
 	@Override
-	File getDataPath() {
+	public File getDataPath() {
 		return dataPath;
 	}
 
@@ -36,15 +40,18 @@ public class OpenTagSensor extends AbstractMovementSensor {
 	}
 
 	@Override
-	public Pane getSettingsPane() {
-		// TODO Auto-generated method stub
-		return null;
+	public SensorPane getSettingsPane() {
+		return otSensorPane;
 	}
 	
 	@Override
 	public boolean loadData() {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	public void setDataPath(File dataPath) {
+		this.dataPath=dataPath; 		
 	}
 
 	

@@ -6,7 +6,6 @@ import main.SensorManager;
 import main.SensorManager.SensorType;
 import dataUnits.movementSensors.AbstractMovementSensor;
 import dataUnits.movementSensors.MovementSensor;
-import dataUnits.movementSensors.OpenTagSensor;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
@@ -23,11 +22,15 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 public class SensorDialog extends Dialog<MovementSensor>{
 	
 	private static SensorDialog singleInstance;
 	
+	/**
+	 * TextField to set name of sensor. 
+	 */
 	TextField nameField; 
 
 	/**
@@ -45,10 +48,22 @@ public class SensorDialog extends Dialog<MovementSensor>{
 	 */
 	SensorManager sensorManager=ArrayModelControl.getInstance().getSensorManager();
 
-	private ParentArrayComboBox parentArrayComboBox; 
+	/**
+	 * Combo box to xhoose the parent array the sensor belongs to. 
+	 */
+	private ParentArrayComboBox parentArrayComboBox;
+	
+	/**
+	 * Combo box to allow users to change sensor type. 
+	 */
+	private ComboBox<SensorType> sensorBox;
+
+	private BorderPane mainPane; 
 
 	
 	public SensorDialog(){
+		this.initOwner(ArrayModelControl.getInstance().getPrimaryStage());
+		
 		this.setTitle("Sensor Dialog");
 		this.getDialogPane().setContent(createDialogPane());
 		this.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
@@ -63,14 +78,13 @@ public class SensorDialog extends Dialog<MovementSensor>{
 		btOk.addEventFilter(ActionEvent.ACTION, (event) -> { 
 			if (getParams());
 			else {
-				//do not close
+				//do not close (error dialogs are handled in getParams class)
 				event.consume();
-				Alert alert = new Alert(AlertType.ERROR);
-				alert.setTitle("Error Dialog");			
-				alert.setContentText("Invalid data enetered in Movement Sensor Dialog");
-				alert.showAndWait();
 			}
 		}); 
+			
+		//this.setResizable(true);
+		
 	}
 
 	public static Dialog<MovementSensor> createDialog(MovementSensor sensor){
@@ -83,12 +97,38 @@ public class SensorDialog extends Dialog<MovementSensor>{
 		return singleInstance; 
 	}
 	
+	@SuppressWarnings("unchecked")
 	private boolean getParams(){
-		return true;
+	 
+		movementSensor.sensorNameProperty().setValue(nameField.getText());
+		movementSensor.parentArrayProperty().setValue(parentArrayComboBox.getValue());
+		if (movementSensor instanceof AbstractMovementSensor){
+			int error= ((AbstractMovementSensor) movementSensor).getSettingsPane().getParams(movementSensor);
+			if (error==0) return true; 	
+			else {
+				((AbstractMovementSensor) movementSensor).getSettingsPane().showErrorWarning(error);
+				return false; 
+			}
+			
+		}
+		return true; 
+		
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void setParams(MovementSensor movementSensor){
-		this.movementSensor=movementSensor;
+		
+		this.movementSensor=movementSensor;		
+		
+		nameField.setText(movementSensor.sensorNameProperty().get());
+		parentArrayComboBox.setValue(movementSensor.parentArrayProperty().getValue());
+		sensorBox.setValue(ArrayModelControl.getInstance().getSensorManager().getSensorType(movementSensor));
+		
+		if (movementSensor instanceof AbstractMovementSensor){
+			createSensorPane(movementSensor);
+			((AbstractMovementSensor) movementSensor).getSettingsPane().setParams(movementSensor);
+		}
+		
 	}; 
 	
 	/**
@@ -99,7 +139,7 @@ public class SensorDialog extends Dialog<MovementSensor>{
 		
 		double sectionPadding=10;
 		
-		BorderPane mainPane=new BorderPane();
+		 mainPane=new BorderPane();
 		
 		Label nameLabel=new Label("Sensor Name"); 
 		nameLabel.setPadding(new Insets(5,0,0,0));
@@ -110,7 +150,9 @@ public class SensorDialog extends Dialog<MovementSensor>{
 		parentArrayComboBox = new ParentArrayComboBox();
 		
 		Label sensorLabel=new Label("Select Sensor");
-		ComboBox<SensorType> sensorBox=new ComboBox<SensorType>();
+		sensorBox=new ComboBox<SensorType>();
+		
+		
 		sensorBox.setItems(FXCollections.observableArrayList(SensorType.values()));
 		/**
 		 * Unlike arrays and hydrophones, sensors are very different from each other and made
@@ -118,10 +160,9 @@ public class SensorDialog extends Dialog<MovementSensor>{
 		 * requires a specific pane and a new instance of the subclass to be created. 
 		 */
 		sensorBox.valueProperty().addListener((obs, t, t1)->{
-			if (sensorManager.getSensorType(movementSensor)!=obs.getValue()){
-				System.out.println("Create new sensor"); 
-				movementSensor=sensorManager.createNewSensor(obs.getValue());
-				createSensorPane(movementSensor); 
+			if (this.movementSensor.sensorTypeProperty().get()!=t1){
+				this.movementSensor=sensorManager.createNewSensor(obs.getValue());
+				setParams(movementSensor); 
 			}
 		}); 
 		
@@ -163,8 +204,15 @@ public class SensorDialog extends Dialog<MovementSensor>{
 	public void createSensorPane(MovementSensor sensor){
 		customSensorPane.setCenter(null); 
 		if (sensor instanceof AbstractMovementSensor){
+			System.out.println("Set new sensor...");
 			customSensorPane.setCenter(	((AbstractMovementSensor) sensor).getSettingsPane());
+			((AbstractMovementSensor) sensor).getSettingsPane().setParams(sensor);
 		}
+		//TODO- this is a bit cimbersome and maybe fixed in new version of JavaFX
+		//need to get stage and resize because new controls will have been added. 
+		Stage stage = (Stage) this.getDialogPane().getScene().getWindow();
+		stage.sizeToScene();
+	
 	}
 
 	

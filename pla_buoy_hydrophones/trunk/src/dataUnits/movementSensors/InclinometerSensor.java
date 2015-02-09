@@ -2,12 +2,13 @@ package dataUnits.movementSensors;
 
 import java.io.File;
 
+import main.SensorManager.SensorType;
 import javafx.beans.property.StringProperty;
 import javafx.scene.layout.Pane;
 
 public class InclinometerSensor extends AbstractMovementSensor {
 
-	public InclinometerSensor(String sensorName, String sensorType) {
+	public InclinometerSensor(String sensorName, SensorType sensorType) {
 		super(sensorName, sensorType);
 		// TODO Auto-generated constructor stub
 	}
@@ -43,7 +44,7 @@ public class InclinometerSensor extends AbstractMovementSensor {
 	}
 
 	@Override
-	public Pane getSettingsPane() {
+	public SensorPane getSettingsPane() {
 		// TODO Auto-generated method stub
 		return null;
 	}

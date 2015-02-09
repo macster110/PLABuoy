@@ -8,17 +8,17 @@ import layout.TablePane;
 import main.ArrayModelControl;
 import main.SensorManager.SensorType;
 
-public class SensorPane extends TablePane<MovementSensor> {
+public class SensorTablePane extends TablePane<MovementSensor> {
 		
-	public SensorPane(MainView mainPane){
+	public SensorTablePane(MainView mainPane){
 		
 		super(mainPane.getArrayModelControl().getSensors());
 		
 		TableColumn<MovementSensor,String>  sensorName = new TableColumn<MovementSensor,String>("Sensor Name");
 		sensorName.setCellValueFactory(cellData -> cellData.getValue().sensorNameProperty());
 		
-		TableColumn<MovementSensor,String>  sensorType = new TableColumn<MovementSensor,String>("Sensor Type");
-		sensorType.setCellValueFactory(cellData -> cellData.getValue().sensorNameProperty());
+		TableColumn<MovementSensor,SensorType>  sensorType = new TableColumn<MovementSensor,SensorType>("Sensor Type");
+		sensorType.setCellValueFactory(cellData -> cellData.getValue().sensorTypeProperty());
 		
 		TableColumn<MovementSensor,String> array = new TableColumn<MovementSensor,String>("Array");
 		array.setCellValueFactory(cellData -> cellData.getValue().parentArrayProperty().getValue().nameProperty());
@@ -57,9 +57,12 @@ public class SensorPane extends TablePane<MovementSensor> {
 
 	@Override
 	public Dialog<MovementSensor> createSettingsDialog(MovementSensor data) {
+		System.out.println("data "+data); 
 		if (data==null) {
 			//create a new open tag sensor as a default. 
-			return SensorDialog.createDialog(ArrayModelControl.getInstance().getSensorManager().createNewSensor(SensorType.OPEN_TAG));
+			MovementSensor movementSensor=ArrayModelControl.getInstance().getSensorManager().createNewSensor(SensorType.OPEN_TAG);
+			movementSensor.parentArrayProperty().setValue(ArrayModelControl.getInstance().getReferenceArray());
+			return SensorDialog.createDialog(movementSensor);
 		}
 		else return SensorDialog.createDialog(data);
 	}

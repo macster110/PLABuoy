@@ -1,7 +1,6 @@
 package layout;
 
-import dataUnits.Array;
-import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
 import javafx.scene.control.Dialog;
@@ -14,7 +13,7 @@ import javafx.scene.layout.Pane;
  * Pane which holds data wihin a table  and has add, settings and delete buttons. 
  * @author Jamie Macaulay
  *
- * @param <T> - type of data yunit
+ * @param <T> - type of data unit
  */
 public abstract class TablePane<T> extends BorderPane {
 
@@ -56,8 +55,19 @@ public abstract class TablePane<T> extends BorderPane {
 		    return row ;
 		});
 		
-		table.setItems(data);
+		//add listner to disable settings and delete buttons when there's nothing in the table. 
+		data.addListener((ListChangeListener.Change<? extends T> c) ->{
+			System.out.println("Hello list changed"); 
+			getButtonPane().getSettingsButton().setDisable(table.getItems().size()<=0);
+			getButtonPane().getDeleteButton().setDisable(table.getItems().size()<=0);
+		});
 	
+		
+		//set table data 
+		table.setItems(data);
+		
+		
+
 	    //create pane holding add, edit and remove controls
         buttonPane=new TableButtonPane(Orientation.VERTICAL); 
         buttonPane.getAddButton().setOnAction((event)->{
@@ -78,6 +88,10 @@ public abstract class TablePane<T> extends BorderPane {
     	
         //make sure table resized with pane to stop blank column
         getTableView().setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        
+    	getButtonPane().getSettingsButton().setDisable(true);
+			getButtonPane().getDeleteButton().setDisable(true);
+
 
 		return arrayPane;
 	}

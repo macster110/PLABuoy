@@ -2,11 +2,12 @@ package dataUnits.movementSensors;
 
 import java.io.File;
 
+import main.SensorManager.SensorType;
 import javafx.scene.layout.Pane;
 
 public class VectorGPSSensor extends AbstractMovementSensor {
 
-	public VectorGPSSensor(String sensorName, String sensorType) {
+	public VectorGPSSensor(String sensorName, SensorType sensorType) {
 		super(sensorName, sensorType);
 		// TODO Auto-generated constructor stub
 	}
@@ -42,7 +43,7 @@ public class VectorGPSSensor extends AbstractMovementSensor {
 	}
 
 	@Override
-	public Pane getSettingsPane() {
+	public SensorPane getSettingsPane() {
 		// TODO Auto-generated method stub
 		return null;
 	}

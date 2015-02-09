@@ -15,9 +15,9 @@ import javafx.scene.control.TableRow;
  * @author Jamie Macaulay
  *
  */
-public class ArrayPane extends TablePane<Array> {
+public class ArrayTablePane extends TablePane<Array> {
 	
-	public ArrayPane(MainView mainPane){
+	public ArrayTablePane(MainView mainPane){
 		super(mainPane.getArrayModelControl().getArrays()); 
 
 		TableColumn<Array,String>  arrayID = new TableColumn<Array,String>("Array Name");

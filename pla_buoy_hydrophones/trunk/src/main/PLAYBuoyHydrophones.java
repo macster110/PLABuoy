@@ -18,9 +18,11 @@ public class PLAYBuoyHydrophones extends Application {
         
         //create the primary control class; 
         ArrayModelControl.create(); 
-     
+        MainView mainView=new MainView(ArrayModelControl.getInstance(), primaryStage);
+        ArrayModelControl.getInstance().setMainView(mainView);
+        
         StackPane root = new StackPane();
-        root.getChildren().add(new MainView(ArrayModelControl.getInstance()));
+        root.getChildren().add(mainView);
         primaryStage.setScene(new Scene(root, 1000, 900));
         primaryStage.show();
     }

@@ -1,8 +1,10 @@
 package main;
 
+import layout.MainView;
 import main.ArrayManager.ArrayType;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.stage.Stage;
 import dataUnits.Array;
 import dataUnits.movementSensors.MovementSensor;
 import dataUnits.Hydrophone;
@@ -14,6 +16,9 @@ import dataUnits.Hydrophone;
  */
 public class ArrayModelControl {
 
+	/**
+	 * Static reference to the ArrayModelControl. 
+	 */
 	private static ArrayModelControl arrayControlInstance; 
 	
 	/**
@@ -35,7 +40,12 @@ public class ArrayModelControl {
 	/**
 	 * Manages different types of sensors. 
 	 */
-	private SensorManager sensorManager; 
+	private SensorManager sensorManager;
+
+	/**
+	 * Reference to the MainView. 
+	 */
+	private MainView mainView; 
 	
 	public ArrayModelControl(){
 		arrayControlInstance=this; 
@@ -109,12 +119,37 @@ public class ArrayModelControl {
 		
 	}
 
+	/**
+	 * Convenience function to get the reference array, 
+	 * @return the reference array. This is a rigid array set at (0,0,0) whihc cannot be deleted. 
+	 */
 	public Array getReferenceArray() {
 		return referenceArray;
 	}
 
+	/**
+	 * Get the sensor mamanger. This organises sensors for all arrays.
+	 * @return the sensor manager. 
+	 */
 	public SensorManager getSensorManager() {
 		return sensorManager;
+	}
+	
+	/**
+	 * Convenience function to get main stage of application. 
+	 * @return the application main stage. Can return null if MainView has not been set/created. 
+	 */
+	public Stage getPrimaryStage(){
+		if (mainView==null) return null; 
+		return mainView.getPrimaryStage();
+	}
+
+	/**
+	 * Set the MainView. This is only called once on application start up. 
+	 * @param mainView - MainView class to set. 
+	 */
+	protected void setMainView(MainView mainView) {
+		this.mainView=mainView; 
 	}
 	
 

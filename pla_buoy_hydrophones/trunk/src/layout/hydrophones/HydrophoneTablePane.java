@@ -7,10 +7,10 @@ import layout.TablePane;
 import main.ArrayModelControl;
 import dataUnits.Hydrophone;
 
-public class HydrophonePane extends TablePane<Hydrophone> {
+public class HydrophoneTablePane extends TablePane<Hydrophone> {
 	
 	
-	public HydrophonePane(MainView mainPane){
+	public HydrophoneTablePane(MainView mainPane){
 		super(mainPane.getArrayModelControl().getHydrophones());
 		
 		TableColumn<Hydrophone,Number>  hydrophoneID = new TableColumn<Hydrophone,Number>("Channel");
