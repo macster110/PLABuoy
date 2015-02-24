@@ -102,6 +102,7 @@ public abstract class TablePane<T> extends BorderPane {
 		//add new result to table 
 		if (arrayDialog.getResult()!=null){
 			data.add(arrayDialog.getResult()); 
+			dialogClosed(arrayDialog.getResult());
 		}
 	
 	}
@@ -109,11 +110,22 @@ public abstract class TablePane<T> extends BorderPane {
 	public void editData(T data){
 		Dialog<T> arrayDialog=createSettingsDialog(data); 
 		arrayDialog.showAndWait();
+		dialogClosed( data);
 	}
 	
 	public void deleteData(T data){
 		table.getItems().remove(data);
 	}
+	
+	/**
+	 * Called whenever dialog is closed and new data has been either created or edited. 
+	 * @param data
+	 */
+	public abstract void dialogClosed(T data);
+		
+	
+	
+
 
 	/**
 	 * Create a dialog to change data settings for each row in table. 

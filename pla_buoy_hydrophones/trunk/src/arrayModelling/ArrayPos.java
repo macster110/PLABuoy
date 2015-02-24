@@ -7,7 +7,9 @@ import org.fxyz.geometry.Point3D;
 import dataUnits.hArray.HArray;
 
 /**
- * Utility class to store calculated hydrophone positions and the modelled streamer. 
+ * Utility class to store calculated hydrophone positions and the modelled streamer. The idea behind this class is that a list of the orignal positions are 
+ * kept in the HArray classes and  transfromHydrophonePos and transfromChildArrayPos represent the transformed hydrophone positions and transformed reference positions of 
+ * child arrays respectively. 
  * @author Jamie Macaulay
  *
  */
@@ -73,28 +75,74 @@ public class ArrayPos {
 		this.streamerPositions = streamerPositions;
 	}
 	
+	/**
+	 * Get transformed positions of child arrays/ 
+	 * @return
+	 */
 	public ArrayList<double[]> getChildArrayPos() {
 		return transfromChildArrayPos;
 	}
 
-	public void setArrayPositions(ArrayList<double[]> arrayPositions) {
+	/**
+	 * Set transformed positions of child arrays. 
+	 * @param arrayPositions
+	 */
+	public void setChildArrayPositions(ArrayList<double[]> arrayPositions) {
 		this.transfromChildArrayPos = arrayPositions;
 	}
 	
-	public HArray getHArray() {
+	/**
+	 * Get the parent array. this is the array to which hydrophones belong. 
+	 * @return the parent array. 
+	 */
+	public HArray getParentHArray() {
 		return hydrophoneArray;
 	}
 
-	public void setHArray(HArray hydrophoneArray) {
+	/**
+	 * Set the parent array. This is the array to which hydrophones belong. 
+	 * @param hydrophoneArray - the array to set as parent. 
+	 */
+	public void setParentHArray(HArray hydrophoneArray) {
 		this.hydrophoneArray = hydrophoneArray;
 	}
 	
+	/**
+	 * Get all arrays which are children of the parent arrays. 
+	 * @return list of parent array's children. 
+	 */
 	public ArrayList<HArray> getChildArrays() {
 		return childArrays;
 	}
 
+	/**
+	 * Set the child arrays of the parent. 
+	 * @param childArrays - child arrays of the parent. 
+	 */
 	public void setChildArrays(ArrayList<HArray> childArrays) {
 		this.childArrays = childArrays;
+	}
+	
+	@Override 
+	public String toString(){
+		
+		String string="";
+		String hydrophoneString; 
+		for (int i=0; i<transfromHydrophonePos.size(); i++){
+			hydrophoneString=("Hydrophone channel " + hydrophoneArray.getHydrophones().get(i).channelProperty().get() + " transfromHydrophonePos.get(i)[0]"+ " y: "+transfromHydrophonePos.get(i)[1] +" z: "+transfromHydrophonePos.get(i)[2]);
+			string=string+hydrophoneString+ " ";
+		}
+//		string=string+"\n";
+		
+		String childArrayString;
+		for (int i=0; i<transfromChildArrayPos.size(); i++){
+			childArrayString=(childArrays.get(i).nameProperty().get() + " child array x: "+transfromChildArrayPos.get(i)[0]+ " y: "+transfromChildArrayPos.get(i)[1]+" z: "+transfromChildArrayPos.get(i)[2]);
+			string=string+childArrayString+" ";
+		}
+
+//		string=string+"\n";
+
+		return string;
 	}
 
 	

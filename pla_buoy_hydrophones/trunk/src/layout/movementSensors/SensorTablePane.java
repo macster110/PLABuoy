@@ -11,9 +11,16 @@ import main.SensorManager.SensorType;
 
 public class SensorTablePane extends TablePane<MovementSensor> implements ControlPane {
 		
+	/**
+	 * Reference to the main view.
+	 */
+	private ArrayModelView mainPane;
+
+
 	public SensorTablePane(ArrayModelView mainPane){
-		
 		super(mainPane.getArrayModelControl().getSensors());
+
+		this.mainPane=mainPane; 
 		
 		TableColumn<MovementSensor,String>  sensorName = new TableColumn<MovementSensor,String>("Sensor Name");
 		sensorName.setCellValueFactory(cellData -> cellData.getValue().sensorNameProperty());
@@ -72,6 +79,13 @@ public class SensorTablePane extends TablePane<MovementSensor> implements Contro
 	@Override
 	public void notifyChange(ChangeType type) {
 		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void dialogClosed(MovementSensor data) {
+		this.mainPane.getArrayModelControl().updateArraySensors();
 		
 	}
 

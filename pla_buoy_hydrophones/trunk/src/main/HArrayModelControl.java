@@ -1,5 +1,7 @@
 package main;
 
+import java.util.ArrayList;
+
 import arrayModelling.ArrayModelManager;
 import layout.ArrayModelView;
 import layout.ControlPane.ChangeType;
@@ -106,8 +108,28 @@ public class HArrayModelControl {
 	 * Note: this is needed to 1) update tables and 2)update array for modelling. 
 	 */
 	public void updateArrayHydrophones(){
+		ArrayList<Hydrophone> arrayHydrophones;
 		for (int i=0; i<arrayManager.getHArrayList().size(); i++){
-			
+			arrayHydrophones=new ArrayList<Hydrophone>(); 
+			for (int j=0; j<this.hydrophones.size(); j++){
+				if (hydrophones.get(j).parentArrayProperty().get()==arrayManager.getHArrayList().get(i)){
+					arrayHydrophones.add(hydrophones.get(j)); 
+				}
+			}
+			arrayManager.getHArrayList().get(i).setHydrophones(arrayHydrophones); 
+		}
+	}
+	
+	public void updateArraySensors(){
+		ArrayList<MovementSensor> arrayHydrophones;
+		for (int i=0; i<arrayManager.getHArrayList().size(); i++){
+			arrayHydrophones=new ArrayList<MovementSensor>(); 
+			for (int j=0; j<this.sensorManager.getSensorList().size(); j++){
+				if (sensorManager.getSensorList().get(j).parentArrayProperty().get()==arrayManager.getHArrayList().get(i)){
+					arrayHydrophones.add(sensorManager.getSensorList().get(j)); 
+				}
+			}
+			arrayManager.getHArrayList().get(i).setSensors(arrayHydrophones); 
 		}
 	}
 	

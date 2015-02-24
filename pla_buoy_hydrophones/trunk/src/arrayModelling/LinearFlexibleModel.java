@@ -56,7 +56,7 @@ public class LinearFlexibleModel implements ArrayModel {
 		ArrayList<MovementSensor> sensorList=new ArrayList<MovementSensor>(movementSensors); 
 
 		
-		//order array reference postion by x,y,or z depending on linear dimension
+		//order array reference position by x,y,or z depending on linear dimension
 		Collections.sort(arrayList, new Comparator<HArray>(){
 		    public int compare(HArray s1, HArray s2) {
 		        return (int) (s1.getParentAttachPoint()[dim]-s2.getParentAttachPoint()[dim]); 
@@ -125,8 +125,8 @@ public class LinearFlexibleModel implements ArrayModel {
 		
 		//replace positions with sorted positions. 
 		newArrayPos.setHydrophonePositions(newHydrophonePos);
-		newArrayPos.setArrayPositions(newArrayAttachPos);
-		newArrayPos.setHArray(getArray());
+		newArrayPos.setChildArrayPositions(newArrayAttachPos);
+		newArrayPos.setParentHArray(getArray());
 		newArrayPos.setChildArrays(childrenArray);
 
 
@@ -135,7 +135,17 @@ public class LinearFlexibleModel implements ArrayModel {
 
 	}
 	
-	private ArrayPos calcOrientation(double[] arrayPositions, double[] hydrophonePos, double[] sensorPos,
+	/**
+	 * Calculate new hydrophone and child array reference positions. 
+	 * @param arrayPositions -  positions of child arrays in meters - reference to array (0,0,0).
+	 * @param hydrophonePos - hydrophone positions in meters - reference to array (0,0,0).
+	 * @param sensorPos - sensor positions in meters - reference to array (0,0,0).
+	 * @param angles - Euler angles of sensors in RADIANS 
+	 * @param n - number of bins to split streamer into for angle calculation
+	 * @param dim - the dimensions of stream (x,y,z)  ->(0,1,2)
+	 * @return
+	 */
+	private ArrayPos calcOrientation(double[] childArrayPos, double[] hydrophonePos, double[] sensorPos,
 			ArrayList<double[]> angles, int n, int dim){
 		
 		ArrayList<double[]> hydrophonePosTrans=new ArrayList<double[]>(); 

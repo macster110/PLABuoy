@@ -200,8 +200,27 @@ public abstract class HArray  {
 			}
 		}
 		return children;
+	}
+
+	public void setHydrophones(ArrayList<Hydrophone> arrayHydrophones) {
+		//remove all hydrophones
+		this.hydrophones.removeAll(this.hydrophones); 
+		//add hydrophoen from list- will trigger any listeners
+		for (int i=0; i<arrayHydrophones.size(); i++){
+			hydrophones.add(arrayHydrophones.get(i));
+		}
+		
+	}
+
+	public void setSensors(ArrayList<MovementSensor> sensors) {
+		//remove all hydrophones
+		this.movementSensors.removeAll(this.movementSensors); 
+		//add hydrophoen from list- will trigger any listeners
+		for (int i=0; i<sensors.size(); i++){
+			movementSensors.add(sensors.get(i));
+		}
 	} 
-	
+
 
 	
 	

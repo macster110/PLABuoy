@@ -10,9 +10,16 @@ import dataUnits.Hydrophone;
 
 public class HydrophoneTablePane extends TablePane<Hydrophone> implements ControlPane{
 	
-	
+	/**
+	 * Reference to the main view. 
+	 */
+	private ArrayModelView mainPane;
+
+
 	public HydrophoneTablePane(ArrayModelView mainPane){
 		super(mainPane.getArrayModelControl().getHydrophones());
+		
+		this.mainPane=mainPane;
 		
 		TableColumn<Hydrophone,Number>  hydrophoneID = new TableColumn<Hydrophone,Number>("Channel");
 		hydrophoneID.setCellValueFactory(cellData -> cellData.getValue().channel);
@@ -64,6 +71,15 @@ public class HydrophoneTablePane extends TablePane<Hydrophone> implements Contro
 	@Override
 	public void notifyChange(ChangeType type) {
 		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void dialogClosed(Hydrophone data) {
+		//Update hydrophones;  
+		System.out.println("Update hydrophones"); 
+		mainPane.getArrayModelControl().updateArrayHydrophones();
 		
 	}
 

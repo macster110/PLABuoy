@@ -7,6 +7,7 @@ import main.HArrayModelControl;
 import dataUnits.hArray.HArray;
 import dataUnits.hArray.RigidHArray;
 import main.HArrayManager.ArrayType;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.TableColumn;
@@ -34,8 +35,12 @@ public class ArrayTablePane extends TablePane<HArray> implements ControlPane {
 			else return cellData.getValue().parentHArrayProperty().get().nameProperty();
 		});
 
-		TableColumn<HArray,Integer> numHydrophones = new TableColumn<HArray,Integer>("No. Hydrophones");
-		numHydrophones.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<Integer>(cellData.getValue().getHydrophones().size()));
+		TableColumn<HArray,Number> numHydrophones = new TableColumn<HArray,Number>("No. Hydrophones");
+		numHydrophones.setCellValueFactory(cellData -> Bindings.size(cellData.getValue().getHydrophones()));
+		
+
+		TableColumn<HArray,Number> numSensors = new TableColumn<HArray,Number>("No. Sensors");
+		numSensors.setCellValueFactory(cellData -> Bindings.size(cellData.getValue().getMovementSensors()));
 
 		TableColumn parentPoint = new TableColumn("Attachment Point");
 
@@ -76,7 +81,7 @@ public class ArrayTablePane extends TablePane<HArray> implements ControlPane {
 
 		parentPoint.getColumns().addAll(xPos, yPos, zPos);
 
-		getTableView().getColumns().addAll(arrayID, arrayType, attachmentArray, parentPoint, numHydrophones);
+		getTableView().getColumns().addAll(arrayID, arrayType, attachmentArray, parentPoint, numHydrophones,numSensors);
 
 	}
 	
@@ -96,6 +101,13 @@ public class ArrayTablePane extends TablePane<HArray> implements ControlPane {
 
 	@Override
 	public void notifyChange(ChangeType type) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void dialogClosed(HArray data) {
 		// TODO Auto-generated method stub
 		
 	}
