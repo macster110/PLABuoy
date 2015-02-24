@@ -1,13 +1,14 @@
 package layout.arrays;
 
-import layout.ParentArrayComboBox;
-import main.ArrayModelControl;
-import dataUnits.Array;
-import main.ArrayManager.ArrayType;
+import layout.utils.ParentArrayComboBox;
+import main.HArrayManager;
+import main.HArrayModelControl;
+import dataUnits.hArray.HArray;
+import main.HArrayManager.ArrayType;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -21,27 +22,37 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.util.StringConverter;
+import javafx.stage.Stage;
 
-public class ArrayDialog extends Dialog<Array>{
+public class HArrayDialog extends Dialog<HArray>{
 	
-	private static ArrayDialog singleInstance;
+	private static HArrayDialog singleInstance;
 	private TextField yPos;
 	private TextField xPos;
 	private TextField zPos;
-	private ComboBox<Array> parentArrayComboBox;
+	private ComboBox<HArray> parentArrayComboBox;
 	private ComboBox<ArrayType> arrayType;
 	private TextField nameField;
 	
 	/**
+	 * Reference to the array manager
+	 */
+	private HArrayManager arrayManager;
+	
+	/**
 	 * The array for which the dialog is changing settings. 
 	 */
-	private Array array;
-	private ComboBox<Orientation> orientationComboBox; 
+	private HArray array;
+	
+	/**
+	 * Custom pane in which specific controls for different array types are palced. 
+	 */
+	private BorderPane customSensorPane; 
 	
 	//create the dialog
-	public ArrayDialog(){
-		this.initOwner(ArrayModelControl.getInstance().getPrimaryStage());
+	public HArrayDialog(){
+		this.initOwner(HArrayModelControl.getInstance().getPrimaryStage());
+		arrayManager=HArrayModelControl.getInstance().getHArrayManager();
 
 		this.setTitle("Array Dialog");
 		this.getDialogPane().setContent(createDialogPane());
@@ -68,9 +79,9 @@ public class ArrayDialog extends Dialog<Array>{
 	
 	}
 	
-	public static Dialog<Array> createDialog(Array array){
+	public static Dialog<HArray> createDialog(HArray array){
 		if (singleInstance==null) {
-			singleInstance=new ArrayDialog();
+			singleInstance=new HArrayDialog();
 		}
 	
 		singleInstance.setParams(array);
@@ -80,7 +91,7 @@ public class ArrayDialog extends Dialog<Array>{
 	
 	public Boolean getParams(){
 		array.nameProperty().setValue(nameField.getText());
-		array.arrayTypeProperty().setValue(arrayType.getValue());
+		array.hArrayTypeProperty().setValue(arrayType.getValue());
 		try {
 		array.xPosProperty().setValue(Double.valueOf(xPos.getText()));
 		array.yPosProperty().setValue(Double.valueOf(yPos.getText()));
@@ -93,19 +104,20 @@ public class ArrayDialog extends Dialog<Array>{
 		return true; 
 	}
 	
-	public void setParams(Array array){
+	public void setParams(HArray array){
 		this.array=array; 
 		nameField.setText(array.nameProperty().getValue());
-		arrayType.setValue(array.arrayTypeProperty().getValue());
+		arrayType.setValue(array.hArrayTypeProperty().getValue());
 		
 		//attachmentComboBox.setItems(ArrayModelControl.getInstance().getArrays());
-		parentArrayComboBox.setValue(array.parentArrayProperty().getValue());
-		
-		orientationComboBox.setValue(array.orientationProperty().getValue());
-		
+		parentArrayComboBox.setValue(array.parentHArrayProperty().getValue());
+				
 		xPos.setText(Double.toString(array.xPosProperty().get()));
 		yPos.setText(Double.toString(array.yPosProperty().get()));
 		zPos.setText(Double.toString(array.zPosProperty().get()));
+		
+		createArrayPane(array);
+
 	}
 	
 	/**
@@ -116,21 +128,37 @@ public class ArrayDialog extends Dialog<Array>{
 		double sectionPadding=15; 
 				
 		BorderPane mainPane=new BorderPane(); 
+		customSensorPane=new BorderPane(); 
 		
 		VBox mainControls=new VBox(); 
 		mainControls.setSpacing(2);
-		mainControls.setPrefWidth(200);
+		mainControls.setPrefWidth(270);
 		
 		Label nameLabel=new Label("Array Name"); 
 		nameLabel.setPadding(new Insets(5,0,0,0));
 		nameField=new TextField();
-
-		Label arrayOrientationLabel=new Label("Orientation"); 
-		arrayOrientationLabel.setPadding(new Insets(sectionPadding,0,0,0));
-		orientationComboBox = new ComboBox<Orientation>();
-		orientationComboBox.getItems().addAll(Orientation.values());
-		orientationComboBox.setMaxWidth(Double.MAX_VALUE);
-		HBox.setHgrow(orientationComboBox, Priority.ALWAYS);
+		
+		//parent array. 
+		Label parentArrayLabel=new Label("Parent Array");
+		parentArrayLabel.setPadding(new Insets(sectionPadding,0,0,0));
+		parentArrayComboBox = new ParentArrayComboBox();
+		parentArrayComboBox.valueProperty().addListener((obs, t, t1)->{
+			if (t1!=null) setArrayDimEnabled(t1.getHydrophoneDimPos());
+		}); 
+		
+		//attachment point 
+		Label attachmentLabel=new Label("Attachment Point"); 
+		attachmentLabel.setPadding(new Insets(sectionPadding,0,0,0));
+		HBox arrayPos= new HBox(); 
+		arrayPos.setAlignment(Pos.CENTER);
+		xPos=new TextField();
+		xPos.setMaxWidth(50);
+		yPos=new TextField();
+		yPos.setMaxWidth(50);
+		zPos=new TextField();
+		zPos.setMaxWidth(50);
+		arrayPos.setSpacing(5);
+		arrayPos.getChildren().addAll(new Label("x (m)"), xPos, new Label("y (m)"), yPos, new Label("z (m)"), zPos);
 		
 		Label arrayTypeLabel=new Label("Array Type"); 
 		arrayTypeLabel.setPadding(new Insets(sectionPadding,0,0,0));
@@ -139,39 +167,53 @@ public class ArrayDialog extends Dialog<Array>{
 		arrayType.setMaxWidth(Double.MAX_VALUE);
 		HBox.setHgrow(arrayType, Priority.ALWAYS);
 		arrayType.valueProperty().addListener((obs, t, t1)->{
-			switch(t1){
-			case RIGID_ARRAY:
-				orientationComboBox.setDisable(true);
-			break;
-			case LINEAR_FILEXIBLE_ARRAY:
-				orientationComboBox.setDisable(false);
-				break;
-			default:
-				break;
+			if (array.hArrayTypeProperty().get()!=t1){
+				this.array=arrayManager.createNewArray(obs.getValue());
+				//have create new array. 
+				setParams(array); 
 			}
 		}); 
 		
 
-		Label parentArrayLabel=new Label("Parent Array");
-		parentArrayLabel.setPadding(new Insets(sectionPadding,0,0,0));
-		parentArrayComboBox = new ParentArrayComboBox();
-	
-		//attachment point 
-		Label attachmentLabel=new Label("Attachment Point"); 
-		attachmentLabel.setPadding(new Insets(sectionPadding,0,0,0));
-		HBox arrayPos= new HBox(); 
-		xPos=new TextField();
-		yPos=new TextField();
-		zPos=new TextField();
-		arrayPos.setSpacing(10);
-		arrayPos.getChildren().addAll(new Label("x (m)"), xPos, new Label("y (m)"), yPos, new Label("z (m)"), zPos);
+		mainControls.getChildren().addAll(nameLabel, nameField, parentArrayLabel, parentArrayComboBox, attachmentLabel, arrayPos, arrayTypeLabel, arrayType); 
 		
-		mainControls.getChildren().addAll(nameLabel, nameField, arrayTypeLabel, arrayType, 
-				parentArrayLabel, parentArrayComboBox, arrayOrientationLabel, orientationComboBox, attachmentLabel, arrayPos); 
-		
-		mainPane.setCenter(mainControls);
+		mainPane.setTop(mainControls);
+		mainPane.setCenter(customSensorPane);
+
 				
 		return mainPane;
+
+	}
+	
+	
+	/**
+	 * Create the specific pane in the dialog for the selected sensor. 
+	 */
+	public void createArrayPane(HArray array){
+		customSensorPane.setCenter(null); 
+		System.out.println("Set new array pane...");
+		customSensorPane.setCenter(array.getArrayPane());
+		array.getArrayPane().setParams(array);
+
+
+		//TODO- this is a bit cimbersome and maybe fixed in new version of JavaFX
+		//need to get stage and resize because new controls will have been added. 
+		Stage stage = (Stage) this.getDialogPane().getScene().getWindow();
+		stage.sizeToScene();
+
+		System.out.println("Array pane set...");
+
+		
+	}
+	
+	/**
+	 * Set which hydrophone dimensions can be set
+	 * @param dim - three element boolean for x,y,z. false to disable. 
+	 */
+	private void setArrayDimEnabled(boolean[] dim){
+		this.xPos.setDisable(!dim[0]);
+		this.yPos.setDisable(!dim[1]);
+		this.zPos.setDisable(!dim[2]);
 
 	}
 	

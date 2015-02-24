@@ -1,11 +1,16 @@
 package main;
 
-import layout.MainView;
-import main.ArrayManager.ArrayType;
+import arrayModelling.ArrayModelManager;
+import layout.ArrayModelView;
+import layout.ControlPane.ChangeType;
+import main.HArrayManager.ArrayType;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.stage.Stage;
-import dataUnits.Array;
+import dataUnits.hArray.HArray;
+import dataUnits.hArray.RigidHArray;
 import dataUnits.movementSensors.MovementSensor;
 import dataUnits.Hydrophone;
 
@@ -14,12 +19,12 @@ import dataUnits.Hydrophone;
  * @author Jamie Macaulay
  *
  */
-public class ArrayModelControl {
+public class HArrayModelControl {
 
 	/**
 	 * Static reference to the ArrayModelControl. 
 	 */
-	private static ArrayModelControl arrayControlInstance; 
+	private static HArrayModelControl arrayControlInstance; 
 	
 	/**
 	 * All hydrophones within the different arrays. No need to have a manager for hydrophones as there's only one type of hydrophone. 
@@ -29,13 +34,12 @@ public class ArrayModelControl {
 	/**
 	 * The reference array. Sits at 0,0,0 and can't be deleted
 	 */
-	private Array referenceArray;
+	private HArray referenceArray;
 	
 	/**
 	 * Manages different types of arrays
 	 */
-	private ArrayManager arrayManager; 
-	
+	private HArrayManager arrayManager; 
 	
 	/**
 	 * Manages different types of sensors. 
@@ -45,22 +49,35 @@ public class ArrayModelControl {
 	/**
 	 * Reference to the MainView. 
 	 */
-	private MainView mainView; 
+	private ArrayModelView mainView;
+
+	/**
+	 * Reference to the array model manager. This manages the algorithms which calculate hydrophones
+	 */
+	private ArrayModelManager arrayModelManager; 
 	
-	public ArrayModelControl(){
+	public HArrayModelControl(){
 		arrayControlInstance=this; 
 		
 		//create sensor and array managers. 
-		arrayManager=new ArrayManager(); 
-		sensorManager=new SensorManager(); 
+		arrayManager=new HArrayManager(this);
+		sensorManager=new SensorManager(this); 
+		
+		//manages modelling algorithms 
+		arrayModelManager=new ArrayModelManager(this);
 		
 		//create a non deleteable reference array. 
-		referenceArray=new Array(); 
+		referenceArray=new RigidHArray(); 
 		referenceArray.nameProperty().setValue("Reference Array");
-		referenceArray.arrayTypeProperty().setValue(ArrayType.RIGID_ARRAY);
-		referenceArray.parentArrayProperty().setValue(null);
+		referenceArray.hArrayTypeProperty().setValue(ArrayType.RIGID_ARRAY);
+		referenceArray.parentHArrayProperty().setValue(null);
 	
-		arrayManager.getArrayList().add(referenceArray);
+		arrayManager.getHArrayList().add(referenceArray);
+		
+		//add notification listener to hydrophone list
+		hydrophones.addListener((Change<? extends Hydrophone> c) ->{
+			this.notifyModelChanged(ChangeType.HYDROPHONE_CHANGED);
+		});
 		
 	} 
 	
@@ -85,11 +102,21 @@ public class ArrayModelControl {
 	}
 	
 	/**
+	 * Check all array data units have correct associated hydrophone within internal lists. 
+	 * Note: this is needed to 1) update tables and 2)update array for modelling. 
+	 */
+	public void updateArrayHydrophones(){
+		for (int i=0; i<arrayManager.getHArrayList().size(); i++){
+			
+		}
+	}
+	
+	/**
 	 * Get a list of all current arrays
 	 * @return a list iof all current arrays
 	 */
-	public ObservableList<Array> getArrays() {
-		return arrayManager.getArrayList();
+	public ObservableList<HArray> getArrays() {
+		return arrayManager.getHArrayList();
 	}
 
 	/**
@@ -108,13 +135,13 @@ public class ArrayModelControl {
 		return sensorManager.getSensorList();
 	}
 	
-	public static ArrayModelControl getInstance(){
+	public static HArrayModelControl getInstance(){
 		return arrayControlInstance; 
 	}
 
 	public static void create() {
 		if (arrayControlInstance==null){
-			new  ArrayModelControl(); 
+			new  HArrayModelControl(); 
 		}
 		
 	}
@@ -123,7 +150,7 @@ public class ArrayModelControl {
 	 * Convenience function to get the reference array, 
 	 * @return the reference array. This is a rigid array set at (0,0,0) whihc cannot be deleted. 
 	 */
-	public Array getReferenceArray() {
+	public HArray getReferenceArray() {
 		return referenceArray;
 	}
 
@@ -148,8 +175,29 @@ public class ArrayModelControl {
 	 * Set the MainView. This is only called once on application start up. 
 	 * @param mainView - MainView class to set. 
 	 */
-	protected void setMainView(MainView mainView) {
+	protected void setMainView(ArrayModelView mainView) {
 		this.mainView=mainView; 
+	}
+	
+	/**
+	 * Notify all control panes that something has changed
+	 * @param type - type of change
+	 */
+	public void notifyModelChanged(ChangeType type){
+		if (mainView!=null) this.mainView.notifyModelChanged(type);
+		
+	}
+
+	/**
+	 * Get the array manager. This holds the list of current arrays. 
+	 * @return the array manager. 
+	 */
+	public HArrayManager getHArrayManager() {
+		return this.arrayManager;
+	}
+	
+	public ArrayModelManager getArrayModelManager(){
+		return this.arrayModelManager;
 	}
 	
 

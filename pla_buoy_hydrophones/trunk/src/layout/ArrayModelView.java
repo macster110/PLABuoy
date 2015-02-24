@@ -1,10 +1,13 @@
 package layout;
 
 
+import java.util.ArrayList;
+
+import layout.ControlPane.ChangeType;
 import layout.arrays.ArrayTablePane;
 import layout.hydrophones.HydrophoneTablePane;
 import layout.movementSensors.SensorTablePane;
-import main.ArrayModelControl;
+import main.HArrayModelControl;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
@@ -17,19 +20,35 @@ import javafx.stage.Stage;
  * @author Jamie Macaulay
  *
  */
-public class MainView extends BorderPane {
+public class ArrayModelView extends BorderPane {
 	
 	/**
 	 *Reference to the a ArrayModelControl. 
 	 */
-	private ArrayModelControl arrayModelControl;
+	private HArrayModelControl arrayModelControl;
 	
 	/**
 	 * The primary stage. 
 	 */
 	private Stage primaryStage;
+	
+	/**
+	 * Reference to the array pane. 
+	 */
+	private Array3DPane array3DPane; 
+	
+	/**
+	 * Reference to the pane which allows users to simulate sensor movement. 
+	 */
+	private SensorsSimPane sensorSimPane; 
+	
+	/**
+	 * List of control panes. Notification are passed between these panes to indicate chnages such as sensors being added, array types being chnaged etc. 
+	 */
+	private ArrayList<ControlPane> controlPanes;
+	
 
-	public MainView (ArrayModelControl arrayModelControl, Stage primaryStage){
+	public ArrayModelView (HArrayModelControl arrayModelControl, Stage primaryStage){
 		
 		this.arrayModelControl=arrayModelControl; 
 		this.primaryStage=primaryStage; 
@@ -56,9 +75,19 @@ public class MainView extends BorderPane {
 		
 		sensorBox.getChildren().addAll(arrayLabel, arrayPane, hydrophoneLabel, hydrophonePane, sensorLabel, sensorPane);
 		sensorBox.setSpacing(10);
+	
 		
 		this.setLeft(sensorBox);
+		this.setCenter(array3DPane=new Array3DPane(this));
+		this.setRight(sensorSimPane= new SensorsSimPane(this));
 		
+		//add all to list. 
+		controlPanes=new ArrayList<ControlPane>();
+		controlPanes.add(arrayPane); 
+		controlPanes.add(hydrophonePane); 
+		controlPanes.add(sensorPane); 
+		controlPanes.add(array3DPane); 
+		controlPanes.add(sensorSimPane); 
 	}
 	
 	/**
@@ -73,8 +102,14 @@ public class MainView extends BorderPane {
 	 * Get the array control model. This holds data on arrays, hydrophones and sensors. 
 	 * @return
 	 */
-	public ArrayModelControl getArrayModelControl() {
+	public HArrayModelControl getArrayModelControl() {
 		return arrayModelControl;
+	}
+
+	public void notifyModelChanged(ChangeType type) {
+		for (int i=0; i<this.controlPanes.size(); i++){
+			this.controlPanes.get(i).notifyChange(type);
+		}
 	}
 
 }
