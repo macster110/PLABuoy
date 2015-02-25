@@ -132,6 +132,7 @@ public class ArrayModelManager {
 		
 		//print results.
 		System.out.println("Print transformed array positions "+currentArrayPos);
+		
 		printCurrentArrayPos(); 
 	
 		return 0; 

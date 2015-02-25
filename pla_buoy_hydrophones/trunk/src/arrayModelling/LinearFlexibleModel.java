@@ -106,7 +106,7 @@ public class LinearFlexibleModel implements ArrayModel {
 		
 		
 		//run the calculations
-		ArrayPos newArrayPos = calcOrientation(arrayPos, hydrophonePos, sensorPos,
+		ArrayPos newArrayPos = transformPositions(arrayPos, hydrophonePos, sensorPos,
 				angles, iterations, dim);
 		
 		
@@ -145,7 +145,7 @@ public class LinearFlexibleModel implements ArrayModel {
 	 * @param dim - the dimensions of stream (x,y,z)  ->(0,1,2)
 	 * @return
 	 */
-	private ArrayPos calcOrientation(double[] childArrayPos, double[] hydrophonePos, double[] sensorPos,
+	private ArrayPos transformPositions(double[] childArrayPos, double[] hydrophonePos, double[] sensorPos,
 			ArrayList<double[]> angles, int n, int dim){
 		
 		ArrayList<double[]> hydrophonePosTrans=new ArrayList<double[]>(); 

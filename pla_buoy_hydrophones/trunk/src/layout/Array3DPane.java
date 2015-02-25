@@ -17,9 +17,9 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
+import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
-import layout.ControlPane.ChangeType;
 
 public class Array3DPane extends BorderPane implements  ControlPane{
 	
@@ -144,12 +144,7 @@ public class Array3DPane extends BorderPane implements  ControlPane{
 	            }
 	        });
 	    }
-	 
-	 
-	 
-	 
 	
-
 	@Override
 	public void notifyChange(ChangeType type) {
 	
@@ -164,7 +159,7 @@ public class Array3DPane extends BorderPane implements  ControlPane{
 				System.out.println("SensorSimPane: SENSOR_CHANGED");
 				break;
 			case NEW_ARRAY_POS_CALCULATED:
-				this.mainView.getArrayModelControl().getArrayModelManager().getArrayPos(); 
+				drawArrays(this.mainView.getArrayModelControl().getArrayModelManager().getArrayPos()); 
 				break;
 				
 			default:
@@ -172,12 +167,45 @@ public class Array3DPane extends BorderPane implements  ControlPane{
 			}
 	}
 	
-	
-	public void drawArray(ArrayPos pos){
+	/**
+	 * Draw the entire array 
+	 * @param pos - hydrophone and streamer positions in the same co-ordinate frame as the reference frame. 
+	 */
+	public void drawArrays(ArrayList<ArrayList<ArrayPos>> pos){
 		
+		root3D.getChildren().removeAll(root3D.getChildren()); 
+
+		if (pos==null){
+			System.err.println("Array3DPane: Hydrophone positions are null");
+			return; 
+		}
+				
+		for (int i=0; i< pos.size(); i++){
+			for (int j=0; j<pos.get(i).size(); j++){
+				drawArray(pos.get(i).get(j)); 
+			}
+		}
 		
 		System.out.println("Draw 3D hydrophone array");
 	}
+	
+	/**
+	 * Draw an array
+	 * @param arrayPos - hydrophone and streamer positions in the same co-ordinate frame as the reference frame. 
+	 */
+	private void drawArray(ArrayPos arrayPos){
+			Sphere sphere;
+			for (int i=0; i<arrayPos.getHydrophonePos().size(); i++){
+				 sphere=new Sphere(30);
+				 sphere.setTranslateX(arrayPos.getHydrophonePos().get(i)[0]);
+				 sphere.setTranslateY(arrayPos.getHydrophonePos().get(i)[1]);
+				 sphere.setTranslateZ(arrayPos.getHydrophonePos().get(i)[2]);
+				 root3D.getChildren().add(sphere);
+			}
+			
+		
+	}
+	
 	
 	
 
