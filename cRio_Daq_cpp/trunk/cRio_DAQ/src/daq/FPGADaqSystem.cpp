@@ -7,19 +7,21 @@
 
 #include "FPGADaqSystem.h"
 
+#include <stddef.h>
 #include <stdio.h>
+//#include <stdlib.h>
 #include <string.h>
-
-
-#include "../NIFpgaManager.h"
-#include "../Settings.h"
-#include "../mythread.h"
-#include <string>
-#include <unistd.h>
-#include <iosfwd>
-#include <stdio.h>
-#include <stdlib.h>
+//#include <unistd.h>
+#include <cstdint>
+//#include <iosfwd>
 #include <iostream>
+//#include <string>
+
+//#include "../mythread.h"
+#include "../nifpga/NiFpgaChoice.h"
+//#include "../NIFpgaManager.h"
+#include "../Reporter.h"
+#include "../Settings.h"
 
 using namespace std;
 
@@ -148,12 +150,14 @@ NiFpga_Status FPGADaqSystem::prepare_FPGA()
 	 * Opens a session with the FPGA, downloads the bit stream, and runs the FPGA, storing any error info in "status"
 	 * The names of the .lvbitx file and signature values are stored in the /cRioTestC/NiFpga_NI_9222_Anologue_DAQ2_FPGA.h file.
 	 */
+	int thisStat;
 	printf("FPGA Manager: Opening a Session... status %d\n",status_FPGA);
-	NiFpga_MergeStatus(&status_FPGA, NiFpga_Open(NiFpga_NI_9222_Anologue_DAQ2_FPGA_Bitfile,
-			NiFpga_NI_9222_Anologue_DAQ2_FPGA_Signature,
+	NiFpga_MergeStatus(&status_FPGA, thisStat = NiFpga_Open(FPGABITFILE,
+			FPGABITFILESIGNATURE,
 			"RIO0",
 			0,
 			&session_FPGA));
+	reporter->report(0, "FPGA Manager: NiFpga_Open() returned %d\n", thisStat);
 
 	/* reserve a context for this thread to wait on IRQs */
 	NiFpga_MergeStatus(&status_FPGA, NiFpga_ReserveIrqContext(session_FPGA, &irqContext_FPGA));
@@ -176,7 +180,7 @@ void FPGADaqSystem::read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status
 	printf("Set microsecond tick to %d\n", Sample_Rate_us);
 	// Set the sample rate
 	NiFpga_MergeStatus(status, NiFpga_WriteU32(session,
-			NiFpga_NI_9222_Anologue_DAQ2_FPGA_ControlU32_SamplePerioduSec,
+			NiFpga_ControlU32_SamplePerioduSec,
 			Sample_Rate_us));
 
 	/**
@@ -220,7 +224,7 @@ void FPGADaqSystem::read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status
 
 		/* Read FIFO data into the Fifo_Data array */
 		NiFpga_MergeStatus(status, NiFpga_ReadFifoI16(session,
-				NiFpga_NI_9222_Anologue_DAQ2_FPGA_TargetToHostFifoI16_FIFO,
+				NiFpga_TargetToHostFifoI16_FIFO,
 				Fifo_Data,
 				Number_Acquire,
 				Fifo_Timeout,

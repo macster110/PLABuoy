@@ -9,7 +9,7 @@
 #define FPGADAQSYSTEM_H_
 
 #include "DAQSystem.h"
-#include "../NiFpga.h"
+#include "../nifpga/NiFpga.h"
 #include "../mythread.h"
 
 #include <pthread.h>

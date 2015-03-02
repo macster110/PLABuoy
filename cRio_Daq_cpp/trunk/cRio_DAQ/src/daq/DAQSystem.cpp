@@ -17,20 +17,7 @@
 
 #include "../Reporter.h"
 
-///*Entry function for pthread to write FIFO data*/
-//void *read_Buffer_thread_function(void *param)
-//{
-//	/*Acquire the number of channels from the FPGA*/
-//	//	DAQSystem* daqSystem = (DAQSystem*) param;
-//	//	int16_t channels = 0;
-//	//	 NiFpga_ReadI16(daqSystem->get_Session_FPGA(),
-//	//			NiFpga_NI_9222_Anologue_DAQ2_FPGA_IndicatorI16_ChassisTemperature,
-//	//			&channels);
-//	//	printf("Acquired number of channels from FPGA...%d\n",channels);
-//	((DAQSystem*) param)->read_Data_Buffer(NCHANNELS);
-//
-//	return NULL;
-//}
+
 
 DECLARETHREAD(read_Buffer_thread_function, DAQSystem, read_Data_Buffer)
 

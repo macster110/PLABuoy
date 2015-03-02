@@ -358,7 +358,6 @@ void watchdog_monitor(){
 				stop();
 				myusleep(500000); //sleep for half a second to allow things to finish up.
 				system("/sbin/reboot");
-//				NiFpga_WriteBool(session_FPGA, NiFpga_NI_9222_Anologue_DAQ2_FPGA_ControlBool_SystemReset,true);
 			}
 			daqSystem->resetErrorCount(); //return the error count to zero.
 		}

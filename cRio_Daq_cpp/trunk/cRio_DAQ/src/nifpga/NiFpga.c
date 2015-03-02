@@ -1,7 +1,7 @@
 /*
- * FPGA Interface C API 13.0 source file.
+ * FPGA Interface C API 14.0 source file.
  *
- * Copyright (c) 2013,
+ * Copyright (c) 2014,
  * National Instruments Corporation.
  * All rights reserved.
  */
@@ -9,7 +9,7 @@
 #include "NiFpga.h"
 
 /*
- * Platform specific includes.
+ * Platform specific includes .
  */
 #if NiFpga_Windows
    #include <windows.h>
@@ -20,7 +20,7 @@
    #include <sysSymTbl.h>
    MODULE_ID VxLoadLibraryFromPath(const char* path, int flags);
    STATUS VxFreeLibrary(MODULE_ID library, int flags);
-#elif NiFpga_Linux
+#elif NiFpga_Linux || NiFpga_MacOsX
    #include <stdlib.h>
    #include <stdio.h>
    #include <dlfcn.h>
@@ -46,7 +46,7 @@
    static HMODULE NiFpga_library = NULL;
 #elif NiFpga_VxWorks
    static MODULE_ID NiFpga_library = NULL;
-#elif NiFpga_Linux
+#elif NiFpga_Linux || NiFpga_MacOsX
    static void* NiFpga_library = NULL;
 #else
    #error
@@ -1979,8 +1979,13 @@ NiFpga_Status NiFpga_Initialize(void)
          NiFpga_library = LoadLibraryA("NiFpga.dll");
       #elif NiFpga_VxWorks
          NiFpga_library = VxLoadLibraryFromPath("NiFpga.out", 0);
-      #elif NiFpga_Linux
-         const char* const library = "libNiFpga.so";
+      #elif NiFpga_Linux || NiFpga_MacOsX
+         #if NiFpga_Linux
+            const char* const library = "libNiFpga.so";
+         #elif NiFpga_MacOsX
+            const char* const library =
+               "/Library/Frameworks/NiFpga.framework/NiFpga";
+         #endif
          NiFpga_library = dlopen(library, RTLD_LAZY);
          if (!NiFpga_library)
             fprintf(stderr, "Error opening %s: %s\n", library, dlerror());
@@ -2005,7 +2010,7 @@ NiFpga_Status NiFpga_Initialize(void)
                               (char**)address,
                               &type) != OK)
                return NiFpga_Status_VersionMismatch;
-         #elif NiFpga_Linux
+         #elif NiFpga_Linux || NiFpga_MacOsX
             *address = dlsym(NiFpga_library, name);
             if (!*address)
                return NiFpga_Status_VersionMismatch;
@@ -2056,7 +2061,7 @@ NiFpga_Status NiFpga_Finalize(void)
       #elif NiFpga_VxWorks
          if (VxFreeLibrary(NiFpga_library, 0) != OK)
             status = NiFpga_Status_ResourceNotInitialized;
-      #elif NiFpga_Linux
+      #elif NiFpga_Linux || NiFpga_MacOsX
          if (dlclose(NiFpga_library))
             status = NiFpga_Status_ResourceNotInitialized;
       #else

@@ -10,7 +10,8 @@
 #ifndef NIFPGAMANAGER_H_
 #define NIFPGAMANAGER_H_
 /* Includes all FPGA Interface C API functions required */
-#include "NiFpga_NI_9222_Anologue_DAQ2_FPGA.h"
+//#include "NiFpga_NI_9222_Anologue_DAQ2_FPGA.h"
+#include "nifpga/NiFpgaChoice.h"
 /*pthread library for running on different threads*/
 #include <pthread.h>
 

@@ -21,7 +21,7 @@
 /*Needed for memcpy*/
 #include <cstring>
 /* Includes all FPGA Interface C API functions required */
-#include "NiFpga_NI_9222_Anologue_DAQ2_FPGA.h"
+#include "nifpga/NiFpgaChoice.h"
 /*Functions to read DAQ cards and write data*/
 #include "ReadNIDAQ.h"
 /*Useful functions including switching on and off LEDs*/
@@ -178,12 +178,12 @@ void ChassisTemperature(NiFpga_Session session, NiFpga_Status *status)
 	printf("Acquiring Chassis Temperature...\n");
 
 	NiFpga_MergeStatus(status, NiFpga_ReadI16(session,
-			NiFpga_NI_9222_Anologue_DAQ2_FPGA_IndicatorI16_ChassisTemperature,
+			NiFpga_IndicatorI16_ChassisTemperature,
 											 &RawTemperature));
 	//To convert temperature returned from the FPGA to Celsius, divide by 4
 	Temperature = RawTemperature;
 	Temperature /= 4;
-	printf("FPGA Manager: Measured Internal Chassis Temperature is %.1f Celsius\n",Temperature);
+	printf("FPGA Manager: Measured Internal Chassis Temperature is %.1f Celcius\n",Temperature);
 }
 //
 ///**
