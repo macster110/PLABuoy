@@ -23,7 +23,7 @@ const int wavFormat=SF_FORMAT_WAV | SF_FORMAT_PCM_16;
 
 /* The folder on the external drive to save wav files in.*/
 /*const string wavlocation="/home/admin/cRioKE/";*/
-const string wav_location="/u";
+const string wav_location="/U";
 
 /* The prefix for the .wav files.*/
 const string wav_prefix="PAM";

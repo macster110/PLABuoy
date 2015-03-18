@@ -14,6 +14,8 @@
 #include "../mythread.h"
 #include <unistd.h> // for usleep
 
+#include "../process/processdata.h"
+
 #include "../Reporter.h"
 
 DECLARETHREAD(SimThreadStarter, SimulatedDaq, simThread)
@@ -35,7 +37,7 @@ void* SimulatedDaq::simThread(){
 	uint64_t expectedSamples = 0;
 	short* p = bufstart;
 	short nextVal = 0;
-	short valStep = 1;
+	short valStep = 0;
 	simTimer->start();
 	daq_go = true;
 	samplesInBuff = 0;
@@ -56,7 +58,7 @@ void* SimulatedDaq::simThread(){
 			*p = nextVal;
 		}
 		samplesInBuff += BUFFERBLOCKSAMPLES;
-		samplesAcquired += (BUFFERBLOCKSAMPLES / NCHANNELS);
+		samplesAcquired += (BUFFERBLOCKSAMPLES / getProcess(0)->getNChan());
 		if (p >= bufend) {
 			p = bufstart;
 		}

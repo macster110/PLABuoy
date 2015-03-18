@@ -12,7 +12,7 @@
 //#include <stdlib.h>
 #include <string.h>
 //#include <unistd.h>
-#include <cstdint>
+//#include <stdint>
 //#include <iosfwd>
 #include <iostream>
 //#include <string>
@@ -22,6 +22,8 @@
 //#include "../NIFpgaManager.h"
 #include "../Reporter.h"
 #include "../Settings.h"
+
+#include "../process/processdata.h"
 
 using namespace std;
 
@@ -109,7 +111,7 @@ void FPGADaqSystem::run_FPGA_tasks()
 			printf("FPGA Manager: Error preparing FPGA %d!\n", status_FPGA);
 			close_FPGA();
 			errorCount_FPGA++;
-			continue;
+			exit(0); // bomb if there is an error
 		}
 
 
@@ -152,6 +154,8 @@ NiFpga_Status FPGADaqSystem::prepare_FPGA()
 	 */
 	int thisStat;
 	printf("FPGA Manager: Opening a Session... status %d\n",status_FPGA);
+	printf("NiFPga_Open with Bitfile %s and signature %s\n", FPGABITFILE,
+			FPGABITFILESIGNATURE);
 	NiFpga_MergeStatus(&status_FPGA, thisStat = NiFpga_Open(FPGABITFILE,
 			FPGABITFILESIGNATURE,
 			"RIO0",
@@ -176,7 +180,7 @@ void FPGADaqSystem::read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status
 	//unsigned int Sample_Rate_us = 20;
 	uint32_t fifo=0;
 	size_t depth=100000; //need to make this this size to prevent overflow errors in FIFO.
-	uint32_t Sample_Rate_us = 1000000/SAMPLERATE;
+	uint32_t Sample_Rate_us = 1000000/getProcess(0)->getSampleRate();
 	printf("Set microsecond tick to %d\n", Sample_Rate_us);
 	// Set the sample rate
 	NiFpga_MergeStatus(status, NiFpga_WriteU32(session,

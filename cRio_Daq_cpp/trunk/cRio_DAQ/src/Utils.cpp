@@ -23,7 +23,7 @@
 
 using namespace std;
 
-const string wav_location="/u";
+const string wav_location="/U";
 
 #define MAX(a,b) (a>b?a:b)
 /*

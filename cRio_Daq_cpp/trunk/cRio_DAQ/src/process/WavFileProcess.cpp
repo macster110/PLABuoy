@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <sndfile.h>
 
-WavFileProcess::WavFileProcess() : PLAProcess("wavrecord") {
+WavFileProcess::WavFileProcess() : PLAProcess("wavrecord", "WAV") {
 	nCalls = 0;
 }
 

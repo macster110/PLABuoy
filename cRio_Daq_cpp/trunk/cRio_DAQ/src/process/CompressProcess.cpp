@@ -29,7 +29,7 @@
 // largest allowable frame.
 short    PBUFF[MAXFRAME+X3_HDRLEN] ;
 
-CompressProcess::CompressProcess() : PLAProcess("compress") {
+CompressProcess::CompressProcess() : PLAProcess("compress", "X3V2") {
 
 }
 

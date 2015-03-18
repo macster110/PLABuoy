@@ -145,10 +145,13 @@ int main(int argc, char *argv[]){
 	/**Make sure LED's are off**/
 //	set_user_LED_status(LED_USER1_OFF);
 //	set_user_LED_status(LED_STATUS_OFF);
-	udpCommands->stopUDPThread(true);
+//	printf("Stop UDP Thread\n");
+	udpCommands->stopUDPThread(false);
+//	printf("Stoped UDP Thread\n");
 	// clean up processes.
 	processDelete();
 
+	printf("This is the last line of the program !\n");
 	return 0;
 }
 
@@ -194,7 +197,7 @@ bool start() {
 	}
 	acquire=true;
 	printf("Initiating cRio recording\n");
-	processInit(NCHANNELS, SAMPLERATE);
+	processInit(DEFAULTNCHANNELS, DEFAULTSAMPLERATE);
 	/*Start recording data from serial port*/
 	//			record_Serial(1,B4800);
 	/**Start FPGA tasks**/

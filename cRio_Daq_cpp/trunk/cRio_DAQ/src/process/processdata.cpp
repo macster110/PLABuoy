@@ -12,9 +12,14 @@
 #include "../Utils.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "../x3/xml_if.h"
+#include "../mxml/mxml.h"
+#include "../Settings.h"
 
 
 PLAProcess** plaProcesses;
+
+static int globalProcessId = 0;
 
 int nChannels = 0;
 
@@ -25,11 +30,10 @@ int nChannels = 0;
  */
 void processCreate() {
 	plaProcesses = (PLAProcess**) malloc(sizeof(PLAProcess*) * NPROCESSES);
-	plaProcesses[0] = new PLAProcess("base");
+	plaProcesses[0] = new PLAProcess("base", "BASE");
 	plaProcesses[1] = new CompressProcess();
 	plaProcesses[2] = new X3FileProcess();
 	plaProcesses[3] = new NetSender();
-
 	/*
 	 * Add both the wav writing and the compression process to the
 	 * input process.
@@ -43,6 +47,20 @@ void processCreate() {
 
 	// attach net sender to output of compression.
 	plaProcesses[1]->addChildProcess(plaProcesses[3]);
+
+	// set the default sample rates, etc.
+	plaProcesses[0]->setSampleRate(DEFAULTSAMPLERATE);
+	plaProcesses[0]->setNChan(DEFAULTNCHANNELS);
+
+//	mxml_node_t *doc = mxmlNewXML("1.0");
+//	mxml_node_t *mainEl = mxmlNewElement(doc, "PLABuoy");
+//	for (int i = 0; i < NPROCESSES; i++) {
+//		plaProcesses[i]->getXMLInfo(doc, mainEl);
+//	}
+//	char xmlCharData[2048];
+//	mxmlSaveString(doc, xmlCharData, 2048, MXML_NO_CALLBACK);
+//	printf(xmlCharData);
+//	exit(0);
 }
 
 int getNumProcesses() {
@@ -119,9 +137,11 @@ class PLAProcess* findProcess(std::string processName) {
 	return NULL;
 }
 
-PLAProcess::PLAProcess(const string processName) : CommandList() {
+PLAProcess::PLAProcess(const string processName, const string xmlName) : CommandList() {
 	this->processName = processName;
+	this->xmlName = xmlName;
 	enabled = true;
+	processId = ++globalProcessId;
 	childProcesses = NULL;
 	parentProcess = NULL;
 	nChildProcesses = 0;
@@ -181,3 +201,51 @@ void PLAProcess::addChildProcess(PLAProcess* childProcess) {
 	childProcesses[nChildProcesses++] = childProcess;
 	childProcess->setParentProcess(this);
 }
+
+int PLAProcess::getChannelBitMap() {
+	int map = 0;
+	for (int i = 0; i < nChan; i++) {
+		map |= 1<<i;
+	}
+	return map;
+}
+void PLAProcess::setNChan(int nChan) {
+	this->nChan = nChan;
+	for (int i = 0; i < nChildProcesses; i++) {
+		childProcesses[i]->setNChan(nChan);
+	}
+}
+
+void PLAProcess:: setSampleRate(int sampleRate) {
+	this->sampleRate = sampleRate;
+	for (int i = 0; i < nChildProcesses; i++) {
+		childProcesses[i]->setSampleRate(sampleRate);
+	}
+}
+
+// XML info management functions
+mxml_node_t* PLAProcess::getXMLInfo(mxml_node_t *doc, mxml_node_t *parentNode) {
+//	std::string inf = getXMLStartInfo();
+//	return closeXMLInfo(inf);
+	mxml_node_t *thisNode = getXMLStartInfo(doc, parentNode);
+}
+mxml_node_t* PLAProcess::getXMLStartInfo(mxml_node_t *doc, mxml_node_t *parentNode) {
+	mxml_node_t *node = mxmlNewElement(parentNode, "CFG");
+	mxml_node_t *el;
+	char txt[20];
+	sprintf(txt, "%d", processId);
+	mxmlElementSetAttr(node, "ID", txt);
+
+	el = mxmlNewElement(node, "PROC");
+	mxmlNewText(el, 0, getXmlName().c_str());
+	el = mxmlNewElement(node, "CHANBITMAP");
+	mxmlNewInteger(el, getChannelBitMap());
+	el = mxmlNewElement(node, "FS");
+	mxmlNewInteger(el, sampleRate);
+
+
+	return node;
+}
+//std::string PLAProcess::closeXMLInfo(std::string startInfo) {
+//	return "";
+//}

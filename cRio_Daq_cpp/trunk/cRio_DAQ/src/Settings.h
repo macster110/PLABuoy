@@ -8,11 +8,11 @@
 #ifndef SETTINGS_H_
 #define SETTINGS_H_
 
-#define SAMPLERATE (500000)
+#define DEFAULTSAMPLERATE (500000)
 /*
  * Number of channels for acquisition.
  */
-#define NCHANNELS (8)
+#define DEFAULTNCHANNELS (8)
 /*
  * number of samples to acquire each loop much be a multiple of NCHANNELS
  */
@@ -22,7 +22,7 @@
  * This is a large buffer that data are copied to from the 4096 byte FIFO buffer
  * on the FPGA.
  */
-#define READBUFFERLENGTH (NCHANNELS * 1024 * 1024)
+#define READBUFFERLENGTH (DEFAULTNCHANNELS * 1024 * 1024)
 
 
 #endif /* SETTINGS_H_ */

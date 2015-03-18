@@ -12,7 +12,7 @@
 #include "../utils.h"
 #include <stdint.h>
 #include <string>
-
+#include "../mxml/mxml.h"
 //using namespace std;
 
 typedef struct {
@@ -75,7 +75,7 @@ class PLAProcess : public CommandList {
 
 public:
 
-	PLAProcess(std::string processName);
+	PLAProcess(std::string processName, std::string xmlName);
 
 	virtual ~PLAProcess();
 
@@ -117,6 +117,22 @@ public:
 		this->enabled = enabled;
 	}
 
+	int getProcessId() const {
+		return processId;
+	}
+
+	virtual mxml_node_t* getXMLInfo(mxml_node_t *doc, mxml_node_t *parentNode);
+
+	const std::string& getXmlName() const {
+		return xmlName;
+	}
+
+	int getChannelBitMap();
+
+	virtual void setNChan(int chan);
+
+	virtual void setSampleRate(int sampleRate);
+
 protected:
 
 	int forwardData(PLABuff* plaBuffer);
@@ -128,7 +144,13 @@ private:
 	int sampleRate;
 	const PLAProcess* parentProcess;
 	std::string processName;
+	std::string xmlName;
 	bool enabled;
+	int processId;
+
+	// XML info management functions
+	mxml_node_t* getXMLStartInfo(mxml_node_t *doc, mxml_node_t *parentNode);
+//	std::string closeXMLInfo(std::string startInfo);
 };
 
 #endif /* PROCESSDATA_H_ */

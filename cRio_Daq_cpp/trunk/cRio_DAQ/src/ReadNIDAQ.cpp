@@ -128,13 +128,13 @@ const unsigned int Number_Acquire = READBLOCKSIZE;
  * Start the readout thread for the main buffer read.
  */
 bool startBufferRead() {
-
+	return false;
 }
 /*
  * Stop the readout thread for the main buffer read.
  */
 bool stopBufferRead() {
-
+	return false;
 }
 
 //void create_Buffer()

@@ -23,7 +23,7 @@ using namespace std;
 
 #define MAX_FILE_SIZE (2000000000L)
 
-X3FileProcess::X3FileProcess() : PLAProcess("x3record") {
+X3FileProcess::X3FileProcess() : PLAProcess("x3record", "X3V3") {
 	x3File = NULL;
 	uncompressedBytes = compressedBytes = 0;
 	repTimer = new RealTimer();

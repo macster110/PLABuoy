@@ -59,7 +59,7 @@ DECLARETHREAD(netsendThreadFunction, NetSender, sendThreadLoop)
 //	return NULL;
 //}
 
-NetSender::NetSender() : PLAProcess("netsend") {
+NetSender::NetSender() : PLAProcess("netsend", "NETTX") {
 	// launch the thread to connect to and send data to the
 	// other machine.
 	socketId = 0;
