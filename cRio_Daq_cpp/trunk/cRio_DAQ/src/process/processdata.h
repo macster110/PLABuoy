@@ -121,7 +121,11 @@ public:
 		return processId;
 	}
 
-	virtual mxml_node_t* getXMLInfo(mxml_node_t *doc, mxml_node_t *parentNode);
+	virtual mxml_node_t* getXMLInfo(mxml_node_t *doc, mxml_node_t *parentNode, timeval* timeVal);
+	// XML info management functions
+	mxml_node_t* getXMLStartInfo(mxml_node_t *doc, mxml_node_t *parentNode, timeval* timeVal);
+
+	mxml_node_t* getXMLProcessChain(mxml_node_t *doc, mxml_node_t *parentNode, timeval* timeVal);
 
 	const std::string& getXmlName() const {
 		return xmlName;
@@ -148,9 +152,6 @@ private:
 	bool enabled;
 	int processId;
 
-	// XML info management functions
-	mxml_node_t* getXMLStartInfo(mxml_node_t *doc, mxml_node_t *parentNode);
-//	std::string closeXMLInfo(std::string startInfo);
 };
 
 #endif /* PROCESSDATA_H_ */

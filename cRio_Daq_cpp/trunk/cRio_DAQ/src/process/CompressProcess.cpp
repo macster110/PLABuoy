@@ -30,7 +30,6 @@
 short    PBUFF[MAXFRAME+X3_HDRLEN] ;
 
 CompressProcess::CompressProcess() : PLAProcess("compress", "X3V2") {
-
 }
 
 CompressProcess::~CompressProcess() {
@@ -67,6 +66,7 @@ int CompressProcess::process(PLABuff* plaBuffer) {
 	// write the header into the X3_HDRLEN (10) bytes at the start of the buffer
 	packtimeval(plaBuffer->timeStamp, x3time);
 	nw += x3frameheader(PBUFF,1,ibuff->nch,ibuff->nsamps,nw,x3time,cd) ;
+
 	// good to go and write to file.
 	// need to byte swap here - not 100% sure what Mark was up to in his code.
 	short* swapBuff = (short*) PBUFF;
@@ -99,4 +99,50 @@ void CompressProcess::packtimeval(struct timeval timeVal, short* packedTime) {
 	packedTime[1] = timeVal.tv_sec & 0xFFFF;
 	packedTime[2] = timeVal.tv_usec >> 16;
 	packedTime[3] = timeVal.tv_usec & 0xFFFF;
+}
+
+mxml_node_t* CompressProcess::getXMLInfo(mxml_node_t *doc, mxml_node_t *parentNode, timeval* timeVal) {
+	mxml_node_t *node = getXMLStartInfo(doc, parentNode, timeVal);
+	mxml_node_t *el;
+	char txt[20];
+/*
+ *
+	addxmlfield(s,"CFG","ID=\"0\" FTYPE=\"XML\"",NULL) ;
+	openxmlfield(s,"CFG","ID=\"1\" FTYPE=\"WAV\"") ;
+	sprintf(sfs,"%d",sampleRate) ;
+	addxmlfield(s,"FS","UNIT=\"Hz\"",sfs) ;
+	sprintf(sfs,"%d",nChan) ;
+	addxmlfield(s,"NCHAN",NULL,sfs);
+	addxmlfield(s,"SUFFIX",NULL,"wav") ;
+	openxmlfield(s,"CODEC","TYPE=\"X3\" VERS=\"2\"") ;      // name of the encoder
+	sprintf(sfs,"%d",blockSize);
+	addxmlfield(s,"BLKLEN",NULL,sfs) ;
+	addxmlfield(s,"CODES","N=\"4\"","RICE0,RICE1,RICE3,BFP") ;
+	addxmlfield(s,"FILTER",NULL,"DIFF") ;
+	addxmlfield(s,"NBITS",NULL,"16") ;
+	addxmlfield(s,"T","N=\"3\"","3,8,20") ;
+ */
+	el = mxmlNewElement(node, "SUFFIX");
+	mxmlNewText(el, 0, "wav");
+
+	el = mxmlNewElement(node, "FILTER");
+	mxmlNewText(el, 0, "diff");
+
+	int      DEF_T[] = X3_DEF_T ;
+	int DEF_C[] = X3_DEF_CODES;
+	for (int i = 0; i < X3_DEF_NT; i++) {
+		sprintf(txt, "RICE%d", DEF_C[i]);
+		el = mxmlNewElement(node, "CODE");
+		mxmlNewText(el, 0, txt);
+		sprintf(txt, "%d", DEF_T[i]);
+		mxmlElementSetAttr(el, "THRESH", txt);
+	}
+	el = mxmlNewElement(node, "CODE");
+	mxmlNewText(el, 0, "BFP");
+	el = mxmlNewElement(node, "BLKLEN");
+	mxmlNewInteger(el, X3BLOCKSIZE);
+
+
+
+	return node;
 }

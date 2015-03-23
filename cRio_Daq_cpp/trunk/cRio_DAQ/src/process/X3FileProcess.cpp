@@ -23,15 +23,17 @@ using namespace std;
 
 #define MAX_FILE_SIZE (2000000000L)
 
-X3FileProcess::X3FileProcess() : PLAProcess("x3record", "X3V3") {
+X3FileProcess::X3FileProcess() : PLAProcess("x3record", "WAV") {
 	x3File = NULL;
 	uncompressedBytes = compressedBytes = 0;
+	headerDataLength = 512;
+	headerData = (char*) malloc(headerDataLength);
 	repTimer = new RealTimer();
 	repTimer->start();
 }
 
 X3FileProcess::~X3FileProcess() {
-	// TODO Auto-generated destructor stub
+	free (headerData);
 }
 
 
@@ -79,14 +81,34 @@ FILE* X3FileProcess::openFile(timeval timeStamp) {
 	string fileName = createFileName("PLA", ".x3a", timeStamp);
 	FILE* aFile = fopen(fileName.c_str(),"wb") ;
 	fprintf(aFile,X3_FILE_KEY);
-	char hData[X3HEADLEN];
-	int dataBytes = X3_prepareXMLheader(hData+X3_HDRLEN*2, 500000, 8, X3BLOCKSIZE);
+	/*
+	 * Get teh XML chain describing what's going into the file
+	 */
+	mxml_node_t *doc = mxmlNewXML("1.0");
+	mxml_node_t *mainEl = mxmlNewElement(doc, "CONFIG");
+	getXMLProcessChain(doc, mainEl, &timeStamp);
+
+	int dataBytes = mxmlSaveString(doc, headerData+X3_HDRLEN*2, headerDataLength-X3_HDRLEN*2, MXML_NO_CALLBACK);
+	if (dataBytes >= headerDataLength-X3_HDRLEN*2) {
+		// need more room !
+		headerDataLength = dataBytes + X3_HDRLEN*2 + 10;
+		headerData = (char*) realloc(headerData, headerDataLength);
+		dataBytes=mxmlSaveString(mainEl, headerData+X3_HDRLEN*2, headerDataLength-X3_HDRLEN*2, MXML_NO_CALLBACK);
+	}
+	mxmlDelete(doc);
+	// number of bytes returned by mxmlSaveString may be odd, but we need to align on a short
+	// boundary - so set the next char to 0 as well (assume currently null terminated).
+	headerData[X3_HDRLEN*2+strlen(headerData+X3_HDRLEN*2)+1] = 0;
+
+//	int dataBytes = X3_prepareXMLheader(hData+X3_HDRLEN*2, 500000, 8, X3BLOCKSIZE);
 	int nw = (dataBytes+1)>>1;
-	int cd = crc16((short*) (hData+X3_HDRLEN*2), nw);
-	nw += x3frameheader((short*) hData,0,0,0,nw,NULL,cd) ;
+	int cd = crc16((short*) (headerData+X3_HDRLEN*2), nw);
+	nw += x3frameheader((short*) headerData,0,0,0,nw,NULL,cd) ;
 	fwrite(aFile, 2, nw, aFile);
 	uncompressedBytes = compressedBytes = 0;
-	printf("Opened new x3 file %s\n", fileName.c_str());
+	printf("Opened new x3 file %s with xml information:\n", fileName.c_str());
+	printf(headerData+X3_HDRLEN*2);
+	printf("\n");
 	openFileName = fileName;
 	return aFile;
 }

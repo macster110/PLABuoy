@@ -22,6 +22,8 @@ public:
 	int process(PLABuff* plaBuffer);
 
 	void endProcess();
+
+	virtual mxml_node_t* getXMLInfo(mxml_node_t *doc, mxml_node_t *parentNode, timeval* timeVal);
 private:
 	void packtimeval(struct timeval timeVal, short* packedTime);
 };

@@ -30,7 +30,7 @@ int nChannels = 0;
  */
 void processCreate() {
 	plaProcesses = (PLAProcess**) malloc(sizeof(PLAProcess*) * NPROCESSES);
-	plaProcesses[0] = new PLAProcess("base", "BASE");
+	plaProcesses[0] = new PLAProcess("Audio", "AUDIO");
 	plaProcesses[1] = new CompressProcess();
 	plaProcesses[2] = new X3FileProcess();
 	plaProcesses[3] = new NetSender();
@@ -40,10 +40,10 @@ void processCreate() {
 	 */
 	plaProcesses[0]->addChildProcess(plaProcesses[1]);
 
-#ifndef WINDOWS
+//#ifndef WINDOWS
 	// attach x3 write process to compressor.
 	plaProcesses[1]->addChildProcess(plaProcesses[2]);
-#endif
+//#endif
 
 	// attach net sender to output of compression.
 	plaProcesses[1]->addChildProcess(plaProcesses[3]);
@@ -54,9 +54,12 @@ void processCreate() {
 
 //	mxml_node_t *doc = mxmlNewXML("1.0");
 //	mxml_node_t *mainEl = mxmlNewElement(doc, "PLABuoy");
-//	for (int i = 0; i < NPROCESSES; i++) {
-//		plaProcesses[i]->getXMLInfo(doc, mainEl);
-//	}
+//	timeval tv;
+//	gettimeofday(&tv, 0);
+////	for (int i = 0; i < NPROCESSES; i++) {
+////		plaProcesses[i]->getXMLInfo(doc, mainEl, &tv);
+////	}
+//	plaProcesses[2]->getXMLProcessChain(doc, mainEl, &tv);
 //	char xmlCharData[2048];
 //	mxmlSaveString(doc, xmlCharData, 2048, MXML_NO_CALLBACK);
 //	printf(xmlCharData);
@@ -224,28 +227,65 @@ void PLAProcess:: setSampleRate(int sampleRate) {
 }
 
 // XML info management functions
-mxml_node_t* PLAProcess::getXMLInfo(mxml_node_t *doc, mxml_node_t *parentNode) {
-//	std::string inf = getXMLStartInfo();
-//	return closeXMLInfo(inf);
-	mxml_node_t *thisNode = getXMLStartInfo(doc, parentNode);
+mxml_node_t* PLAProcess::getXMLInfo(mxml_node_t *doc, mxml_node_t *parentNode, timeval* timeVal) {
+	mxml_node_t *thisNode = getXMLStartInfo(doc, parentNode, timeVal);
+	return thisNode;
 }
-mxml_node_t* PLAProcess::getXMLStartInfo(mxml_node_t *doc, mxml_node_t *parentNode) {
+
+mxml_node_t* PLAProcess::getXMLStartInfo(mxml_node_t *doc, mxml_node_t *parentNode, timeval* timeVal) {
 	mxml_node_t *node = mxmlNewElement(parentNode, "CFG");
 	mxml_node_t *el;
 	char txt[20];
 	sprintf(txt, "%d", processId);
 	mxmlElementSetAttr(node, "ID", txt);
+	mxmlElementSetAttr(node, "FTYPE",  getXmlName().c_str());
+	if (timeVal) {
+		el = mxmlNewElement(node, "TIME");
+		sprintf(txt, "%d", timeVal->tv_sec);
+		mxmlElementSetAttr(el, "S", txt);
+		sprintf(txt, "%d", timeVal->tv_usec);
+		mxmlElementSetAttr(el, "uS", txt);
+	}
+	// work out the source process id ...
+	if (parentProcess) {
+		el = mxmlNewElement(node, "SRC");
+		mxmlNewInteger(el, parentProcess->processId);
+	}
+
 
 	el = mxmlNewElement(node, "PROC");
 	mxmlNewText(el, 0, getXmlName().c_str());
+	el = mxmlNewElement(node, "NCHS");
+	mxmlNewInteger(el, getNChan());
 	el = mxmlNewElement(node, "CHANBITMAP");
 	mxmlNewInteger(el, getChannelBitMap());
 	el = mxmlNewElement(node, "FS");
 	mxmlNewInteger(el, sampleRate);
+	el = mxmlNewElement(node, "NBITS");
+	mxmlNewInteger(el, 16);
 
 
 	return node;
 }
-//std::string PLAProcess::closeXMLInfo(std::string startInfo) {
-//	return "";
-//}
+
+/**
+ * Get a chain of process information for all processes feeding into the current one ...
+ */
+mxml_node_t* PLAProcess::getXMLProcessChain(mxml_node_t *doc, mxml_node_t *parentNode, timeval* timeVal) {
+	// don't know exactly how many upstream processed there are, but we do know the maximum.
+	PLAProcess* proc[NPROCESSES];
+	PLAProcess* current;
+	int nProc = 0;
+	current = this;
+	while (current) {
+		proc[nProc] = current;
+		nProc++;
+		current = (PLAProcess*) current->parentProcess;
+	}
+	for (int i = nProc-1; i >= 0; i--) {
+//		printf("Get XML for proc %d id 0x%X %s", i, (unsigned) proc[i], )
+		proc[i]->getXMLInfo(doc, parentNode, timeVal);
+	}
+	return parentNode;
+}
+

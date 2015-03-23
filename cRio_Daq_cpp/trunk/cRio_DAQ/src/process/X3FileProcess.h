@@ -36,6 +36,8 @@ private:
 	void closeFile();
 	class RealTimer* repTimer;
 	std::string openFileName;
+	char* headerData;
+	int headerDataLength;
 };
 
 #endif /* X3FILEPROCESS_H_ */
