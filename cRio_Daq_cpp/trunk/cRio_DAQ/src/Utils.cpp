@@ -23,7 +23,11 @@
 
 using namespace std;
 
+#ifdef WINDOWS
+const string wav_location = "C:/PLATest";
+#else
 const string wav_location="/U";
+#endif
 
 #define MAX(a,b) (a>b?a:b)
 /*
