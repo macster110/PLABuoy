@@ -2,7 +2,7 @@ package dataUnits.hArray;
 
 import layout.arrays.HArrayPane;
 import layout.arrays.RigidArrayPane;
-import main.HArrayManager.ArrayType;
+import main.ArrayManager.ArrayType;
 import arrayModelling.ArrayModel;
 import arrayModelling.RigidModel;
 

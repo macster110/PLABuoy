@@ -4,8 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-import org.fxyz.geometry.Point3D;
-
+import javafx.geometry.Point3D;
 import dataUnits.Hydrophone;
 import dataUnits.hArray.HArray;
 import dataUnits.movementSensors.MovementSensor;
@@ -95,7 +94,7 @@ public class LinearFlexibleModel implements ArrayModel {
 		}
 		
 		//get angles from movement sensor. This model does not deal with depth readings. 
-		ArrayList<double[]> angles=new ArrayList<double[]>();
+		ArrayList<Double[]> angles=new ArrayList<Double[]>();
 		int[] sortIndexS=new int[movementSensors.size()]; //now need a record of the indexes for sorting
 		double[] sensorPos = new double[movementSensors.size()];
 		for (int i=0; i<movementSensors.size(); i++){
@@ -124,8 +123,8 @@ public class LinearFlexibleModel implements ArrayModel {
 		}
 		
 		//replace positions with sorted positions. 
-		newArrayPos.setHydrophonePositions(newHydrophonePos);
-		newArrayPos.setChildArrayPositions(newArrayAttachPos);
+		newArrayPos.setTransformHydrophonePos(newHydrophonePos);
+		newArrayPos.setTransformChildArrayPos(newArrayAttachPos);
 		newArrayPos.setParentHArray(getArray());
 		newArrayPos.setChildArrays(childrenArray);
 
@@ -146,7 +145,7 @@ public class LinearFlexibleModel implements ArrayModel {
 	 * @return
 	 */
 	private ArrayPos transformPositions(double[] childArrayPos, double[] hydrophonePos, double[] sensorPos,
-			ArrayList<double[]> angles, int n, int dim){
+			ArrayList<Double[]> angles, int n, int dim){
 		
 		ArrayList<double[]> hydrophonePosTrans=new ArrayList<double[]>(); 
 		ArrayList<Point3D> streamerPos=new ArrayList<Point3D>(); 
@@ -170,7 +169,7 @@ public class LinearFlexibleModel implements ArrayModel {
 		streamerAll.add(streamerPos);
 
 		
-		arrayPos.setHydrophonePositions(hydrophonePosTrans);
+		arrayPos.setTransformHydrophonePos(hydrophonePosTrans);
 		arrayPos.setStreamerPositions(streamerAll);
 		
 		

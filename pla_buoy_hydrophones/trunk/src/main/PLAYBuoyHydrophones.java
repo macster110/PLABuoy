@@ -17,9 +17,9 @@ public class PLAYBuoyHydrophones extends Application {
         primaryStage.setTitle("Hydrophone Movement Reconstruction");
         
         //create the primary control class; 
-        HArrayModelControl.create(); 
-        ArrayModelView mainView=new ArrayModelView(HArrayModelControl.getInstance(), primaryStage);
-        HArrayModelControl.getInstance().setMainView(mainView);
+        ArrayModelControl.create(); 
+        ArrayModelView mainView=new ArrayModelView(ArrayModelControl.getInstance(), primaryStage);
+        ArrayModelControl.getInstance().setMainView(mainView);
         
         StackPane root = new StackPane();
         root.getChildren().add(mainView);

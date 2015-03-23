@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import arrayModelling.ArrayModelManager;
 import layout.ArrayModelView;
 import layout.ControlPane.ChangeType;
-import main.HArrayManager.ArrayType;
+import main.ArrayManager.ArrayType;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 import dataUnits.hArray.HArray;
 import dataUnits.hArray.RigidHArray;
 import dataUnits.movementSensors.MovementSensor;
+import dataUnits.movementSensors.OpenTagSensor;
 import dataUnits.Hydrophone;
 
 /**
@@ -21,12 +22,12 @@ import dataUnits.Hydrophone;
  * @author Jamie Macaulay
  *
  */
-public class HArrayModelControl {
+public class ArrayModelControl {
 
 	/**
 	 * Static reference to the ArrayModelControl. 
 	 */
-	private static HArrayModelControl arrayControlInstance; 
+	private static ArrayModelControl arrayControlInstance; 
 	
 	/**
 	 * All hydrophones within the different arrays. No need to have a manager for hydrophones as there's only one type of hydrophone. 
@@ -41,7 +42,7 @@ public class HArrayModelControl {
 	/**
 	 * Manages different types of arrays
 	 */
-	private HArrayManager arrayManager; 
+	private ArrayManager arrayManager; 
 	
 	/**
 	 * Manages different types of sensors. 
@@ -58,11 +59,11 @@ public class HArrayModelControl {
 	 */
 	private ArrayModelManager arrayModelManager; 
 	
-	public HArrayModelControl(){
+	public ArrayModelControl(){
 		arrayControlInstance=this; 
 		
 		//create sensor and array managers. 
-		arrayManager=new HArrayManager(this);
+		arrayManager=new ArrayManager(this);
 		sensorManager=new SensorManager(this); 
 		
 		//manages modelling algorithms 
@@ -81,7 +82,40 @@ public class HArrayModelControl {
 			this.notifyModelChanged(ChangeType.HYDROPHONE_CHANGED);
 		});
 		
+		createTestArray();
 	} 
+	
+	public void createTestArray(){
+		Hydrophone hydrophone1=new Hydrophone(0, 0, 0); 
+		hydrophone1.channelProperty().set(0);
+		hydrophone1.parentArrayProperty().set(referenceArray);
+		
+		Hydrophone hydrophone2=new Hydrophone(0, 0, -20); 
+		hydrophone2.channelProperty().set(1);
+		hydrophone2.parentArrayProperty().set(referenceArray);
+		
+		Hydrophone hydrophone3=new Hydrophone(0, 10, -20); 
+		hydrophone3.channelProperty().set(2);
+		hydrophone3.parentArrayProperty().set(referenceArray);
+		
+		Hydrophone hydrophone4=new Hydrophone(0, -10, -20); 
+		hydrophone4.channelProperty().set(3);
+		hydrophone4.parentArrayProperty().set(referenceArray);
+		
+		hydrophones.addAll(hydrophone1, hydrophone2, hydrophone3, hydrophone4); 
+		
+		OpenTagSensor openTag=new OpenTagSensor(); 
+		openTag.parentArrayProperty().set(referenceArray);
+		openTag.sensorNameProperty.setValue("Open Tag Test");
+		sensorManager.getSensorList().add(openTag);
+		
+		notifyModelChanged(ChangeType.HYDROPHONE_CHANGED);
+		notifyModelChanged(ChangeType.SENSOR_CHANGED);
+		notifyModelChanged(ChangeType.ARRAY_CHANGED);
+
+		 updateArrayHydrophones();
+		 updateArraySensors();
+	}
 	
 	/**
 	 * Run the model. 
@@ -157,13 +191,13 @@ public class HArrayModelControl {
 		return sensorManager.getSensorList();
 	}
 	
-	public static HArrayModelControl getInstance(){
+	public static ArrayModelControl getInstance(){
 		return arrayControlInstance; 
 	}
 
 	public static void create() {
 		if (arrayControlInstance==null){
-			new  HArrayModelControl(); 
+			new  ArrayModelControl(); 
 		}
 		
 	}
@@ -177,7 +211,7 @@ public class HArrayModelControl {
 	}
 
 	/**
-	 * Get the sensor mamanger. This organises sensors for all arrays.
+	 * Get the sensor manager. This organises sensors for all arrays.
 	 * @return the sensor manager. 
 	 */
 	public SensorManager getSensorManager() {
@@ -192,6 +226,15 @@ public class HArrayModelControl {
 		if (mainView==null) return null; 
 		return mainView.getPrimaryStage();
 	}
+	
+	/**
+	 * Get the MainView. This is only called once on application start up. 
+	 * @return mainView -the MainView which manages GUI Nodes. 
+	 */
+	protected ArrayModelView getMainView() {
+		return mainView; 
+	}
+	
 
 	/**
 	 * Set the MainView. This is only called once on application start up. 
@@ -214,7 +257,7 @@ public class HArrayModelControl {
 	 * Get the array manager. This holds the list of current arrays. 
 	 * @return the array manager. 
 	 */
-	public HArrayManager getHArrayManager() {
+	public ArrayManager getHArrayManager() {
 		return this.arrayManager;
 	}
 	

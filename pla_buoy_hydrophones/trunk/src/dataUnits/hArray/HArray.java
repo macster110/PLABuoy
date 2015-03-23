@@ -6,8 +6,8 @@ import arrayModelling.ArrayModel;
 import dataUnits.Hydrophone;
 import dataUnits.movementSensors.MovementSensor;
 import layout.arrays.HArrayPane;
-import main.HArrayManager.ArrayType;
-import main.HArrayModelControl;
+import main.ArrayManager.ArrayType;
+import main.ArrayModelControl;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -74,7 +74,7 @@ public abstract class HArray  {
      * Create a new array. 
      */
     public HArray(){
-    	this.parentHArrayProperty.setValue(HArrayModelControl.getInstance().getReferenceArray());
+    	this.parentHArrayProperty.setValue(ArrayModelControl.getInstance().getReferenceArray());
     }
     
     /**
@@ -193,7 +193,7 @@ public abstract class HArray  {
 	 */
 	public ArrayList<HArray> getChildArrays() {
 		ArrayList<HArray> children=new ArrayList<HArray>(); 
-		ObservableList<HArray> arrays=HArrayModelControl.getInstance().getHArrayManager().getHArrayList();
+		ObservableList<HArray> arrays=ArrayModelControl.getInstance().getHArrayManager().getHArrayList();
 		for (int i=0; i<arrays.size(); i++ ){
 			if (arrays.get(i).getParentHArray()==this){
 				children.add(arrays.get(i));

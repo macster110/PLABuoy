@@ -3,10 +3,10 @@ package layout.arrays;
 import layout.ArrayModelView;
 import layout.ControlPane;
 import layout.utils.TablePane;
-import main.HArrayModelControl;
+import main.ArrayModelControl;
 import dataUnits.hArray.HArray;
 import dataUnits.hArray.RigidHArray;
-import main.HArrayManager.ArrayType;
+import main.ArrayManager.ArrayType;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.scene.control.Dialog;
@@ -92,7 +92,7 @@ public class ArrayTablePane extends TablePane<HArray> implements ControlPane {
 			HArray newArray=new RigidHArray(); 
 			newArray.nameProperty().setValue("New Array");
 			//add reference array as parent. 
-			newArray.parentHArrayProperty().setValue(HArrayModelControl.getInstance().getArrays().get(0));
+			newArray.parentHArrayProperty().setValue(ArrayModelControl.getInstance().getArrays().get(0));
 			return HArrayDialog.createDialog(newArray);
 		}
 		else return HArrayDialog.createDialog(data);

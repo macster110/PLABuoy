@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import layout.movementSensors.SensorPane;
-import main.HArrayModelControl;
+import main.ArrayModelControl;
 import main.SensorManager.SensorType;
 import dataUnits.hArray.HArray;
 import javafx.beans.property.DoubleProperty;
@@ -50,7 +50,7 @@ public abstract class AbstractMovementSensor implements MovementSensor {
 	/**
 	 * The array the sensor belongs to. 
 	 */
-	private ObjectProperty<HArray> parentArray= new SimpleObjectProperty<HArray>(HArrayModelControl.getInstance().getReferenceArray()); 
+	private ObjectProperty<HArray> parentArray= new SimpleObjectProperty<HArray>(ArrayModelControl.getInstance().getReferenceArray()); 
 	
 	/**
 	 * The name of the sensor
@@ -86,8 +86,8 @@ public abstract class AbstractMovementSensor implements MovementSensor {
 	 */
 	@SuppressWarnings("rawtypes")
 	public abstract SensorPane getSettingsPane();
-	
-	
+		
+
 	@Override
 	public StringProperty sensorNameProperty() {
 		return sensorNameProperty;
@@ -99,14 +99,14 @@ public abstract class AbstractMovementSensor implements MovementSensor {
 	}
 
 	@Override
-	public double[] getReferencePosition() {
-		double[] position={xRefProperty.get(), yRefProperty.get(), zRefProperty.get(),};
+	public Double[] getReferencePosition() {
+		Double[] position={xRefProperty.get(), yRefProperty.get(), zRefProperty.get(),};
 		return position;
 	}
 	
 	@Override
-	public double[] getOrientationReference() {
-		double[] orientation={headingRefProperty.get(), pitchRefProperty.get(), rollRefProperty.get(),};
+	public Double[] getOrientationReference() {
+		Double[] orientation={headingRefProperty.get(), pitchRefProperty.get(), rollRefProperty.get(),};
 		return orientation;
 	}
 
@@ -144,6 +144,14 @@ public abstract class AbstractMovementSensor implements MovementSensor {
 	@Override
 	public ObjectProperty<HArray> parentArrayProperty(){
 		return parentArray;
+	}
+	
+	/**
+	 * Get the simulated data for the sensor. This is sensor data from the sliders in the 
+	 * @return
+	 */
+	public Double[] getSimOrientationData(){
+		return ArrayModelControl.getInstance().getSensorManager().getSimSensorData(this); 
 	}
 	
 	/**

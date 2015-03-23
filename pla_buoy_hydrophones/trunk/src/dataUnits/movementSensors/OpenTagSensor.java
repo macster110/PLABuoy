@@ -14,7 +14,7 @@ public class OpenTagSensor extends AbstractMovementSensor {
 	
 	/**
 	 * List of sensor types the open tag has. Ignore the depth sensor as this is an add on to open tags.
-	 * If depth sensor is ever used can create an 'OPEN_TAG_DEPTH' sensor type. 
+	 * TODO If depth sensor is ever used can create an 'OPEN_TAG_DEPTH' sensor type. 
 	 */
 	private boolean[]  sensorTypes={true,true,true, false, false, false};
 
@@ -24,15 +24,16 @@ public class OpenTagSensor extends AbstractMovementSensor {
 	}
 
 	@Override
-	public double[] getOrientationData(long time) {
-		// TODO Auto-generated method stub
+	public Double[] getOrientationData(long time) {
+		//return sim data. 
+		if (time<0) return super.getSimOrientationData();
+		//try return true data. 
 		return null;
 	}
 
 	@Override
-	public double[] getPosition(long time) {
-		// TODO Auto-generated method stub
-		return null;
+	public Double[] getPosition(long time) {
+		return getReferencePosition();
 	}
 
 	@Override
@@ -64,6 +65,12 @@ public class OpenTagSensor extends AbstractMovementSensor {
 	@Override
 	public boolean[] getHasSensors() {
 		return sensorTypes;
+	}
+
+	@Override
+	public Double[] getLatLong(long time) {
+		//open tag has no lat long
+		return null ;
 	}
 
 	

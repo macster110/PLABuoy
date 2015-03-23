@@ -6,7 +6,7 @@ import dataUnits.Hydrophone;
 import dataUnits.hArray.HArray;
 import dataUnits.movementSensors.MovementSensor;
 import layout.ControlPane.ChangeType;
-import main.HArrayModelControl;
+import main.ArrayModelControl;
 
 /**
  * Manages algorithms to calculate hydrophone positions. 
@@ -20,8 +20,8 @@ public class ArrayModelManager {
 	/**
 	 * Error due to the fact the parent-> child tier structure has inconsistencies
 	 * with the list of arrays. This occurs if say an array is added which is a child of another
-	 *  array which itself is a child of that array. For any array you should be able to trace
-	 *  parent back to the reference array. 
+	 * array which itself is a child of that array. For any array you should be able to trace
+	 * parent back to the reference array. 
 	 */
 	public final static int INCONSISTANT_TIER_ERROR=1; 
 	
@@ -33,10 +33,10 @@ public class ArrayModelManager {
 	 */
 	private ArrayList<ArrayList<ArrayPos>> currentArrayPos; 
 
-	private HArrayModelControl arrayModelControl;
+	private ArrayModelControl arrayModelControl;
 
 	
-	public ArrayModelManager(HArrayModelControl arrayModelControl) {
+	public ArrayModelManager(ArrayModelControl arrayModelControl) {
 		this.arrayModelControl=arrayModelControl; 
 	}
 	
@@ -82,7 +82,7 @@ public class ArrayModelManager {
 			n++; 
 		}
 		
-		System.out.println("tieredArray: "+tieredArray + " n "+n);
+		System.out.println("ArrayModelManager: TieredArray: "+tieredArray + " n "+n);
 		
 		/**
 		 * Now sanity check - are the number of arrays in the tiered array the same as the 
@@ -99,7 +99,8 @@ public class ArrayModelManager {
 		for (int i=0; i<tieredArray.size(); i++){
 			ArrayList<ArrayPos> arrayResults=new ArrayList<ArrayPos>(); 
 			for (int j=0; j<tieredArray.get(i).size(); j++){
-				HArray array=tieredArray.get(i).get(j); 
+				HArray array=tieredArray.get(i).get(j);
+				//TRANSFORM THE ARRAY POSITIONS. 
 				arrayResults.add(array.getArrayModel().getTransformedPositions(array.getChildArrays(), 
 						new ArrayList<Hydrophone>(array.getHydrophones()), new ArrayList<MovementSensor>(array.getMovementSensors()), timeMillis));
 			}
@@ -107,9 +108,10 @@ public class ArrayModelManager {
 		}
 		
 		/**
-		 * Now we have a set of array results. Next thing to do is to combine these into one result which can be sent to the 3D map and saved. 
+		 * Now we have a set of array results but each array has it's own co-ordinate system with (0,0,0) being where it connects to it's parent. 
+		 * Next thing to do is to combine these into one result which can be sent to the 3D map and saved. 
 		 * Need to be careful here as we have to propagate up the reference positions of each array and compensate hydrophone array positions by adding
-		 *attachment points. Note: this could have been integrated into previous nested loop but was kept separate for readability purposes. 
+		 * attachment points. Note: this could have been integrated into previous nested loop but was kept separate for readability purposes. 
 		 */
 		for (int i=0; i<tierredArrayResults.size()-2; i++){
 			for (int j=0; j<tierredArrayResults.get(i).size(); j++){
@@ -179,8 +181,8 @@ public class ArrayModelManager {
 		}
 		
 		//now set
-		child.setHydrophonePositions(hydrophones);
-		child.setChildArrayPositions(childArrayPos);
+		child.setTransformHydrophonePos(hydrophones);
+		child.setTransformChildArrayPos(childArrayPos);
 
 	}
 	
@@ -198,7 +200,7 @@ public class ArrayModelManager {
 		return children;
 	}
 	
-	public HArrayModelControl getArrayModelControl() {
+	public ArrayModelControl getArrayModelControl() {
 		return arrayModelControl;
 	}
 

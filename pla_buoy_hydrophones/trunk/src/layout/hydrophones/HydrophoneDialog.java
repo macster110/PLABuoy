@@ -1,7 +1,7 @@
 package layout.hydrophones;
 
 import layout.utils.ParentArrayComboBox;
-import main.HArrayModelControl;
+import main.ArrayModelControl;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -48,7 +48,7 @@ public class HydrophoneDialog  extends Dialog<Hydrophone>{
 	public enum ErrorType {NO_ERROR, POS_FIELD, ERROR_FIELD, CHANNEL_ALREADY_USED}; 
 	
 	public HydrophoneDialog(){
-		this.initOwner(HArrayModelControl.getInstance().getPrimaryStage());
+		this.initOwner(ArrayModelControl.getInstance().getPrimaryStage());
 
 		this.setTitle("Hydrophone Dialog");
 		this.getDialogPane().setContent(createDialogPane());
@@ -105,7 +105,7 @@ public class HydrophoneDialog  extends Dialog<Hydrophone>{
 	
 	public ErrorType getParams(){
 		
-		if (HArrayModelControl.getInstance().checkHydrophoneChannels(channelChoiceBox.getValue())) return ErrorType.CHANNEL_ALREADY_USED;
+		if (ArrayModelControl.getInstance().checkHydrophoneChannels(channelChoiceBox.getValue())) return ErrorType.CHANNEL_ALREADY_USED;
 	
 		hydrophone.channelProperty().setValue(channelChoiceBox.getValue());
 			

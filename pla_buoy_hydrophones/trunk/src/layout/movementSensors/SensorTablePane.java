@@ -6,7 +6,7 @@ import javafx.scene.control.TableColumn;
 import layout.ArrayModelView;
 import layout.ControlPane;
 import layout.utils.TablePane;
-import main.HArrayModelControl;
+import main.ArrayModelControl;
 import main.SensorManager.SensorType;
 
 public class SensorTablePane extends TablePane<MovementSensor> implements ControlPane {
@@ -68,8 +68,8 @@ public class SensorTablePane extends TablePane<MovementSensor> implements Contro
 		System.out.println("data "+data); 
 		if (data==null) {
 			//create a new open tag sensor as a default. 
-			MovementSensor movementSensor=HArrayModelControl.getInstance().getSensorManager().createNewSensor(SensorType.OPEN_TAG);
-			movementSensor.parentArrayProperty().setValue(HArrayModelControl.getInstance().getReferenceArray());
+			MovementSensor movementSensor=ArrayModelControl.getInstance().getSensorManager().createNewSensor(SensorType.OPEN_TAG);
+			movementSensor.parentArrayProperty().setValue(ArrayModelControl.getInstance().getReferenceArray());
 			return SensorDialog.createDialog(movementSensor);
 		}
 		else return SensorDialog.createDialog(data);

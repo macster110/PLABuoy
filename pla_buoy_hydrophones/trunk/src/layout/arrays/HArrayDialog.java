@@ -1,10 +1,10 @@
 package layout.arrays;
 
 import layout.utils.ParentArrayComboBox;
-import main.HArrayManager;
-import main.HArrayModelControl;
+import main.ArrayManager;
+import main.ArrayModelControl;
 import dataUnits.hArray.HArray;
-import main.HArrayManager.ArrayType;
+import main.ArrayManager.ArrayType;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
@@ -37,7 +37,7 @@ public class HArrayDialog extends Dialog<HArray>{
 	/**
 	 * Reference to the array manager
 	 */
-	private HArrayManager arrayManager;
+	private ArrayManager arrayManager;
 	
 	/**
 	 * The array for which the dialog is changing settings. 
@@ -51,8 +51,8 @@ public class HArrayDialog extends Dialog<HArray>{
 	
 	//create the dialog
 	public HArrayDialog(){
-		this.initOwner(HArrayModelControl.getInstance().getPrimaryStage());
-		arrayManager=HArrayModelControl.getInstance().getHArrayManager();
+		this.initOwner(ArrayModelControl.getInstance().getPrimaryStage());
+		arrayManager=ArrayModelControl.getInstance().getHArrayManager();
 
 		this.setTitle("Array Dialog");
 		this.getDialogPane().setContent(createDialogPane());

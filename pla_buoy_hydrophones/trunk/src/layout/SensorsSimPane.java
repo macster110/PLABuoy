@@ -9,6 +9,8 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
@@ -46,6 +48,8 @@ public class SensorsSimPane extends BorderPane implements ControlPane {
 		
 		this.setTop(arrayLabel);
 		this.setCenter(sensorHolderPane);
+		
+		populateSensorPane();
 	}
 	
 	/**
@@ -109,9 +113,28 @@ public class SensorsSimPane extends BorderPane implements ControlPane {
 		}
 	}
 	
-	private void sliderChanged(){
+	/**
+	 * Called when user changed sim sensor control. 
+	 */
+	private void simDataControlChanged(){
 		mainView.getArrayModelControl().notifyModelChanged(ChangeType.SIM_SENSOR_TRIGGERED);
 		mainView.getArrayModelControl().getArrayModelManager().calculateHydrophonePositions(-1);
+	}
+	
+	/**
+	 * Get simulated data for a sensor.  
+	 * @param movementSensor - the movement sensor to find sim data for. 
+	 * @return heading, pitch , roll, (all in RADIANS) latitude, longitude (in DECIMAL), depth (in METERS). 
+	 */
+	public Double[] getSimSensorData(MovementSensor movementSensor){
+		Double[] simSensorData=null; 
+		for (int i=0; i<currentSensorPanes.size(); i++){
+			if (movementSensor == currentSensorPanes.get(i).getMovementSensor()){
+				simSensorData=currentSensorPanes.get(i).getSimSensorData(); 
+			}
+		}
+		
+		return simSensorData; 
 	}
 
 	
@@ -129,8 +152,11 @@ public class SensorsSimPane extends BorderPane implements ControlPane {
 		
 		private Slider rollSlider;
 		
-		private Slider depthSlider; 
+		private Slider depthSlider;
 		
+		private Spinner<Double> latitude; 
+		
+		private Spinner<Double> longitude; 
 
 		public SimSensorPane(MovementSensor movementSensor){
 			this.movementSensor=movementSensor;
@@ -148,7 +174,7 @@ public class SensorsSimPane extends BorderPane implements ControlPane {
 				headingSlider.setShowTickMarks(true);
 				headingSlider.setShowTickLabels(true);
 				headingSlider.valueProperty().addListener(( ov, ol_val ,new_val)->{
-					sliderChanged();
+					simDataControlChanged();
 				});
 			}
 				
@@ -159,7 +185,7 @@ public class SensorsSimPane extends BorderPane implements ControlPane {
 				pitchSlider.setShowTickMarks(true);
 				pitchSlider.setShowTickLabels(true);
 				pitchSlider.valueProperty().addListener(( ov, ol_val ,new_val)->{
-					sliderChanged();
+					simDataControlChanged();
 				});
 			}
 			if (movementSensor.getHasSensors()[2]){
@@ -169,21 +195,70 @@ public class SensorsSimPane extends BorderPane implements ControlPane {
 				rollSlider.setShowTickMarks(true);
 				rollSlider.setShowTickLabels(true);
 				rollSlider.valueProperty().addListener(( ov, ol_val ,new_val)->{
-					sliderChanged();
+					simDataControlChanged();
+				});
+			}
+			
+			if (movementSensor.getHasSensors()[3]){
+				this.getChildren().add(new Label("Latitude N (m)"));
+				this.getChildren().add(latitude= new Spinner<Double>(-90., 90., 0.0, 0.0001));
+				latitude.setEditable(false);
+				latitude.valueProperty().addListener(( ov, ol_val ,new_val)->{
+					simDataControlChanged();
+				});
+
+			}
+			
+			if (movementSensor.getHasSensors()[4]){
+				this.getChildren().add(new Label("Longitude W (m)"));
+				this.getChildren().add(longitude=new Spinner<Double>(-180., 180., 0.0, 0.0001));
+				longitude.setEditable(true);
+				longitude.valueProperty().addListener(( ov, ol_val ,new_val)->{
+					simDataControlChanged();
 				});
 			}
 			
 			if (movementSensor.getHasSensors()[5]){
 				this.getChildren().add(new Label("Depth (m)"));
-				this.getChildren().add(depthSlider= new Slider(0,50, 0));
+				this.getChildren().add(depthSlider= new Slider(0,100, 0));
 				depthSlider.valueProperty().addListener(( ov, ol_val ,new_val)->{
-					sliderChanged();
+					simDataControlChanged();
 				});
 			}
 			
 		}
 	
-		
+		/**
+		 * Get the current simulated data ceneter 
+		 * @return heading, pitch , roll, (all in RADIANS) latitude, longitude (in DECIMAL), depth (in METERS). 
+		 */
+		public Double[] getSimSensorData() {
+			
+			Double[] sensorData=new Double[6];  
+			
+			if (movementSensor.getHasSensors()[0]){
+				sensorData[0]=Math.toRadians(headingSlider.getValue());
+			}
+			if (movementSensor.getHasSensors()[1]){
+				sensorData[1]=Math.toRadians(pitchSlider.getValue());
+			}
+			if (movementSensor.getHasSensors()[2]){
+				sensorData[2]=Math.toRadians(rollSlider.getValue());
+			}
+			if (movementSensor.getHasSensors()[3]){
+				sensorData[3]=latitude.getValue();
+			}
+			if (movementSensor.getHasSensors()[4]){
+				sensorData[4]=longitude.getValue();
+			}
+			if (movementSensor.getHasSensors()[5]){
+				sensorData[5]=depthSlider.getValue();
+			}
+			
+			return sensorData;
+		}
+
+
 		/**
 		 * Get the movement sensor. 
 		 * @return the movement sensor. 

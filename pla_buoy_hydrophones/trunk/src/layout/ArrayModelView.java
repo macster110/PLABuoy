@@ -7,7 +7,7 @@ import layout.ControlPane.ChangeType;
 import layout.arrays.ArrayTablePane;
 import layout.hydrophones.HydrophoneTablePane;
 import layout.movementSensors.SensorTablePane;
-import main.HArrayModelControl;
+import main.ArrayModelControl;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
@@ -25,7 +25,7 @@ public class ArrayModelView extends BorderPane {
 	/**
 	 *Reference to the a ArrayModelControl. 
 	 */
-	private HArrayModelControl arrayModelControl;
+	private ArrayModelControl arrayModelControl;
 	
 	/**
 	 * The primary stage. 
@@ -48,7 +48,7 @@ public class ArrayModelView extends BorderPane {
 	private ArrayList<ControlPane> controlPanes;
 	
 
-	public ArrayModelView (HArrayModelControl arrayModelControl, Stage primaryStage){
+	public ArrayModelView (ArrayModelControl arrayModelControl, Stage primaryStage){
 		
 		this.arrayModelControl=arrayModelControl; 
 		this.primaryStage=primaryStage; 
@@ -99,10 +99,18 @@ public class ArrayModelView extends BorderPane {
 	}
 	
 	/**
+	 * Get the SensorSimPane. This contains controls to allow users to simulate different sensor readings. 
+	 * @return the SensorSimPane.
+	 */
+	public SensorsSimPane getSensorSimPane(){
+		return sensorSimPane;
+	}
+	
+	/**
 	 * Get the array control model. This holds data on arrays, hydrophones and sensors. 
 	 * @return
 	 */
-	public HArrayModelControl getArrayModelControl() {
+	public ArrayModelControl getArrayModelControl() {
 		return arrayModelControl;
 	}
 

@@ -3,7 +3,7 @@ package layout.movementSensors;
 import java.io.File;
 import java.util.ArrayList;
 
-import main.HArrayModelControl;
+import main.ArrayModelControl;
 
 import org.controlsfx.glyphfont.Glyph;
 
@@ -96,7 +96,7 @@ public class OpenTagPane extends SensorPane<OpenTagSensor> {
 			final DirectoryChooser directoryChooser =
 	                new DirectoryChooser();
 			
-	            folderPath = directoryChooser.showDialog(HArrayModelControl.getInstance().getPrimaryStage());
+	            folderPath = directoryChooser.showDialog(ArrayModelControl.getInstance().getPrimaryStage());
 	           
 	    		if (folderPath!=null){
 		    		if (AbstractMovementSensor.getFiles(oTFileExtensions, folderPath, true).size()<=0) showErrorWarning(NO_FILES_ERROR);

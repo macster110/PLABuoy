@@ -13,7 +13,7 @@ import layout.ControlPane.ChangeType;
  * @author Jamie Macaulay 
  *
  */
-public class HArrayManager {
+public class ArrayManager {
 	
 	/**
 	 * Enum of array types
@@ -32,12 +32,12 @@ public class HArrayManager {
 	/**
 	 * Reference to the array model control. 
 	 */
-	private HArrayModelControl arrayModelControl;
+	private ArrayModelControl arrayModelControl;
 	
 	/**
 	 * Create the array manager.
 	 */
-	public HArrayManager(HArrayModelControl arrayModelControl){
+	public ArrayManager(ArrayModelControl arrayModelControl){
 		this.arrayModelControl=arrayModelControl;
 				
 		arrays.addListener((ListChangeListener.Change<? extends HArray> c) ->{

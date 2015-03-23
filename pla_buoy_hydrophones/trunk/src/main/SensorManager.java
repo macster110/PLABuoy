@@ -22,7 +22,7 @@ public class SensorManager {
 	/**
 	 * Reference to the array mode control. 
 	 */
-	private HArrayModelControl arrayModelControl;
+	private ArrayModelControl arrayModelControl;
 	
 	/**
 	 * The types of sensor AVAILABLE
@@ -33,11 +33,20 @@ public class SensorManager {
 		OPEN_TAG
 	}; 
 	
-	public SensorManager(HArrayModelControl arrayModelControl){
+	public SensorManager(ArrayModelControl arrayModelControl){
 		this.arrayModelControl=arrayModelControl;
 		sensors.addListener((ListChangeListener.Change<? extends MovementSensor> c) ->{
 			arrayModelControl.notifyModelChanged(ChangeType.SENSOR_CHANGED);
 		});
+	}
+	
+	/**
+	 * Get simulated data for a sensor. 
+	 * @param movementSensor - the sensor to get simulated data.
+	 * @return array of simulated data for the sleected sensor in format: heading, pitch , roll, (all in RADIANS) latitude, longitude (in DECIMAL), depth (in METERS). 
+	 */
+	public Double[] getSimSensorData(MovementSensor movementSensor){
+		return arrayModelControl.getMainView().getSensorSimPane().getSimSensorData(movementSensor);
 	}
 	
 	/**

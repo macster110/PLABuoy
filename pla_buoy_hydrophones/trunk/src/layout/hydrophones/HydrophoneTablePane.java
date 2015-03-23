@@ -5,7 +5,7 @@ import javafx.scene.control.TableColumn;
 import layout.ArrayModelView;
 import layout.ControlPane;
 import layout.utils.TablePane;
-import main.HArrayModelControl;
+import main.ArrayModelControl;
 import dataUnits.Hydrophone;
 
 public class HydrophoneTablePane extends TablePane<Hydrophone> implements ControlPane{
@@ -61,7 +61,7 @@ public class HydrophoneTablePane extends TablePane<Hydrophone> implements Contro
 	public Dialog<Hydrophone> createSettingsDialog(Hydrophone data) {
 		if (data==null) {
 			Hydrophone newHydrophone=new Hydrophone(0, 0, 0); 
-			newHydrophone.setParentArray(HArrayModelControl.getInstance().getReferenceArray());
+			newHydrophone.setParentArray(ArrayModelControl.getInstance().getReferenceArray());
 			return HydrophoneDialog.createDialog(newHydrophone);
 		}
 		else return HydrophoneDialog.createDialog(data);

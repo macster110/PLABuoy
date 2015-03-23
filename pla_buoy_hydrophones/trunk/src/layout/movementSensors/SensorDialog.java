@@ -1,7 +1,7 @@
 package layout.movementSensors;
 
 import layout.utils.ParentArrayComboBox;
-import main.HArrayModelControl;
+import main.ArrayModelControl;
 import main.SensorManager;
 import main.SensorManager.SensorType;
 import dataUnits.movementSensors.AbstractMovementSensor;
@@ -44,7 +44,7 @@ public class SensorDialog extends Dialog<MovementSensor>{
 	/**
 	 * Reference to the sensor manager. 
 	 */
-	SensorManager sensorManager=HArrayModelControl.getInstance().getSensorManager();
+	SensorManager sensorManager=ArrayModelControl.getInstance().getSensorManager();
 
 	/**
 	 * Combo box to xhoose the parent array the sensor belongs to. 

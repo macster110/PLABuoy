@@ -15,11 +15,11 @@ import dataUnits.movementSensors.MovementSensor;
 public interface ArrayModel {
 	
 	/**
-	 * Model the positions of hydrophones and the reference positions of other arrays for an array. 
+	 * Model the positions of hydrophones and the reference positions of child arrays for an array. 
 	 * @param childArrays - any arrays which are a child of the array utilising this model will need new reference positions,.
 	 * @param hydrophones - hydrophone belonging to the array utilising this model require new positions. 
 	 * @param movementSensors - movement sensors used to model array movement
-	 * @param time - the time to model array fro. If -1 the model uses simulated movement sensor readings {@link SensorsSimPane} 
+	 * @param time - the time to model array for. If -1 the model uses simulated movement sensor readings {@link SensorsSimPane} 
 	 * @return a new ArrayPos- contains new hydrophone positions
 	 */
 	public ArrayPos getTransformedPositions(ArrayList<HArray> childArrays, ArrayList<Hydrophone> hydrophones, ArrayList<MovementSensor> movementSensors, long time);

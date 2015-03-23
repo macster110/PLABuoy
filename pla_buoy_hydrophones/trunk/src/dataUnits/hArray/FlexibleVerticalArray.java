@@ -3,8 +3,8 @@ package dataUnits.hArray;
 import layout.arrays.FlexVertPane;
 import layout.arrays.HArrayPane;
 import layout.movementSensors.SensorPane;
-import main.HArrayModelControl;
-import main.HArrayManager.ArrayType;
+import main.ArrayModelControl;
+import main.ArrayManager.ArrayType;
 import arrayModelling.ArrayModel;
 
 public class FlexibleVerticalArray extends HArray {

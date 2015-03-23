@@ -2,12 +2,11 @@ package arrayModelling;
 
 import java.util.ArrayList;
 
-import org.fxyz.geometry.Point3D;
-
+import javafx.geometry.Point3D;
 import dataUnits.hArray.HArray;
 
 /**
- * Utility class to store calculated hydrophone positions and the modelled streamer. The idea behind this class is that a list of the orignal positions are 
+ * Utility class to store transformed hydrophone positions and the modelled streamer. The idea behind this class is that a list of the orignal positions are 
  * kept in the HArray classes and  transfromHydrophonePos and transfromChildArrayPos represent the transformed hydrophone positions and transformed reference positions of 
  * child arrays respectively. 
  * @author Jamie Macaulay
@@ -52,7 +51,7 @@ public class ArrayPos {
 	 * Set hydrophone positions
 	 * @param hydrophonePositions - list of x,y,z hydrophone postions. 
 	 */
-	public void setHydrophonePositions(ArrayList<double[]> hydrophonePositions) {
+	public void setTransformHydrophonePos(ArrayList<double[]> hydrophonePositions) {
 		this.transfromHydrophonePos = hydrophonePositions;
 	}
 
@@ -87,7 +86,7 @@ public class ArrayPos {
 	 * Set transformed positions of child arrays. 
 	 * @param arrayPositions
 	 */
-	public void setChildArrayPositions(ArrayList<double[]> arrayPositions) {
+	public void setTransformChildArrayPos(ArrayList<double[]> arrayPositions) {
 		this.transfromChildArrayPos = arrayPositions;
 	}
 	

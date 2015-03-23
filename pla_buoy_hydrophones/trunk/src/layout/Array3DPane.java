@@ -18,11 +18,41 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.Sphere;
+import javafx.scene.text.Text;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 
+/**
+ * Create a 3D visualisation of the array.
+ * <p>
+ * Co-rodinate systems:
+ * <p><p>
+ * Because the pla_buoy_hydrophones is a program designed to integaret with PAMGUARD we use the PAMGUARD co-rdinate system. This is;
+ * <p>
+ * x point right
+ * <p>
+ * y points north or into the screen
+ * <p>
+ * z is height and points up
+ * <p><p>
+ * This is different from the JavAFX 3D system in which
+ * <p>
+ * x points right
+ * <p>
+ * y points down
+ * <p>
+ * z points into the screen
+ * <p>
+ * Thus the source code for this class is a little bit more complex. By convention the co-ordinate system is only changed for display purposes and remains 
+ * in PAMGUARD format throughout the rest of code. 
+ * @author Jamie Macaulay
+ *
+ */
 public class Array3DPane extends BorderPane implements  ControlPane{
 	
+	private double scaleFactor=20; 
+	private double axisSize=10*scaleFactor; 
+
     double mousePosX;
     double mousePosY;
     double mouseOldX;
@@ -35,6 +65,16 @@ public class Array3DPane extends BorderPane implements  ControlPane{
      */
 	Group root3D;
 	
+	/**
+	 * Group which holds array shapes. 
+	 */
+	Group arrayGroup; 
+	
+	/**
+	 * Group which holds axis and other non changing bits. 
+	 */
+	Group axisGroup; 
+
 	/**
 	 * The camera to 
 	 */
@@ -62,9 +102,15 @@ public class Array3DPane extends BorderPane implements  ControlPane{
         
         //create main 3D group 
 		root3D=new Group();
-		addTestShapes();
+		arrayGroup=new Group(); 
+		axisGroup=new Group();
+		
+		root3D.getChildren().add(arrayGroup);
+		root3D.getChildren().add(axisGroup);
+		
+		//build axis. 
+		buildAxes();
 
-        
         //Use a SubScene to mix 3D and 2D stuff.        
 		//note- make sure depth buffer in sub scene is enabled. 
         SubScene subScene = new SubScene(root3D, 500,500, true, SceneAntialiasing.BALANCED);
@@ -88,6 +134,57 @@ public class Array3DPane extends BorderPane implements  ControlPane{
         
 	}
 	
+	/**
+	 * Create axis
+	 */
+	private void buildAxes() {
+        double length = 2d*axisSize;
+        double width = axisSize/100d;
+        double radius = 2d*axisSize/100d;
+        final PhongMaterial redMaterial = new PhongMaterial();
+        redMaterial.setDiffuseColor(Color.DARKRED);
+        redMaterial.setSpecularColor(Color.RED);
+        final PhongMaterial greenMaterial = new PhongMaterial();
+        greenMaterial.setDiffuseColor(Color.DARKGREEN);
+        greenMaterial.setSpecularColor(Color.GREEN);
+        final PhongMaterial blueMaterial = new PhongMaterial();
+        blueMaterial.setDiffuseColor(Color.DARKBLUE);
+        blueMaterial.setSpecularColor(Color.BLUE);
+        
+        Text xText=new Text("x"); 
+        xText.setStyle("-fx-font: 10px Tahoma; -fx-text-fill: green;");
+        Text yText=new Text("z"); 
+        yText.setStyle("-fx-font: 10px Tahoma; -fx-text-fill: green;");
+        Text zText=new Text("y"); 
+        zText.setStyle("-fx-font: 10px Tahoma; -fx-text-fill: green;");
+
+        xText.setTranslateX(axisSize+5);
+        yText.setTranslateY(-(axisSize+5));
+        zText.setTranslateZ(axisSize+5);
+
+        Sphere xSphere = new Sphere(radius);
+        Sphere ySphere = new Sphere(radius);
+        Sphere zSphere = new Sphere(radius);
+        xSphere.setMaterial(redMaterial);
+        ySphere.setMaterial(greenMaterial);
+        zSphere.setMaterial(blueMaterial);
+         
+        xSphere.setTranslateX(axisSize);
+        ySphere.setTranslateY(-axisSize);
+        zSphere.setTranslateZ(axisSize);
+         
+        Box xAxis = new Box(length, width, width);
+        Box yAxis = new Box(width, length, width);
+        Box zAxis = new Box(width, width, length);
+        xAxis.setMaterial(redMaterial);
+        yAxis.setMaterial(greenMaterial);
+        zAxis.setMaterial(blueMaterial);
+         
+        axisGroup.getChildren().addAll(xAxis, yAxis, zAxis);
+        axisGroup.getChildren().addAll(xText, yText, zText);
+        axisGroup.getChildren().addAll(xSphere, ySphere, zSphere);
+    }
+	
 	
 	 private void handleMouse(SubScene scene) {
 	    	
@@ -105,8 +202,6 @@ public class Array3DPane extends BorderPane implements  ControlPane{
 	            @Override public void handle(ScrollEvent event) {
 	            	System.out.println("Scroll Event: "+event.getDeltaX() + " "+event.getDeltaY()); 
                 	translate.setZ(translate.getZ()+  event.getDeltaY() *0.001*translate.getZ());   // + 
-
-	            	
 	            }
 	        });
 	        
@@ -173,7 +268,7 @@ public class Array3DPane extends BorderPane implements  ControlPane{
 	 */
 	public void drawArrays(ArrayList<ArrayList<ArrayPos>> pos){
 		
-		root3D.getChildren().removeAll(root3D.getChildren()); 
+		arrayGroup.getChildren().removeAll(arrayGroup.getChildren()); 
 
 		if (pos==null){
 			System.err.println("Array3DPane: Hydrophone positions are null");
@@ -190,20 +285,39 @@ public class Array3DPane extends BorderPane implements  ControlPane{
 	}
 	
 	/**
-	 * Draw an array
+	 * Draw an array.
 	 * @param arrayPos - hydrophone and streamer positions in the same co-ordinate frame as the reference frame. 
 	 */
 	private void drawArray(ArrayPos arrayPos){
+		
+			//draw hydrophones
 			Sphere sphere;
 			for (int i=0; i<arrayPos.getHydrophonePos().size(); i++){
-				 sphere=new Sphere(30);
-				 sphere.setTranslateX(arrayPos.getHydrophonePos().get(i)[0]);
-				 sphere.setTranslateY(arrayPos.getHydrophonePos().get(i)[1]);
-				 sphere.setTranslateZ(arrayPos.getHydrophonePos().get(i)[2]);
-				 root3D.getChildren().add(sphere);
+				 sphere=new Sphere(1*scaleFactor);
+				 sphere.setTranslateX(arrayPos.getHydrophonePos().get(i)[0]*scaleFactor);
+				 sphere.setTranslateY(-arrayPos.getHydrophonePos().get(i)[2]*scaleFactor);
+				 sphere.setTranslateZ(arrayPos.getHydrophonePos().get(i)[1]*scaleFactor);
+				 arrayGroup.getChildren().add(sphere);
+			
 			}
 			
-		
+			//draw streamer
+		    PolyLine3D polyLine3D;
+		    ArrayList<Point3D> streamerPoints;
+		    
+			for (int i=0; i<arrayPos.getStreamerPositions().size(); i++){
+				if (arrayPos.getStreamerPositions().get(i)==null) return; 
+				streamerPoints=new ArrayList<Point3D>(); 
+				 for (int j=0; j<arrayPos.getStreamerPositions().get(i).size(); j++){
+					 //need to convert to fxyz 3D point - stupid but no work around. 
+					 Point3D newPoint=new Point3D((float) (arrayPos.getStreamerPositions().get(i).get(j).getX()*scaleFactor),
+							(float) (-arrayPos.getStreamerPositions().get(i).get(j).getZ()*scaleFactor), (float) (arrayPos.getStreamerPositions().get(i).get(j).getY()*scaleFactor));
+					 streamerPoints.add(newPoint);
+				 }
+				 polyLine3D=new PolyLine3D(streamerPoints, 9, Color.BLUE); 
+				 arrayGroup.getChildren().add(polyLine3D);
+			 }
+
 	}
 	
 	
@@ -225,7 +339,7 @@ public class Array3DPane extends BorderPane implements  ControlPane{
 			mySphere.setTranslateZ(Math.random()*200);
 			mySphere.setMaterial(redMaterial);
 			mySphere.setDepthTest(DepthTest.ENABLE);
-	        root3D.getChildren().add(mySphere);
+			arrayGroup.getChildren().add(mySphere);
 	        randPoints.add(new Point3D((float) Math.random()*500,(float) Math.random()*500, (float) Math.random()*200));
 		}
 		
@@ -234,7 +348,7 @@ public class Array3DPane extends BorderPane implements  ControlPane{
 //        root3D.getChildren().add(light);
 		
        PolyLine3D polyLine3D=new PolyLine3D(randPoints, 1, Color.BLUE); 
-       root3D.getChildren().add(polyLine3D);
+       arrayGroup.getChildren().add(polyLine3D);
 
 	}
 
