@@ -154,7 +154,6 @@ public class PositionRefPane extends VBox {
 		movmentSensor.pitchRefProperty().setValue(Math.toRadians(pitchVal));
 		movmentSensor.rollRefProperty().setValue(Math.toRadians(rollVal));
 
-
 		movmentSensor.xRefPositionProperty().setValue(xVal);
 		movmentSensor.yRefPositionProperty().setValue(yVal);
 		movmentSensor.zRefPositionProperty().setValue(zVal);

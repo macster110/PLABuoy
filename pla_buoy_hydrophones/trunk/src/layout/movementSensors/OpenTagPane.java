@@ -73,12 +73,10 @@ public class OpenTagPane extends SensorPane<OpenTagSensor> {
 	
 	public OpenTagPane(){
 		
-		
 		Label nameLabel=new Label(".DSG file(s)"); 
 		nameLabel.setPadding(new Insets(5,0,0,0));
 		
 		oTFileExtensions.add("dsg"); 
-		
 		
 		//create HBox with text field and file path and browse button. 
 		HBox openFilePath=new HBox();  
@@ -110,9 +108,7 @@ public class OpenTagPane extends SensorPane<OpenTagSensor> {
 
 		});
 		
-		
 		openFilePath.getChildren().addAll(filePath, browseButton); 
-		
 		
 		this.setSpacing(2);
 		this.getChildren().addAll(nameLabel, openFilePath, positionRefPane=new PositionRefPane());
@@ -122,15 +118,16 @@ public class OpenTagPane extends SensorPane<OpenTagSensor> {
 	@Override
 	public int getParams(OpenTagSensor movementSensor) {
 					
+		int error=0; 
 		System.out.println("Folder path "+ folderPath + "  file path text"+filePath.getText());
-		if (folderPath==null ) return NO_FILES_ERROR;
+		if (folderPath==null ) error= NO_FILES_ERROR;
 		
 		//check at least some files exist. 
-		if (AbstractMovementSensor.getFiles(oTFileExtensions, folderPath, true).size()<=0) return NO_FILES_ERROR;
+		else if (AbstractMovementSensor.getFiles(oTFileExtensions, folderPath, true).size()<=0) error= NO_FILES_ERROR;
 
 	    movementSensor.setDataPath(folderPath); 
 	    
-		int error = positionRefPane.getParams(movementSensor);
+		error = positionRefPane.getParams(movementSensor);
 
 		return error;
 	}

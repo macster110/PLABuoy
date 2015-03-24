@@ -2,6 +2,7 @@ package arrayModelling;
 
 import java.util.ArrayList;
 
+import javafx.geometry.Point3D;
 import dataUnits.Hydrophone;
 import dataUnits.hArray.HArray;
 import dataUnits.movementSensors.MovementSensor;
@@ -113,7 +114,7 @@ public class ArrayModelManager {
 		 * Need to be careful here as we have to propagate up the reference positions of each array and compensate hydrophone array positions by adding
 		 * attachment points. Note: this could have been integrated into previous nested loop but was kept separate for readability purposes. 
 		 */
-		for (int i=0; i<tierredArrayResults.size()-2; i++){
+		for (int i=0; i<tierredArrayResults.size()-1; i++){
 			for (int j=0; j<tierredArrayResults.get(i).size(); j++){
 				ArrayPos parent= tierredArrayResults.get(i).get(j);
 				//find children in lower tier
@@ -128,21 +129,21 @@ public class ArrayModelManager {
 		}
 
 		//notify that a new hydrophone array has been calculated  
-		arrayModelControl.notifyModelChanged(ChangeType.NEW_ARRAY_POS_CALCULATED);
-		
 		currentArrayPos=tierredArrayResults;
-		
+
+		arrayModelControl.notifyModelChanged(ChangeType.NEW_ARRAY_POS_CALCULATED);
+				
 		//print results.
-		System.out.println("Print transformed array positions "+currentArrayPos);
-		
+		//System.out.println("Print transformed array positions "+currentArrayPos);
 		printCurrentArrayPos(); 
 	
 		return 0; 
 	}
 	
 	public void printCurrentArrayPos(){
+		System.out.println("Current Array Pos: ");
 		for (int i=0; i<currentArrayPos.size(); i++){
-			for (int j=0; j<currentArrayPos.size(); j++){
+			for (int j=0; j<currentArrayPos.get(i).size(); j++){
 				System.out.println(currentArrayPos.get(i).get(j).toString());
 			}
 		}
@@ -152,13 +153,13 @@ public class ArrayModelManager {
 	 * Transform arrayPos results 
 	 * @param parent
 	 * @param child
+	 * @return transformed child. 
 	 */
-	private void transfromResults(ArrayPos parent, ArrayPos child){
+	private ArrayPos transfromResults(ArrayPos parent, ArrayPos child){
 		//find referencePos
 		int index=parent.getChildArrays().indexOf(child.getParentHArray());
 		if (index<0){
 			System.err.println("Warning: ArrayModelManager: The parent ArrayPos did not contain child. ");
-			return;
 		}
 		
 		double[] referencePos=parent.getChildArrayPos().get(index); 
@@ -180,9 +181,26 @@ public class ArrayModelManager {
 			childArrayPos.get(i)[2]=childArrayPos.get(i)[2]+referencePos[2];
 		}
 		
+		ArrayList<ArrayList<Point3D>> transformStreamer=new ArrayList<ArrayList<Point3D>>();
+		for (int i=0; i<child.getStreamerPositions().size(); i++){
+			ArrayList<Point3D> transLine=new ArrayList<Point3D>(); 
+			for (int j=0; j<child.getStreamerPositions().get(i).size(); j++){
+				Point3D transPoint=new Point3D(
+						child.getStreamerPositions().get(i).get(j).getX()+referencePos[0],
+						child.getStreamerPositions().get(i).get(j).getY()+referencePos[1],
+						child.getStreamerPositions().get(i).get(j).getZ()+referencePos[2]
+						); 
+				transLine.add(transPoint);
+			} 
+			transformStreamer.add(transLine);
+		}
+		
 		//now set
 		child.setTransformHydrophonePos(hydrophones);
 		child.setTransformChildArrayPos(childArrayPos);
+		child.setStreamerPositions(transformStreamer);
+		
+		return child; 
 
 	}
 	

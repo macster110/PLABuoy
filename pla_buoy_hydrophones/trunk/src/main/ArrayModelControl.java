@@ -69,7 +69,7 @@ public class ArrayModelControl {
 		//manages modelling algorithms 
 		arrayModelManager=new ArrayModelManager(this);
 		
-		//create a non deleteable reference array. 
+		//create a non delteable reference array. 
 		referenceArray=new RigidHArray(); 
 		referenceArray.nameProperty().setValue("Reference Array");
 		referenceArray.hArrayTypeProperty().setValue(ArrayType.RIGID_ARRAY);
@@ -82,40 +82,9 @@ public class ArrayModelControl {
 			this.notifyModelChanged(ChangeType.HYDROPHONE_CHANGED);
 		});
 		
-		createTestArray();
+		createTestArray1();
+		createTestArray2();
 	} 
-	
-	public void createTestArray(){
-		Hydrophone hydrophone1=new Hydrophone(0, 0, 0); 
-		hydrophone1.channelProperty().set(0);
-		hydrophone1.parentArrayProperty().set(referenceArray);
-		
-		Hydrophone hydrophone2=new Hydrophone(0, 0, -20); 
-		hydrophone2.channelProperty().set(1);
-		hydrophone2.parentArrayProperty().set(referenceArray);
-		
-		Hydrophone hydrophone3=new Hydrophone(0, 10, -20); 
-		hydrophone3.channelProperty().set(2);
-		hydrophone3.parentArrayProperty().set(referenceArray);
-		
-		Hydrophone hydrophone4=new Hydrophone(0, -10, -20); 
-		hydrophone4.channelProperty().set(3);
-		hydrophone4.parentArrayProperty().set(referenceArray);
-		
-		hydrophones.addAll(hydrophone1, hydrophone2, hydrophone3, hydrophone4); 
-		
-		OpenTagSensor openTag=new OpenTagSensor(); 
-		openTag.parentArrayProperty().set(referenceArray);
-		openTag.sensorNameProperty.setValue("Open Tag Test");
-		sensorManager.getSensorList().add(openTag);
-		
-		notifyModelChanged(ChangeType.HYDROPHONE_CHANGED);
-		notifyModelChanged(ChangeType.SENSOR_CHANGED);
-		notifyModelChanged(ChangeType.ARRAY_CHANGED);
-
-		 updateArrayHydrophones();
-		 updateArraySensors();
-	}
 	
 	/**
 	 * Run the model. 
@@ -263,6 +232,69 @@ public class ArrayModelControl {
 	
 	public ArrayModelManager getArrayModelManager(){
 		return this.arrayModelManager;
+	}
+	
+	///TEST ARRAYS///
+	
+	public void createTestArray1(){
+		Hydrophone hydrophone1=new Hydrophone(0, 0, 0); 
+		hydrophone1.channelProperty().set(0);
+		hydrophone1.parentArrayProperty().set(referenceArray);
+		
+		Hydrophone hydrophone2=new Hydrophone(0, 0, -20); 
+		hydrophone2.channelProperty().set(1);
+		hydrophone2.parentArrayProperty().set(referenceArray);
+		
+		Hydrophone hydrophone3=new Hydrophone(0, 10, -20); 
+		hydrophone3.channelProperty().set(2);
+		hydrophone3.parentArrayProperty().set(referenceArray);
+		
+		Hydrophone hydrophone4=new Hydrophone(0, -10, -20); 
+		hydrophone4.channelProperty().set(3);
+		hydrophone4.parentArrayProperty().set(referenceArray);
+		
+		hydrophones.addAll(hydrophone1, hydrophone2, hydrophone3, hydrophone4); 
+		
+		OpenTagSensor openTag=new OpenTagSensor(); 
+		openTag.parentArrayProperty().set(referenceArray);
+		openTag.sensorNameProperty.setValue("Open Tag Test1");
+		sensorManager.getSensorList().add(openTag);
+		
+		notifyModelChanged(ChangeType.HYDROPHONE_CHANGED);
+		notifyModelChanged(ChangeType.SENSOR_CHANGED);
+		notifyModelChanged(ChangeType.ARRAY_CHANGED);
+
+		updateArrayHydrophones();
+		updateArraySensors();
+	}
+	
+	public void createTestArray2(){
+		
+		RigidHArray subArray1=new RigidHArray(); 
+		subArray1.nameProperty().setValue("Sub Array1");
+		subArray1.parentHArrayProperty().setValue(referenceArray);
+		double[] subArrayPos={0.,0.,-20.};
+		subArray1.setParentAttachPoint(subArrayPos);
+		arrayManager.getHArrayList().add(subArray1);
+		
+		Hydrophone hydrophone1=new Hydrophone(0, 0, -20); 
+		hydrophone1.channelProperty().set(4);
+		hydrophone1.parentArrayProperty().set(subArray1);
+		
+		hydrophones.addAll(hydrophone1); 
+
+		OpenTagSensor openTag=new OpenTagSensor(); 
+		openTag.parentArrayProperty().set(subArray1);
+		openTag.sensorNameProperty.setValue("Open Tag Test2");
+		sensorManager.getSensorList().add(openTag);
+		
+		
+		notifyModelChanged(ChangeType.HYDROPHONE_CHANGED);
+		notifyModelChanged(ChangeType.SENSOR_CHANGED);
+		notifyModelChanged(ChangeType.ARRAY_CHANGED);
+
+		updateArrayHydrophones();
+		updateArraySensors();
 	}
 	
 

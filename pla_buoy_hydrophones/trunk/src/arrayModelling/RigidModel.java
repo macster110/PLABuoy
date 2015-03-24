@@ -141,9 +141,9 @@ public class RigidModel implements ArrayModel  {
 		//now iterate through all sensors and find info. 
 		for (int i=0; i<movementSensors.size(); i++){
 			if (movementSensors.get(i).getOrientationData(time)!=null){
-				if (sensorData[0]==null)  sensorData[0]=movementSensors.get(i).getOrientationData(time)[0]; 
-				if (sensorData[1]==null) sensorData[1] =movementSensors.get(i).getOrientationData(time)[1]; 
-				if (sensorData[2]==null)  sensorData[2]=movementSensors.get(i).getOrientationData(time)[2]; 
+				if (sensorData[0]==null)  sensorData[0]=movementSensors.get(i).getOrientationData(time)[0]-movementSensors.get(i).getReferenceOrientation()[0]; 
+				if (sensorData[1]==null)  sensorData[1]=movementSensors.get(i).getOrientationData(time)[1]-movementSensors.get(i).getReferenceOrientation()[1]; 
+				if (sensorData[2]==null)  sensorData[2]=movementSensors.get(i).getOrientationData(time)[2]-movementSensors.get(i).getReferenceOrientation()[2]; 
 			}
 			if (movementSensors.get(i).getLatLong(time)!=null){
 				if (sensorData[3]==null)  sensorData[3]=movementSensors.get(i).getLatLong(time)[0];

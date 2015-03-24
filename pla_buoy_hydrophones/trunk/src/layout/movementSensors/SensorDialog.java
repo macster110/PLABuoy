@@ -105,7 +105,7 @@ public class SensorDialog extends Dialog<MovementSensor>{
 		movementSensor.sensorNameProperty().setValue(nameField.getText());
 		movementSensor.parentArrayProperty().setValue(parentArrayComboBox.getValue());
 		if (movementSensor instanceof AbstractMovementSensor){
-			int error= ((AbstractMovementSensor) movementSensor).getSettingsPane().getParams(movementSensor);
+			int error=((AbstractMovementSensor) movementSensor).getSettingsPane().getParams(movementSensor);
 			if (error==0) return true; 	
 			else {
 				return ((AbstractMovementSensor) movementSensor).getSettingsPane().showErrorWarning(error);

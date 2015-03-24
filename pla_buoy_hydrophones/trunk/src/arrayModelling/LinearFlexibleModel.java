@@ -31,6 +31,9 @@ public class LinearFlexibleModel implements ArrayModel {
 	 */
 	private int type=FLEXIBLE_VERTICAL;
 	
+	/**
+	 * Number of iterations
+	 */
 	int iterations=100;
 
 	/**
@@ -137,12 +140,12 @@ public class LinearFlexibleModel implements ArrayModel {
 	/**
 	 * Calculate new hydrophone and child array reference positions. 
 	 * @param arrayPositions -  positions of child arrays in meters - reference to array (0,0,0).
-	 * @param hydrophonePos - hydrophone positions in meters - reference to array (0,0,0).
-	 * @param sensorPos - sensor positions in meters - reference to array (0,0,0).
-	 * @param angles - Euler angles of sensors in RADIANS 
+	 * @param hydrophonePos - hydrophone positions in meters - reference to array (0,0,0) - in numerical order e.g. shallowest to deepest. 
+	 * @param sensorPos - sensor positions in meters - reference to array (0,0,0). - in numerical order. 
+	 * @param angles - eular angles of sensors in RADIANS. heading, pitch, roll.  
 	 * @param n - number of bins to split streamer into for angle calculation
 	 * @param dim - the dimensions of stream (x,y,z)  ->(0,1,2)
-	 * @return
+	 * @return new transformed hydrophone positions. 
 	 */
 	private ArrayPos transformPositions(double[] childArrayPos, double[] hydrophonePos, double[] sensorPos,
 			ArrayList<Double[]> angles, int n, int dim){
@@ -151,7 +154,47 @@ public class LinearFlexibleModel implements ArrayModel {
 		ArrayList<Point3D> streamerPos=new ArrayList<Point3D>(); 
 		ArrayList<ArrayList<Point3D>> streamerAll=new ArrayList<ArrayList<Point3D>>(); 
 		
+		//we assume streamer starts at (0,0,0), the reference point of the current array (remember this can be attached to parent array so isn't (0,0,0) of the reference 
+		//co-ordinate system.
+		
+		double maxLength=hydrophonePos[hydrophonePos.length-1];
+		double chunkSize=(maxLength+1)/iterations; 
+		
+		double[][] chunkAngles=new double[iterations+1][3];
+		double[][] chunkVectors=new double[iterations+1][3];
+		
+		//first model the streamer, 
+		for (int i=0; i<iterations+1; i++){
+			
+			double chunkPosStart=i*chunkSize;
+			double chunkPosEnd=(i+1)*chunkSize; 
+					
+			//check if the chunk is 'above' (if vertical dimension) the first tag
+			if (chunkPosEnd>sensorPos[0]){
+				chunkAngles[i][0]= angles.get(0)[0]; 
+			    chunkAngles[i][1]= angles.get(0)[1]; 
+				chunkAngles[i][2]= angles.get(0)[2]; 
+			}
+			//check if the chunk is 'below' (if vertical dimension) the last tag. 
+			else if (chunkPosStart<sensorPos[sensorPos.length-1]){
+				chunkAngles[i][0]= angles.get(sensorPos.length-1)[0]; 
+			    chunkAngles[i][1]= angles.get(sensorPos.length-1)[1]; 
+				chunkAngles[i][2]= angles.get(sensorPos.length-1)[2]; 
+			}
+			//the chunk is between two tags.
+			else {
+				//find the two tags the 
+			}
+				
+			
+			//check if the chunk is below the deepest tag. 
+			 
+			
+		}
+			
+		
 		ArrayPos arrayPos=new ArrayPos(); 
+
 		
 		//TODO- need to actually model array. 
 		double[] hydrophoneLoc; 
@@ -161,8 +204,6 @@ public class LinearFlexibleModel implements ArrayModel {
 			hydrophonePosTrans.add(hydrophoneLoc);
 			//hydrophonePositions.add()
 		}
-		
-		
 		//TEMP
 		streamerPos.add(new Point3D(1,1,1));
 		streamerPos.add(new Point3D(4,4,4));

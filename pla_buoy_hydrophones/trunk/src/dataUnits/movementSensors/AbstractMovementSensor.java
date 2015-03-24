@@ -105,7 +105,7 @@ public abstract class AbstractMovementSensor implements MovementSensor {
 	}
 	
 	@Override
-	public Double[] getOrientationReference() {
+	public Double[] getReferenceOrientation() {
 		Double[] orientation={headingRefProperty.get(), pitchRefProperty.get(), rollRefProperty.get(),};
 		return orientation;
 	}

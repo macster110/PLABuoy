@@ -53,7 +53,7 @@ public interface MovementSensor {
 	 * Get the reference orientation i.e. the orientation when the sensor is sitting on the array in it's default position. 
 	 * @return the orientation reference, (heading, pitch and roll) in RADIANS.
 	 */
-	public Double[] getOrientationReference(); 
+	public Double[] getReferenceOrientation(); 
 	
 	/**
 	 * The reference heading property. Heading of the tag when array is in default position (i.e no movement) in RADIANS. 
