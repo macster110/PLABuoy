@@ -54,6 +54,19 @@ public class ArrayPos {
 	public void setTransformHydrophonePos(ArrayList<double[]> hydrophonePositions) {
 		this.transfromHydrophonePos = hydrophonePositions;
 	}
+	
+	/**
+	 * Set hydrophone positions
+	 * @param hydrophonePositions - list of x,y,z hydrophone postions. 
+	 */
+	public void setTransformHydrophonePos(double[][] hydrophonePositions) {
+		ArrayList<double[]> hydrophonePosList=new ArrayList<double[]>();
+		for (int i=0; i<hydrophonePositions.length; i++){
+			hydrophonePosList.add(hydrophonePositions[i]);
+		}
+		this.transfromHydrophonePos = hydrophonePosList;
+	}
+
 
 	/**
 	 * Get streamer positions - used to generate visualisation of array in 3D map. 
@@ -128,7 +141,8 @@ public class ArrayPos {
 		String string="";
 		String hydrophoneString; 
 		for (int i=0; i<transfromHydrophonePos.size(); i++){
-			hydrophoneString=("Hydrophone channel " + hydrophoneArray.getHydrophones().get(i).channelProperty().get() + " transfromHydrophonePos.get(i)[0]"+ " y: "+transfromHydrophonePos.get(i)[1] +" z: "+transfromHydrophonePos.get(i)[2]);
+			hydrophoneString=("Hydrophone channel " + hydrophoneArray.getHydrophones().get(i).channelProperty().get() + 
+					" transfromHydrophonePos.get(i)[0]"+ " y: "+transfromHydrophonePos.get(i)[1] +" z: "+transfromHydrophonePos.get(i)[2]);
 			string=string+hydrophoneString+ " ";
 		}
 //		string=string+"\n";

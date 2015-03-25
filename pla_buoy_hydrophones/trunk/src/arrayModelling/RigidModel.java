@@ -71,17 +71,18 @@ public class RigidModel implements ArrayModel  {
 		ArrayList<double[]> hydrophonePosTRansform= new ArrayList<double[]>(); 
 		ArrayList<double[]> childArrayPosTRansform= new ArrayList<double[]>(); 
 		ArrayList<ArrayList<Point3D>> streamers=new ArrayList<ArrayList<Point3D>>(); 
-
-
+		
 		//lets rotate stuff - use the JavaFX 3D library as all rotation matrices have already been done for us!
 		//heading - we rotate around the z
-		System.out.println("SensorData: heading "+Math.toDegrees(sensorData[0]) + " pitch: "+Math.toDegrees(sensorData[1])+ " roll: "+Math.toDegrees(sensorData[2]));
+		System.out.println("SensorData :"+sensorData); 
+		System.out.println("SensorData: heading "+(sensorData[0]==null  ? 0: Math.toDegrees(sensorData[0])) + " pitch: "+
+		(sensorData[1]==null  ? 0: Math.toDegrees(sensorData[1]))+ " roll: "+-(sensorData[2]==null  ? 0: Math.toDegrees(sensorData[2])));
 		
-		Rotate rotHeading=new Rotate(Math.toDegrees(sensorData[0]), rotationPoint.getX(), rotationPoint.getY(), rotationPoint.getZ(), Rotate.Z_AXIS);
+		Rotate rotHeading=new Rotate(sensorData[0]==null  ? 0: Math.toDegrees(sensorData[0]), rotationPoint.getX(), rotationPoint.getY(), rotationPoint.getZ(), Rotate.Z_AXIS);
 		//pitch- we rotate about y axis
-		Rotate rotPitch=new Rotate(Math.toDegrees(sensorData[1]), rotationPoint.getX(), rotationPoint.getY(), rotationPoint.getZ(), Rotate.Y_AXIS);
+		Rotate rotPitch=new Rotate(sensorData[1]==null  ? 0: Math.toDegrees(sensorData[1]), rotationPoint.getX(), rotationPoint.getY(), rotationPoint.getZ(), Rotate.X_AXIS);
 		//roll - we rotate about x axis
-		Rotate rotRoll=new Rotate(Math.toDegrees(sensorData[2]), rotationPoint.getX(), rotationPoint.getY(), rotationPoint.getZ(), Rotate.X_AXIS);
+		Rotate rotRoll=new Rotate(-(sensorData[2]==null  ? 0: Math.toDegrees(sensorData[2])), rotationPoint.getX(), rotationPoint.getY(), rotationPoint.getZ(), Rotate.Y_AXIS);
 		
 		//now apply transform to hydrophone and child array positions 
 		Point3D transformedPoint; 
@@ -114,9 +115,7 @@ public class RigidModel implements ArrayModel  {
 			childArrayPosTRansform.add(transformedPos);
 		}
 		
-	
 
-		
 		//now add to ArrayPos
 		ArrayPos arrayPos=new ArrayPos(); 
 		arrayPos.setTransformHydrophonePos(hydrophonePosTRansform);

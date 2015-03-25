@@ -6,13 +6,16 @@ import layout.movementSensors.SensorPane;
 import main.ArrayModelControl;
 import main.ArrayManager.ArrayType;
 import arrayModelling.ArrayModel;
+import arrayModelling.LinearFlexibleModel;
+import arrayModelling.RigidModel;
 
 public class FlexibleVerticalArray extends HArray {
 	
 	private FlexVertPane flexVertPane; 
 	
 	private boolean[] hydrophoneDim={false, false, true};
-	
+
+	private LinearFlexibleModel flexModel;
 	
 
 	public FlexibleVerticalArray(){
@@ -20,12 +23,13 @@ public class FlexibleVerticalArray extends HArray {
     	this.nameProperty().setValue("New Flexible Array ");
 		this.hArrayTypeProperty().setValue(ArrayType.FLEXIBLE_VERTICAL_ARRAY);
 		flexVertPane=new FlexVertPane(); 
+		flexModel=new LinearFlexibleModel(this); 
+
 	}
 
 	@Override
 	public ArrayModel getArrayModel() {
-		// TODO Auto-generated method stub
-		return null;
+		return flexModel;
 	}
 
 	@Override
