@@ -30,7 +30,6 @@ public class RigidModel implements ArrayModel  {
 		
 		ArrayList<double[]> hydrophonePositions=new ArrayList<double[]>(); 
 		for (int i=0; i<hydrophones.size(); i++ ){
-			
 //			//// TEMP ////
 //			hydrophones.get(i).xPosProperty().setValue(hydrophones.get(i).getPosition()[0]+Math.random()*5);
 //			hydrophones.get(i).yPosProperty().setValue(hydrophones.get(i).getPosition()[1]+Math.random()*5);
@@ -45,15 +44,22 @@ public class RigidModel implements ArrayModel  {
 			childArrayPositions.add(childArrays.get(i).getParentAttachPoint());
 		}
 		
+		ArrayList<double[]> sensorPositions=new ArrayList<double[]>(); 
+		for (int i=0; i<movementSensors.size(); i++ ){
+			double[] position={movementSensors.get(i).getPosition(-1)[0], movementSensors.get(i).getPosition(-1)[1], movementSensors.get(i).getPosition(-1)[2]};
+			sensorPositions.add(position);
+		}
+		
 		//a rigid array can only have one sensor reading-> one depth -> one latitude/longitude -> one set of Euler angles. Find array positions. 
 		Double[] sensorData=getSensorData(movementSensors, time);
 		
 		// transform array. 
-		ArrayPos arrayPos=transformPositions(childArrayPositions, hydrophonePositions, sensorData, new Point3D(0,0,0));
+		ArrayPos arrayPos=transformPositions(childArrayPositions, hydrophonePositions, sensorPositions, sensorData, new Point3D(0,0,0));
 		//set arrays. 
-		arrayPos.setParentHArray(getArray());
+		arrayPos.setHArray(getArray());
 		arrayPos.setChildArrays(childArrays);
-	
+		arrayPos.setTime(time);
+
 		return arrayPos;
 	}
 	
@@ -66,19 +72,21 @@ public class RigidModel implements ArrayModel  {
 	 * @param. 
 	 * @return
 	 */
-	private ArrayPos transformPositions(ArrayList<double[]> childArrayPos, 	ArrayList<double[]> hydrophonePos, Double[] sensorData, Point3D rotationPoint){
+	private ArrayPos transformPositions(ArrayList<double[]> childArrayPos, 	ArrayList<double[]> hydrophonePos, ArrayList<double[]> sensorPos, Double[] sensorData, Point3D rotationPoint){
 		
 		ArrayList<double[]> hydrophonePosTRansform= new ArrayList<double[]>(); 
 		ArrayList<double[]> childArrayPosTRansform= new ArrayList<double[]>(); 
+		ArrayList<double[]> sensorPosTransform= new ArrayList<double[]>(); 
+
 		ArrayList<ArrayList<Point3D>> streamers=new ArrayList<ArrayList<Point3D>>(); 
 		
 		//lets rotate stuff - use the JavaFX 3D library as all rotation matrices have already been done for us!
 		//heading - we rotate around the z
-		System.out.println("SensorData :"+sensorData); 
-		System.out.println("SensorData: heading "+(sensorData[0]==null  ? 0: Math.toDegrees(sensorData[0])) + " pitch: "+
-		(sensorData[1]==null  ? 0: Math.toDegrees(sensorData[1]))+ " roll: "+-(sensorData[2]==null  ? 0: Math.toDegrees(sensorData[2])));
+//		System.out.println("SensorData :"+sensorData); 
+//		System.out.println("SensorData: heading "+(sensorData[0]==null  ? 0: Math.toDegrees(sensorData[0])) + " pitch: "+
+//		(sensorData[1]==null  ? 0: Math.toDegrees(sensorData[1]))+ " roll: "+-(sensorData[2]==null  ? 0: Math.toDegrees(sensorData[2])));
 		
-		Rotate rotHeading=new Rotate(sensorData[0]==null  ? 0: Math.toDegrees(sensorData[0]), rotationPoint.getX(), rotationPoint.getY(), rotationPoint.getZ(), Rotate.Z_AXIS);
+		Rotate rotHeading=new Rotate(sensorData[0]==null  ? 0: -Math.toDegrees(sensorData[0]), rotationPoint.getX(), rotationPoint.getY(), rotationPoint.getZ(), Rotate.Z_AXIS);
 		//pitch- we rotate about y axis
 		Rotate rotPitch=new Rotate(sensorData[1]==null  ? 0: Math.toDegrees(sensorData[1]), rotationPoint.getX(), rotationPoint.getY(), rotationPoint.getZ(), Rotate.X_AXIS);
 		//roll - we rotate about x axis
@@ -89,40 +97,73 @@ public class RigidModel implements ArrayModel  {
 		double[] transformedPos;
 		ArrayList<Point3D> streamerPoints;
 		for (int i=0; i<hydrophonePos.size(); i++){
-			transformedPoint =new Point3D(hydrophonePos.get(i)[0], hydrophonePos.get(i)[1], hydrophonePos.get(i)[2]); 
-			transformedPoint=rotPitch.transform(transformedPoint);
-			transformedPoint=rotHeading.transform(transformedPoint);
-			transformedPoint=rotRoll.transform(transformedPoint);
-			transformedPos=new double[3];
-			transformedPos[0]=transformedPoint.getX(); transformedPos[1]=transformedPoint.getY(); transformedPos[2]=transformedPoint.getZ();
-			hydrophonePosTRansform.add(transformedPos);
+//			transformedPoint =new Point3D(hydrophonePos.get(i)[0], hydrophonePos.get(i)[1], hydrophonePos.get(i)[2]); 
+//			transformedPoint=rotPitch.transform(transformedPoint);
+//			transformedPoint=rotHeading.transform(transformedPoint);
+//			transformedPoint=rotRoll.transform(transformedPoint);
+//			transformedPos=new double[3];
+//			transformedPos[0]=transformedPoint.getX(); transformedPos[1]=transformedPoint.getY(); transformedPos[2]=transformedPoint.getZ();
+			hydrophonePosTRansform.add(calcTransformPoint(hydrophonePos.get(i),rotHeading,rotPitch,rotRoll));
 			
 			//create streamer for each hydrophone
 			streamerPoints=new  ArrayList<Point3D>();
 			streamerPoints.add(new Point3D(0,0,0));
-			streamerPoints.add(new Point3D(transformedPos[0],transformedPos[1],transformedPos[2]));
+			streamerPoints.add(new Point3D(hydrophonePosTRansform.get(i)[0],hydrophonePosTRansform.get(i)[1],hydrophonePosTRansform.get(i)[2]));
 			streamers.add(streamerPoints);
 			
 		}
 		
 		for (int i=0; i<childArrayPos.size(); i++){
-			transformedPoint =new Point3D(childArrayPos.get(i)[0], childArrayPos.get(i)[1], childArrayPos.get(i)[2]); 
-			transformedPoint=rotPitch.transform(transformedPoint);
-			transformedPoint=rotHeading.transform(transformedPoint);
-			transformedPoint=rotRoll.transform(transformedPoint);
-			transformedPos=new double[3];
-			transformedPos[0]=transformedPoint.getX(); transformedPos[1]=transformedPoint.getY(); transformedPos[2]=transformedPoint.getZ();
-			childArrayPosTRansform.add(transformedPos);
+//			transformedPoint =new Point3D(childArrayPos.get(i)[0], childArrayPos.get(i)[1], childArrayPos.get(i)[2]); 
+//			transformedPoint=rotPitch.transform(transformedPoint);
+//			transformedPoint=rotHeading.transform(transformedPoint);
+//			transformedPoint=rotRoll.transform(transformedPoint);
+//			transformedPos=new double[3];
+//			transformedPos[0]=transformedPoint.getX(); transformedPos[1]=transformedPoint.getY(); transformedPos[2]=transformedPoint.getZ();
+			childArrayPosTRansform.add(calcTransformPoint(childArrayPos.get(i),rotHeading,rotPitch,rotRoll));
+		}
+
+		for (int i=0; i<sensorPos.size(); i++){
+//			transformedPoint =new Point3D(sensorPos.get(i)[0], sensorPos.get(i)[1], sensorPos.get(i)[2]); 
+//			transformedPoint=rotPitch.transform(transformedPoint);
+//			transformedPoint=rotHeading.transform(transformedPoint);
+//			transformedPoint=rotRoll.transform(transformedPoint);
+//			transformedPos=new double[3];
+//			transformedPos[0]=transformedPoint.getX(); transformedPos[1]=transformedPoint.getY(); transformedPos[2]=transformedPoint.getZ();
+//			sensorPosTransform.add(transformedPos);
+
+			sensorPosTransform.add(calcTransformPoint(sensorPos.get(i),rotHeading,rotPitch,rotRoll));
+
 		}
 		
-
+	
 		//now add to ArrayPos
 		ArrayPos arrayPos=new ArrayPos(); 
 		arrayPos.setTransformHydrophonePos(hydrophonePosTRansform);
 		arrayPos.setTransformChildArrayPos(childArrayPosTRansform);
+		arrayPos.setTransformSensorPos(sensorPosTransform);
 		arrayPos.setStreamerPositions(streamers);
 		
 		return arrayPos;
+	}
+	
+	/**
+	 * Transform point. Note: rotate transforms contain point of rotation. 
+	 * @param transformPos - point to transform. 
+	 * @param rotHeading - heading transform.
+	 * @param rotPitch - pitch transform.
+	 * @param rotRoll - roll transform. 
+	 * @return transformed point {x,y,z} relative to arrays co-ordinate frame. 
+	 */
+	private  double[] calcTransformPoint(double[] transformPos, Rotate rotHeading, Rotate rotPitch, Rotate rotRoll){
+		Point3D transformedPoint=new Point3D(transformPos[0], transformPos[1], transformPos[2]); 
+		transformedPoint=rotPitch.transform(transformedPoint);
+		transformedPoint=rotHeading.transform(transformedPoint);
+		transformedPoint=rotRoll.transform(transformedPoint);
+		double[] transformedPos=new double[3];
+		transformedPos[0]=transformedPoint.getX(); transformedPos[1]=transformedPoint.getY(); transformedPos[2]=transformedPoint.getZ();
+		
+		return transformedPos;
 	}
 	
 	/**

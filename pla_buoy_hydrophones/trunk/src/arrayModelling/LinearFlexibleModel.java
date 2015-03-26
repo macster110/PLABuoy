@@ -34,7 +34,7 @@ public class LinearFlexibleModel implements ArrayModel {
 	/**
 	 * Number of iterations
 	 */
-	int iterations=20;
+	int iterations=100;
 
 	/**
 	 * Reference to the array. 
@@ -105,7 +105,15 @@ public class LinearFlexibleModel implements ArrayModel {
 		int[] sortIndexS=new int[movementSensors.size()]; //now need a record of the indexes for sorting
 		double[] sensorPos = new double[movementSensors.size()];
 		for (int i=0; i<movementSensors.size(); i++){
-			angles.add(sensorList.get(i).getOrientationData(time));
+			//remember to compensate for reference positions; 
+			Double[] sensorData=new Double[3];
+			
+			sensorData[0]=sensorList.get(i).getOrientationData(time)[0]-sensorList.get(i).getReferenceOrientation()[0]; 
+			sensorData[1]=sensorList.get(i).getOrientationData(time)[1]-sensorList.get(i).getReferenceOrientation()[1]; 
+			sensorData[2]=sensorList.get(i).getOrientationData(time)[2]-sensorList.get(i).getReferenceOrientation()[2]; 
+			
+			angles.add(sensorData);
+			
 			sensorPos[i]=sensorList.get(i).getReferencePosition()[dim]; 
 			sortIndexS[i]=sensorList.indexOf(movementSensors.get(i)); 
 		}
@@ -117,27 +125,37 @@ public class LinearFlexibleModel implements ArrayModel {
 		ArrayPos newArrayPos = transformPositions(arrayPos, hydrophonePos, sensorPos,
 				angles, iterations, dim);
 		//set arrays. 
-		newArrayPos.setParentHArray(getArray());
+		newArrayPos.setHArray(getArray());
 		newArrayPos.setChildArrays(childArrays);
 	
 		//sort so that everything is back in original order
-		//array attachmnet points
+		//array attachment points
 		ArrayList<double[]> newArrayAttachPos=new ArrayList<>(); 
-		for (int i=0; i<newArrayPos.getChildArrayPos().size(); i++){
-			newArrayAttachPos.add(newArrayPos.getChildArrayPos().get(sortIndexArray[i]));
+		for (int i=0; i<newArrayPos.getTransformChildArrayPos().size(); i++){
+			newArrayAttachPos.add(newArrayPos.getTransformChildArrayPos().get(sortIndexArray[i]));
 		}
 		
 		//hydrophones
 		ArrayList<double[]> newHydrophonePos=new ArrayList<>(); 
-		for (int i=0; i<newArrayPos.getHydrophonePos().size(); i++){
-			newHydrophonePos.add(newArrayPos.getHydrophonePos().get(sortIndexH[i]));
+		for (int i=0; i<newArrayPos.getTransformHydrophonePos().size(); i++){
+			newHydrophonePos.add(newArrayPos.getTransformHydrophonePos().get(sortIndexH[i]));
+		}
+		
+		
+		//sensors
+		ArrayList<double[]> newSensorPos=new ArrayList<>(); 
+		for (int i=0; i<newArrayPos.getTransformSensorPos().size(); i++){
+			newSensorPos.add(newArrayPos.getTransformSensorPos().get(sortIndexS[i]));
 		}
 		
 		//replace positions with sorted positions. 
 		newArrayPos.setTransformHydrophonePos(newHydrophonePos);
 		newArrayPos.setTransformChildArrayPos(newArrayAttachPos);
-		newArrayPos.setParentHArray(getArray());
+		newArrayPos.setTransformSensorPos(newSensorPos);
+		
+		newArrayPos.setHArray(getArray());
 		newArrayPos.setChildArrays(childArrays);
+		newArrayPos.setTime(time);
 
 
 		//return transformed array positions, hydrophone positions and streamer data for 3D visualisation. 
@@ -167,7 +185,12 @@ public class LinearFlexibleModel implements ArrayModel {
 		//we assume streamer starts at (0,0,0), the reference point of the current array (remember this can be attached to parent array so isn't (0,0,0) of the reference 
 		//co-ordinate system.
 		
-		double maxLength=findMaxLength(hydrophonePos);
+		//want to get max size - must remmeber to include sensors as sensor might be below last hydrophone
+		double maxLength1=findMaxLength(hydrophonePos);
+		double maxLength2=findMaxLength(sensorPos);
+		
+		double maxLength=maxLength1;
+		if (Math.abs(maxLength2)>Math.abs(maxLength1)) maxLength=maxLength2;
 		double chunkSize=(maxLength)/iterations; 
 		
 		//angles of chunks (heading, pitch, roll)
@@ -182,16 +205,16 @@ public class LinearFlexibleModel implements ArrayModel {
 		double chunkPosStart;
 		double chunkPosEnd;
 		int[] sensorChunkPos=new int[sensorPos.length]; //chunk number for each sensor
-		for (int i=0; i<iterations+1; i++){
-			 chunkPosStart=i*chunkSize;
-			 chunkPosEnd=(i+1)*chunkSize; 
-			 for (int j=0; j<sensorPos.length; j++){
+		 for (int j=0; j<sensorPos.length; j++){
+			 for (int i=0; j<iterations; i++){
+				 chunkPosStart=i*chunkSize;
+				 chunkPosEnd=(i+1)*chunkSize;
 				 if (sensorPos[j]<chunkPosStart && sensorPos[j]>=chunkPosEnd){
 					 sensorChunkPos[j]=i;
+					 break;
 				 }
 			 }
-		}
-		
+		 }
 		
 		//now model streamer. 
 		for (int i=0; i<iterations+1; i++){
@@ -199,17 +222,19 @@ public class LinearFlexibleModel implements ArrayModel {
 			chunkPosStart=i*chunkSize;
 			chunkPosEnd=(i+1)*chunkSize; 
 			
-			System.out.println(" chunkPosEnd: "+ chunkPosEnd+ " sensorPos[0]: "+sensorPos[0]);
-			System.out.println(" chunkPosStart: "+ chunkPosEnd+ " sensorPos[sensorPos.length-1]: "+sensorPos[sensorPos.length-1]);
+//			System.out.println(" chunkPosEnd: "+ chunkPosEnd+ " sensorPos[0]: "+sensorPos[0]);
+//			System.out.println(" chunkPosStart: "+ chunkPosEnd+ " sensorPos[sensorPos.length-1]: "+sensorPos[sensorPos.length-1]);
 
 			//check if the chunk is 'above' (if vertical dimension) the first tag
 			if (chunkPosEnd>sensorPos[sensorPos.length-1]){
+				//System.out.println("LinearFelxibleModel: Below deepest tag"+chunkPosStart+" sensorPos[sensorPos.length-1]] "+sensorPos[sensorPos.length-1]);
 				chunkAngles[i][0]= angles.get(sensorPos.length-1)[0]; 
 			    chunkAngles[i][1]= angles.get(sensorPos.length-1)[1]; 
 				chunkAngles[i][2]= angles.get(sensorPos.length-1)[2]; 
 			}
 			//check if the chunk is 'below' (if vertical dimension) the last tag. 
 			else if (chunkPosStart<sensorPos[0]){
+				//System.out.println("LinearFelxibleModel: Above shallowest tag "+chunkPosStart+" sensorPos[0] "+sensorPos[0]);
 				chunkAngles[i][0]= angles.get(0)[0]; 
 			    chunkAngles[i][1]= angles.get(0)[1]; 
 				chunkAngles[i][2]= angles.get(0)[2]; 
@@ -219,45 +244,56 @@ public class LinearFlexibleModel implements ArrayModel {
 				int sensIndxEnd=-1; 
 				int sensIndxStart=-1; 
 				//find the two tags the two tags the chunk is between. Iterate through tag chunk positions. 
-				for (int j=0; j<sensorChunkPos.length; j++){
-					if (i>=sensorChunkPos[j]){
-						sensIndxEnd=j-1;
-						sensIndxStart=j;
+				for (int j=0; j<sensorChunkPos.length-1; j++){
+					if (i<=sensorChunkPos[j] && i>=sensorChunkPos[j+1]){
+						sensIndxEnd=j;
+						sensIndxStart=j+1;
+						
+						/**
+						 * We have chunk position of the tag above (sensIndexStart), the tag below (sensIndexEnd) and the current chunk (i).
+						 * Now we need to figure out the angles of the chunk. This will depend on the dimension. 
+						 */
+						switch (dim){
+						case 0:
+							//TODO- to be implemented in future 
+							break;
+						case 1:
+							//TODO- to be implemented in future 
+							break;
+						case 2:
+							
+							//System.out.println("LinearFelxibleModel: Between Sensors: "+chunkPosStart+" Calculateding angles between sensors " +sensIndxStart+ " and  "+sensIndxEnd);
+							
+							//figure out differences in angles. 
+							double headingDiff=angles.get(sensIndxEnd)[0]-angles.get(sensIndxStart)[0]; 
+							double pitchDiff=angles.get(sensIndxEnd)[1]-angles.get(sensIndxStart)[1]; 
+							double rollPitch=angles.get(sensIndxEnd)[2]-angles.get(sensIndxStart)[2]; 
+							
+							// Vertical array. For a vertical array we only consider tag heading and pitch. It is assumed the 
+							double chunkFraction=(i-sensorChunkPos[sensIndxStart])/(double) (sensorChunkPos[sensIndxEnd]-sensorChunkPos[sensIndxStart]); 
+							
+							//work out angles of the chunk
+							chunkAngles[i][0]=chunkFraction*headingDiff+angles.get(sensIndxStart)[0];
+							chunkAngles[i][1]=chunkFraction*pitchDiff+angles.get(sensIndxStart)[1];
+							chunkAngles[i][2]=chunkFraction*rollPitch+angles.get(sensIndxStart)[2];
+							
+							break; 
+						}
+						break; 
 					}
+					//on sensor chunk
+					else if (i==sensorChunkPos[j]){
+						chunkAngles[i][0]=angles.get(j)[0];
+						chunkAngles[i][1]=angles.get(j)[1];
+						chunkAngles[i][2]=angles.get(j)[2];
+					}
+						
 				}
 
-				/**
-				 * We have chunk position of the tag above (sensIndexStart), the tag below (sensIndexEnd) and the current chunk (i).
-				 * Now we need to figure out the angles of the chunk. This will depend on the dimension. 
-				 */
-				switch (dim){
-				case 0:
-					//TODO- to be implemented in future 
-					break;
-				case 1:
-					//TODO- to be implemented in future 
-					break;
-				case 2:
-					
-					//figure out differences in angles. 
-					double headingDiff=angles.get(sensIndxEnd)[0]-angles.get(sensIndxStart)[0]; 
-					double pitchDiff=angles.get(sensIndxEnd)[1]-angles.get(sensIndxStart)[1]; 
-					double rollPitch=angles.get(sensIndxEnd)[2]-angles.get(sensIndxStart)[2]; 
-					
-					// Vertical array. For a vertical array we only consider tag heading and pitch. It is assumed the 
-					double chunkFraction=(i-sensorChunkPos[sensIndxStart])/(double) (sensorChunkPos[sensIndxEnd]-sensorChunkPos[sensIndxStart]); 
-					
-					//work out angles of the chunk
-					chunkAngles[i][0]=chunkFraction*headingDiff+angles.get(sensIndxStart)[0];
-					chunkAngles[i][1]=chunkFraction*pitchDiff+angles.get(sensIndxStart)[1];
-					chunkAngles[i][2]=chunkFraction*rollPitch+angles.get(sensIndxStart)[2];
-					
-					break; 
-				}
 			}
 			
 			//now work out unit vector for each chunk. 
-			double[] unitVector= calcVertUNitVector(chunkAngles[i][0], chunkAngles[i][1]); 
+			double[] unitVector= calcVertUnitVector(chunkAngles[i][0], chunkAngles[i][1]); 
 			chunkUnitVectors[i]=unitVector;
 			//create true chunk vector
 			double[] vector=new double[3]; 
@@ -275,34 +311,20 @@ public class LinearFlexibleModel implements ArrayModel {
 		
 		}
 		
-		//now find the positon of hydrophones and children on the array
-	    double[][] transformedPositions=getPositonsOnArray(hydrophonePos, chunkPositions, chunkUnitVectors);
-		
-		
-		for (int i=0; i<childArrayPos.length; i++){
-			
-		}
-		
-		
-		
+		//now find the positions of child arrays and hydrophones
+	    double[][] hydrophoneTransformPositions=getPositonsOnArray(hydrophonePos, chunkPositions, chunkUnitVectors);
+	    double[][] childTransformPositions=getPositonsOnArray(childArrayPos, chunkPositions, chunkUnitVectors);
+	    double[][] sensorTransformPositions=getPositonsOnArray(sensorPos, chunkPositions, chunkUnitVectors);
+
 		//create class to hold transformed information. 
 		ArrayPos arrayPos=new ArrayPos(); 
 		arrayPos.setStreamerPositions(chunkToStreamer(chunkPositions));
 
-		//TODO- need to actually model array. //////
-		double[] hydrophoneLoc; 
-		for (int i=0; i<hydrophonePos.length; i++){
-			hydrophoneLoc=new double[3];
-			hydrophoneLoc[dim]=hydrophonePos[i];
-			hydrophonePosTrans.add(hydrophoneLoc);
-			//hydrophonePositions.add()
-		}
-		arrayPos.setTransformChildArrayPos(new ArrayList<double[]>());
+		//set info
+		arrayPos.setTransformHydrophonePos(hydrophoneTransformPositions);
+		arrayPos.setTransformChildArrayPos(childTransformPositions);
+		arrayPos.setTransformSensorPos(sensorTransformPositions);
 
-		////////////////////////////////////////
-		
-		arrayPos.setTransformHydrophonePos(transformedPositions);
-		
 		return arrayPos;
 		
 	}
@@ -329,7 +351,7 @@ public class LinearFlexibleModel implements ArrayModel {
 					//found the chunk the position is on.
 					//whats' the difference in distance? 
 					double magnitude=Math.abs(positions[j])-arrayLength;
-					System.out.println("Magnitude: "+magnitude + " arrayLength: "+arrayLength);
+					//System.out.println("Magnitude: "+magnitude + " arrayLength: "+arrayLength);
 					//multiple by unit vecotr 
 					double[] vector=new double[3]; 
 					vector[0]=chunkUnitVectors[i][0]*magnitude; vector[1]=chunkUnitVectors[i][1]*magnitude; vector[2]=chunkUnitVectors[i][2]*magnitude;
@@ -405,9 +427,10 @@ public class LinearFlexibleModel implements ArrayModel {
 	 * @param pitch - pitch in RADIANS.
 	 * @return unit vector [x,y,z]. 
 	 */
-	private double[] calcVertUNitVector(double heading, double pitch){
-		double x=Math.sin(pitch)*Math.cos(heading); 
-		double y=Math.sin(pitch)*Math.sin(heading); 
+	private double[] calcVertUnitVector(double heading, double pitch){
+		//have to get heading into correct format here. 
+		double x=Math.sin(pitch)*Math.cos(1.5*Math.PI-heading); 
+		double y=Math.sin(pitch)*Math.sin(1.5*Math.PI-heading); 
 		double z=Math.cos(pitch);
 		double[] unitVector={x,y,z};
 		return unitVector;

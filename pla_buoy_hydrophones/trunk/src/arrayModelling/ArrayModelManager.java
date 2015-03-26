@@ -157,16 +157,18 @@ public class ArrayModelManager {
 	 */
 	private ArrayPos transfromResults(ArrayPos parent, ArrayPos child){
 		//find referencePos
-		int index=parent.getChildArrays().indexOf(child.getParentHArray());
+		int index=parent.getChildArrays().indexOf(child.getHArray());
 		if (index<0){
 			System.err.println("Warning: ArrayModelManager: The parent ArrayPos did not contain child. ");
 		}
 		
-		double[] referencePos=parent.getChildArrayPos().get(index); 
+		double[] referencePos=parent.getTransformChildArrayPos().get(index); 
 		
 		//get data in terms of array reference point. 
-		ArrayList<double[]> hydrophones=child.getHydrophonePos();
-		ArrayList<double[]> childArrayPos = child.getChildArrayPos();
+		ArrayList<double[]> hydrophones=child.getTransformHydrophonePos();
+		ArrayList<double[]> childArrayPos = child.getTransformChildArrayPos();
+		ArrayList<double[]> sensorPos = child.getTransformSensorPos();
+
 		
 		//now need to convert to reference frame of parent
 		for (int i=0; i<hydrophones.size(); i++){
@@ -180,15 +182,21 @@ public class ArrayModelManager {
 			childArrayPos.get(i)[1]=childArrayPos.get(i)[1]+referencePos[1];
 			childArrayPos.get(i)[2]=childArrayPos.get(i)[2]+referencePos[2];
 		}
+	
+		for (int i=0; i<sensorPos.size(); i++){
+			sensorPos.get(i)[0]=sensorPos.get(i)[0]+referencePos[0];
+			sensorPos.get(i)[1]=sensorPos.get(i)[1]+referencePos[1];
+			sensorPos.get(i)[2]=sensorPos.get(i)[2]+referencePos[2];
+		}
 		
 		ArrayList<ArrayList<Point3D>> transformStreamer=new ArrayList<ArrayList<Point3D>>();
-		for (int i=0; i<child.getStreamerPositions().size(); i++){
+		for (int i=0; i<child.getTransformStreamerPositions().size(); i++){
 			ArrayList<Point3D> transLine=new ArrayList<Point3D>(); 
-			for (int j=0; j<child.getStreamerPositions().get(i).size(); j++){
+			for (int j=0; j<child.getTransformStreamerPositions().get(i).size(); j++){
 				Point3D transPoint=new Point3D(
-						child.getStreamerPositions().get(i).get(j).getX()+referencePos[0],
-						child.getStreamerPositions().get(i).get(j).getY()+referencePos[1],
-						child.getStreamerPositions().get(i).get(j).getZ()+referencePos[2]
+						child.getTransformStreamerPositions().get(i).get(j).getX()+referencePos[0],
+						child.getTransformStreamerPositions().get(i).get(j).getY()+referencePos[1],
+						child.getTransformStreamerPositions().get(i).get(j).getZ()+referencePos[2]
 						); 
 				transLine.add(transPoint);
 			} 
@@ -198,6 +206,7 @@ public class ArrayModelManager {
 		//now set
 		child.setTransformHydrophonePos(hydrophones);
 		child.setTransformChildArrayPos(childArrayPos);
+		child.setTransformSensorPos(sensorPos);
 		child.setStreamerPositions(transformStreamer);
 		
 		return child; 
@@ -213,7 +222,7 @@ public class ArrayModelManager {
 	private ArrayList<ArrayPos> findChildren(ArrayPos arrayPosParent, ArrayList<ArrayPos> childTier){
 		 ArrayList<ArrayPos> children=new ArrayList<ArrayPos>(); 
 		for (int i=0; i<childTier.size(); i++){
-			if (childTier.get(i).getParentHArray().getParentHArray()==arrayPosParent.getParentHArray()) children.add(childTier.get(i));
+			if (childTier.get(i).getHArray().getParentHArray()==arrayPosParent.getHArray()) children.add(childTier.get(i));
 		}
 		return children;
 	}

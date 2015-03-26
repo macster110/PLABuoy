@@ -116,7 +116,7 @@ public class SensorsSimPane extends BorderPane implements ControlPane {
 	/**
 	 * Called when user changed sim sensor control. 
 	 */
-	private void simDataControlChanged(){
+	public void simDataControlChanged(){
 		mainView.getArrayModelControl().notifyModelChanged(ChangeType.SIM_SENSOR_TRIGGERED);
 		mainView.getArrayModelControl().getArrayModelManager().calculateHydrophonePositions(-1);
 	}
@@ -173,6 +173,7 @@ public class SensorsSimPane extends BorderPane implements ControlPane {
 				headingSlider.setPadding(new Insets(0,0,10,0));
 				headingSlider.setShowTickMarks(true);
 				headingSlider.setShowTickLabels(true);
+				headingSlider.setValue(Math.toDegrees(movementSensor.headingRefProperty().get()));
 				headingSlider.valueProperty().addListener(( ov, ol_val ,new_val)->{
 					simDataControlChanged();
 				});
@@ -184,6 +185,7 @@ public class SensorsSimPane extends BorderPane implements ControlPane {
 				pitchSlider.setPadding(new Insets(0,0,10,0));
 				pitchSlider.setShowTickMarks(true);
 				pitchSlider.setShowTickLabels(true);
+				pitchSlider.setValue(Math.toDegrees(movementSensor.pitchRefProperty().get()));
 				pitchSlider.valueProperty().addListener(( ov, ol_val ,new_val)->{
 					simDataControlChanged();
 				});
@@ -194,6 +196,7 @@ public class SensorsSimPane extends BorderPane implements ControlPane {
 				rollSlider.setPadding(new Insets(0,0,10,0));
 				rollSlider.setShowTickMarks(true);
 				rollSlider.setShowTickLabels(true);
+				rollSlider.setValue(Math.toDegrees(movementSensor.rollRefProperty().get()));
 				rollSlider.valueProperty().addListener(( ov, ol_val ,new_val)->{
 					simDataControlChanged();
 				});

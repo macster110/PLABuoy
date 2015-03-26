@@ -6,14 +6,23 @@ import javafx.geometry.Point3D;
 import dataUnits.hArray.HArray;
 
 /**
- * Utility class to store transformed hydrophone positions and the modelled streamer. The idea behind this class is that a list of the orignal positions are 
- * kept in the HArray classes and  transfromHydrophonePos and transfromChildArrayPos represent the transformed hydrophone positions and transformed reference positions of 
+ * Utility class to store transformed hydrophone, sensor and the modelled streamer positions. 
+ * <p>
+ * In this class a list of the original positions are kept in the HArray classes whilst transfromHydrophonePos, transfromSensorPos and transfromChildArrayPos
+ * represent the transformed hydrophone, sensor and reference positions of 
  * child arrays respectively. 
+ * <p>
+ * In this all co-ordinates are kept in the 
  * @author Jamie Macaulay
  *
  */
 public class ArrayPos {
 	
+	/**
+	 * Time for which array was modelled -1 for simulated data. 
+	 */
+	long time=-1; 
+
 	/**
 	 * Reference to the array to which these results belong
 	 */
@@ -27,44 +36,79 @@ public class ArrayPos {
 	/**
 	 * Hydrophone positions relative to the 0,0,0 point of the array. 
 	 */
-	public ArrayList<double[]> transfromHydrophonePos;
+	public ArrayList<double[]> transformHydrophonePos;
 	
 	/**
-	 * List of child array attachment points to parent after movement transforms have been applied. 
+	 * List of child array attachment points after movement transforms have been applied. 
 	 */
-	public ArrayList<double[]> transfromChildArrayPos;
-
+	public ArrayList<double[]> transformChildArrayPos;
+	
+	
+	/**
+	 * List of  sensor positions after transform has been applied. 
+	 */
+	public ArrayList<double[]> transformSensorPos;
+	
 	/**
 	 * Describes streamer or streamer. 
 	 */
 	public  ArrayList<ArrayList<Point3D>> streamerPositions; 
 	
+	
 	/**
-	 * Get hydrophone positions. 
-	 * @return the hydrophone positons in x,y and z;
+	 * Get transformed sensor positions. 
+	 * @return list of {x,y,z} sensor positions in this arrays' own co-ordinate frame; 
 	 */
-	public ArrayList<double[]> getHydrophonePos() {
-		return transfromHydrophonePos;
+	public ArrayList<double[]> getTransformSensorPos() {
+		return transformSensorPos;
 	}
 
 	/**
-	 * Set hydrophone positions
-	 * @param hydrophonePositions - list of x,y,z hydrophone postions. 
+	 * Set transformed sensor positions. 
+	 * @param list of {x,y,z} sensor positions in this arrays' own co-ordinate frame; 
+	 */
+	public void setTransformSensorPos(ArrayList<double[]> transfromSensorPos) {
+		this.transformSensorPos = transfromSensorPos;
+	}
+	
+	/**
+	 * Set transformed sensor positions. 
+	 * @param list of {x,y,z} sensor positions in this arrays' own co-ordinate frame; 
+	 */
+	public void setTransformSensorPos(double[][] transfromSensorPos) {
+		ArrayList<double[]> sensorPosList=new ArrayList<double[]>();
+		for (int i=0; i<transfromSensorPos.length; i++){
+			sensorPosList.add(transfromSensorPos[i]);
+		}
+		this.transformSensorPos = sensorPosList;
+	}
+
+	/**
+	 * Get transformed hydrophone positions. 
+	 * @param hydrophonePositions - list of {x,y,z} hydrophone positions in this arrays' own co-ordinate frame; 
+	 */
+	public ArrayList<double[]> getTransformHydrophonePos() {
+		return transformHydrophonePos;
+	}
+
+	/**
+	 * Set transformed hydrophone positions
+	 * @param hydrophonePositions - list of {x,y,z} hydrophone positions in this arrays' own co-ordinate frame; 
 	 */
 	public void setTransformHydrophonePos(ArrayList<double[]> hydrophonePositions) {
-		this.transfromHydrophonePos = hydrophonePositions;
+		this.transformHydrophonePos = hydrophonePositions;
 	}
 	
 	/**
 	 * Set hydrophone positions
-	 * @param hydrophonePositions - list of x,y,z hydrophone postions. 
+	 * @param hydrophonePositions - list of {x,y,z} hydrophone postions. 
 	 */
 	public void setTransformHydrophonePos(double[][] hydrophonePositions) {
 		ArrayList<double[]> hydrophonePosList=new ArrayList<double[]>();
 		for (int i=0; i<hydrophonePositions.length; i++){
 			hydrophonePosList.add(hydrophonePositions[i]);
 		}
-		this.transfromHydrophonePos = hydrophonePosList;
+		this.transformHydrophonePos = hydrophonePosList;
 	}
 
 
@@ -74,14 +118,14 @@ public class ArrayPos {
 	 * form a continous curving streamer. Each <ArrayList<Point3D> is one continous line - multiple lines can be used
 	 * to visualise more complex array setups. 
 	 */
-	public ArrayList<ArrayList<Point3D>> getStreamerPositions() {
+	public ArrayList<ArrayList<Point3D>> getTransformStreamerPositions() {
 		return streamerPositions;
 	}
 
 	/**
 	 * Set streamer positions. 
 	 * @param streamerPositions  - could be individual lines or a series of lines which, when plotted
-	 * form a continous curving streamer. 
+	 * form a continuous curving streamer. 
 	 */
 	public void setStreamerPositions( ArrayList<ArrayList<Point3D>> streamerPositions) {
 		this.streamerPositions = streamerPositions;
@@ -91,23 +135,36 @@ public class ArrayPos {
 	 * Get transformed positions of child arrays/ 
 	 * @return
 	 */
-	public ArrayList<double[]> getChildArrayPos() {
-		return transfromChildArrayPos;
+	public ArrayList<double[]> getTransformChildArrayPos() {
+		return transformChildArrayPos;
 	}
 
 	/**
 	 * Set transformed positions of child arrays. 
-	 * @param arrayPositions
+	 * @param arrayPositions list of {x,y,z} in arrays own co-ordinate frame; 
 	 */
 	public void setTransformChildArrayPos(ArrayList<double[]> arrayPositions) {
-		this.transfromChildArrayPos = arrayPositions;
+		this.transformChildArrayPos = arrayPositions;
 	}
+	
+	/**
+	 * Set transformed positions of child arrays. 
+	 * @param arrayPositions list of {x,y,z} in arrays own co-ordinate frame; 
+	 */
+	public void setTransformChildArrayPos(double[][] arrayPositions) {
+		ArrayList<double[]> childArrayPosList=new ArrayList<double[]>();
+		for (int i=0; i<arrayPositions.length; i++){
+			childArrayPosList.add(arrayPositions[i]);
+		}
+		this.transformChildArrayPos = childArrayPosList;
+	}
+	
 	
 	/**
 	 * Get the parent array. this is the array to which hydrophones belong. 
 	 * @return the parent array. 
 	 */
-	public HArray getParentHArray() {
+	public HArray getHArray() {
 		return hydrophoneArray;
 	}
 
@@ -115,7 +172,7 @@ public class ArrayPos {
 	 * Set the parent array. This is the array to which hydrophones belong. 
 	 * @param hydrophoneArray - the array to set as parent. 
 	 */
-	public void setParentHArray(HArray hydrophoneArray) {
+	public void setHArray(HArray hydrophoneArray) {
 		this.hydrophoneArray = hydrophoneArray;
 	}
 	
@@ -135,21 +192,29 @@ public class ArrayPos {
 		this.childArrays = childArrays;
 	}
 	
+	public long getTime() {
+		return time;
+	}
+
+	public void setTime(long time) {
+		this.time = time;
+	}
+	
 	@Override 
 	public String toString(){
 		
 		String string="";
 		String hydrophoneString; 
-		for (int i=0; i<transfromHydrophonePos.size(); i++){
+		for (int i=0; i<transformHydrophonePos.size(); i++){
 			hydrophoneString=("Hydrophone channel " + hydrophoneArray.getHydrophones().get(i).channelProperty().get() + 
-					" transfromHydrophonePos.get(i)[0]"+ " y: "+transfromHydrophonePos.get(i)[1] +" z: "+transfromHydrophonePos.get(i)[2]);
+					" transfromHydrophonePos.get(i)[0]"+ " y: "+transformHydrophonePos.get(i)[1] +" z: "+transformHydrophonePos.get(i)[2]);
 			string=string+hydrophoneString+ " ";
 		}
 //		string=string+"\n";
 		
 		String childArrayString;
-		for (int i=0; i<transfromChildArrayPos.size(); i++){
-			childArrayString=(childArrays.get(i).nameProperty().get() + " child array x: "+transfromChildArrayPos.get(i)[0]+ " y: "+transfromChildArrayPos.get(i)[1]+" z: "+transfromChildArrayPos.get(i)[2]);
+		for (int i=0; i<transformChildArrayPos.size(); i++){
+			childArrayString=(childArrays.get(i).nameProperty().get() + " child array x: "+transformChildArrayPos.get(i)[0]+ " y: "+transformChildArrayPos.get(i)[1]+" z: "+transformChildArrayPos.get(i)[2]);
 			string=string+childArrayString+" ";
 		}
 

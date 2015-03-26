@@ -55,9 +55,8 @@ public abstract class TablePane<T> extends BorderPane {
 		    return row ;
 		});
 		
-		//add listner to disable settings and delete buttons when there's nothing in the table. 
+		//add listener to disable settings and delete buttons when there's nothing in the table. 
 		data.addListener((ListChangeListener.Change<? extends T> c) ->{
-			System.out.println("Hello list changed"); 
 			getButtonPane().getSettingsButton().setDisable(table.getItems().size()<=0);
 			getButtonPane().getDeleteButton().setDisable(table.getItems().size()<=0);
 		});
@@ -89,9 +88,8 @@ public abstract class TablePane<T> extends BorderPane {
         //make sure table resized with pane to stop blank column
         getTableView().setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         
-    	getButtonPane().getSettingsButton().setDisable(true);
-			getButtonPane().getDeleteButton().setDisable(true);
-
+    	getButtonPane().getSettingsButton().setDisable(table.getItems().size()<=0);
+		getButtonPane().getDeleteButton().setDisable(table.getItems().size()<=0);
 
 		return arrayPane;
 	}
