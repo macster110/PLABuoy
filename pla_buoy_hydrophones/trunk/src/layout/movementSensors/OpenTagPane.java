@@ -105,7 +105,6 @@ public class OpenTagPane extends SensorPane<OpenTagSensor> {
 	    			filePath.setText("");
 	    			filePath.setTooltip(new Tooltip("No folder set"));
 	    		}
-
 		});
 		
 		openFilePath.getChildren().addAll(filePath, browseButton); 

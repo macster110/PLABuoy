@@ -148,10 +148,20 @@ public abstract class AbstractMovementSensor implements MovementSensor {
 	
 	/**
 	 * Get the simulated data for the sensor. This is sensor data from the sliders in the 
-	 * @return
+	 * @return simulated heading, pitch and roll data
 	 */
 	public Double[] getSimOrientationData(){
 		return ArrayModelControl.getInstance().getSensorManager().getSimSensorData(this); 
+	}
+	
+	/**
+	 * Get simulated latitude and longitude data. 
+	 * @return simulated latitude and longitude data. 
+	 */
+	public Double[] getSimLatLongData(){
+		Double[] allData= ArrayModelControl.getInstance().getSensorManager().getSimSensorData(this); 
+		Double[] latLongData= {allData[4], allData[5]};
+		return latLongData; 
 	}
 	
 	/**
