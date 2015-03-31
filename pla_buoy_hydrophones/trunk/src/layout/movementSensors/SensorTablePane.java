@@ -5,6 +5,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.TableColumn;
 import layout.ArrayModelView;
 import layout.ControlPane;
+import layout.ControlPane.ChangeType;
 import layout.utils.TablePane;
 import main.ArrayModelControl;
 import main.SensorManager.SensorType;
@@ -85,6 +86,8 @@ public class SensorTablePane extends TablePane<MovementSensor> implements Contro
 
 	@Override
 	public void dialogClosed(MovementSensor data) {
+		mainPane.getArrayModelControl().getArrayModelManager().calculateHydrophonePositions(-1);
+		mainPane.getArrayModelControl().notifyModelChanged(ChangeType.SENSOR_CHANGED);
 		this.mainPane.getArrayModelControl().updateArraySensors();
 		
 	}

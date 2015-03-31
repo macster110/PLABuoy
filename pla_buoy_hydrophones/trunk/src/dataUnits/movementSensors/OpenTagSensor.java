@@ -36,7 +36,6 @@ public class OpenTagSensor extends AbstractMovementSensor {
 		return getReferencePosition();
 	}
 
-	@Override
 	public File getDataPath() {
 		return dataPath;
 	}

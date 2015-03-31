@@ -68,12 +68,6 @@ public abstract class AbstractMovementSensor implements MovementSensor {
 	}
 
 	/**
-	 * Get the path to the data 
-	 * @return the path to the folder which contains data
-	 */
-	abstract File getDataPath(); 
-	
-	/**
 	 * Load sensor data between two times so available in memory. 
 	 * @param time1 - start time in millis to load data from. 
 	 * @param time2 - end time in millis to load data to.
@@ -162,6 +156,14 @@ public abstract class AbstractMovementSensor implements MovementSensor {
 		Double[] allData= ArrayModelControl.getInstance().getSensorManager().getSimSensorData(this); 
 		Double[] latLongData= {allData[4], allData[5]};
 		return latLongData; 
+	}
+	
+	/**
+	 * Get simulated depth data. 
+	 * @return simulated depth data. 
+	 */
+	public Double getSimDepth(){
+		return ArrayModelControl.getInstance().getSensorManager().getSimSensorData(this)[5]; 
 	}
 	
 	/**

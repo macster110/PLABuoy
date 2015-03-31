@@ -1,8 +1,10 @@
 package dataUnits.movementSensors;
 
 import java.io.File;
+import java.util.List;
 
 import layout.movementSensors.SensorPane;
+import layout.movementSensors.VectorGPSPane;
 import main.SensorManager.SensorType;
 
 /**
@@ -12,17 +14,18 @@ import main.SensorManager.SensorType;
  */
 public class VectorGPS extends AbstractMovementSensor {
 	
-	private boolean[] hasSensors={true, false, false, false, true, true};
+	private boolean[] hasSensors={true, false, false, true, true, true};
 	
 	/**
 	 * Data path for vector GPS data. 
 	 */
-	private File dataPath=null;  
+	private List<File> dataPaths=null;
 
+	private VectorGPSPane vectorGPSPane;  
 
-	public VectorGPS(String sensorName, SensorType sensorType) {
-		super(sensorName, sensorType);
-		// TODO Auto-generated constructor stub
+	public VectorGPS() {
+		super("Vector GPS", SensorType.VECTOR_GPS);
+		vectorGPSPane=new VectorGPSPane(); 
 	}
 
 	@Override
@@ -33,6 +36,10 @@ public class VectorGPS extends AbstractMovementSensor {
 
 	@Override
 	public Double[] getPosition(long time) {
+		if (time<0) {
+			Double[] pos={getReferencePosition()[0], getReferencePosition()[1],  super.getSimOrientationData()[5]};
+			return pos; 
+		}
 		return getReferencePosition();
 
 	}
@@ -55,11 +62,6 @@ public class VectorGPS extends AbstractMovementSensor {
 	}
 
 	@Override
-	File getDataPath() {
-		return dataPath;
-	}
-
-	@Override
 	public void loadData(long time1, long time2) {
 		// TODO Auto-generated method stub
 		
@@ -67,8 +69,15 @@ public class VectorGPS extends AbstractMovementSensor {
 
 	@Override
 	public SensorPane getSettingsPane() {
-		// TODO Auto-generated method stub
-		return null;
+		return vectorGPSPane;
+	}
+
+	public List<File> getDataPath() {
+		return dataPaths;
+	}
+
+	public void setDataPath(List<File> filePaths) {
+		this.dataPaths=filePaths;
 	}
 
 }

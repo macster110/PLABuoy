@@ -46,7 +46,7 @@ public class RigidModel implements ArrayModel  {
 		
 		ArrayList<double[]> sensorPositions=new ArrayList<double[]>(); 
 		for (int i=0; i<movementSensors.size(); i++ ){
-			double[] position={movementSensors.get(i).getPosition(-1)[0], movementSensors.get(i).getPosition(-1)[1], movementSensors.get(i).getPosition(-1)[2]};
+			double[] position={movementSensors.get(i).getReferencePosition()[0], movementSensors.get(i).getReferencePosition()[1], movementSensors.get(i).getReferencePosition()[2]};
 			sensorPositions.add(position);
 		}
 		
@@ -97,13 +97,7 @@ public class RigidModel implements ArrayModel  {
 		double[] transformedPos;
 		ArrayList<Point3D> streamerPoints;
 		for (int i=0; i<hydrophonePos.size(); i++){
-//			transformedPoint =new Point3D(hydrophonePos.get(i)[0], hydrophonePos.get(i)[1], hydrophonePos.get(i)[2]); 
-//			transformedPoint=rotPitch.transform(transformedPoint);
-//			transformedPoint=rotHeading.transform(transformedPoint);
-//			transformedPoint=rotRoll.transform(transformedPoint);
-//			transformedPos=new double[3];
-//			transformedPos[0]=transformedPoint.getX(); transformedPos[1]=transformedPoint.getY(); transformedPos[2]=transformedPoint.getZ();
-			hydrophonePosTRansform.add(calcTransformPoint(hydrophonePos.get(i),rotHeading,rotPitch,rotRoll));
+			hydrophonePosTRansform.add(calcTransformPoint(hydrophonePos.get(i),rotHeading,rotPitch,rotRoll,sensorData[5]));
 			
 			//create streamer for each hydrophone
 			streamerPoints=new  ArrayList<Point3D>();
@@ -114,26 +108,17 @@ public class RigidModel implements ArrayModel  {
 		}
 		
 		for (int i=0; i<childArrayPos.size(); i++){
-//			transformedPoint =new Point3D(childArrayPos.get(i)[0], childArrayPos.get(i)[1], childArrayPos.get(i)[2]); 
-//			transformedPoint=rotPitch.transform(transformedPoint);
-//			transformedPoint=rotHeading.transform(transformedPoint);
-//			transformedPoint=rotRoll.transform(transformedPoint);
-//			transformedPos=new double[3];
-//			transformedPos[0]=transformedPoint.getX(); transformedPos[1]=transformedPoint.getY(); transformedPos[2]=transformedPoint.getZ();
-			childArrayPosTRansform.add(calcTransformPoint(childArrayPos.get(i),rotHeading,rotPitch,rotRoll));
+			childArrayPosTRansform.add(calcTransformPoint(childArrayPos.get(i),rotHeading,rotPitch,rotRoll,sensorData[5]));
+			//create streamer to child array
+			streamerPoints=new  ArrayList<Point3D>();
+			streamerPoints.add(new Point3D(0,0,childArrayPosTRansform.get(i)[2]));
+			streamerPoints.add(new Point3D(childArrayPosTRansform.get(i)[0],childArrayPosTRansform.get(i)[1],childArrayPosTRansform.get(i)[2]));
+			streamers.add(streamerPoints);
 		}
 
 		for (int i=0; i<sensorPos.size(); i++){
-//			transformedPoint =new Point3D(sensorPos.get(i)[0], sensorPos.get(i)[1], sensorPos.get(i)[2]); 
-//			transformedPoint=rotPitch.transform(transformedPoint);
-//			transformedPoint=rotHeading.transform(transformedPoint);
-//			transformedPoint=rotRoll.transform(transformedPoint);
-//			transformedPos=new double[3];
-//			transformedPos[0]=transformedPoint.getX(); transformedPos[1]=transformedPoint.getY(); transformedPos[2]=transformedPoint.getZ();
-//			sensorPosTransform.add(transformedPos);
-
-			sensorPosTransform.add(calcTransformPoint(sensorPos.get(i),rotHeading,rotPitch,rotRoll));
-
+			//remember that the sensor stays in position relative to everything else so don't alter depth. 
+			sensorPosTransform.add(calcTransformPoint(sensorPos.get(i),rotHeading,rotPitch,rotRoll,sensorData[5]));
 		}
 		
 	
@@ -146,6 +131,7 @@ public class RigidModel implements ArrayModel  {
 		
 		return arrayPos;
 	}
+
 	
 	/**
 	 * Transform point. Note: rotate transforms contain point of rotation. 
@@ -153,15 +139,19 @@ public class RigidModel implements ArrayModel  {
 	 * @param rotHeading - heading transform.
 	 * @param rotPitch - pitch transform.
 	 * @param rotRoll - roll transform. 
+	 * @param z - z translate 
 	 * @return transformed point {x,y,z} relative to arrays co-ordinate frame. 
 	 */
-	private  double[] calcTransformPoint(double[] transformPos, Rotate rotHeading, Rotate rotPitch, Rotate rotRoll){
+	private  double[] calcTransformPoint(double[] transformPos, Rotate rotHeading, Rotate rotPitch, Rotate rotRoll, Double z){
 		Point3D transformedPoint=new Point3D(transformPos[0], transformPos[1], transformPos[2]); 
 		transformedPoint=rotPitch.transform(transformedPoint);
 		transformedPoint=rotHeading.transform(transformedPoint);
 		transformedPoint=rotRoll.transform(transformedPoint);
 		double[] transformedPos=new double[3];
 		transformedPos[0]=transformedPoint.getX(); transformedPos[1]=transformedPoint.getY(); transformedPos[2]=transformedPoint.getZ();
+		
+		//now add position information;
+		transformedPos[2]=transformedPos[2]+(z==null ? 0:z); 
 		
 		return transformedPos;
 	}
@@ -176,19 +166,42 @@ public class RigidModel implements ArrayModel  {
 	 */
 	private Double[] getSensorData(ArrayList<MovementSensor> movementSensors, long time){
 		
-		Double[] sensorData=new Double[5]; 
+		Double[] sensorData=new Double[6]; 
+		
+		Double[] simSensorData;
+		Double[] position; 
+		Double[] latLong; 
 		
 		//now iterate through all sensors and find info. 
 		for (int i=0; i<movementSensors.size(); i++){
+			
+			simSensorData=movementSensors.get(i).getOrientationData(time); 
+			latLong=movementSensors.get(i).getLatLong(time);
+			position=movementSensors.get(i).getPosition(time);
+
+			//orientation
 			if (movementSensors.get(i).getOrientationData(time)!=null){
-				if (sensorData[0]==null)  sensorData[0]=movementSensors.get(i).getOrientationData(time)[0]-movementSensors.get(i).getReferenceOrientation()[0]; 
-				if (sensorData[1]==null)  sensorData[1]=movementSensors.get(i).getOrientationData(time)[1]-movementSensors.get(i).getReferenceOrientation()[1]; 
-				if (sensorData[2]==null)  sensorData[2]=movementSensors.get(i).getOrientationData(time)[2]-movementSensors.get(i).getReferenceOrientation()[2]; 
+				if (sensorData[0]==null && simSensorData[0]!=null)  sensorData[0]=simSensorData[0]-movementSensors.get(i).getReferenceOrientation()[0]; 
+				else if (simSensorData[0]==null) sensorData[0]=movementSensors.get(i).getReferenceOrientation()[0];
+				
+				if (sensorData[1]==null && simSensorData[1]!=null)  sensorData[1]=simSensorData[1]-movementSensors.get(i).getReferenceOrientation()[1]; 
+				else if (simSensorData[1]==null) sensorData[1]=movementSensors.get(i).getReferenceOrientation()[1];
+
+				if (sensorData[2]==null && simSensorData[2]!=null)  sensorData[2]=simSensorData[2]-movementSensors.get(i).getReferenceOrientation()[2]; 
+				else if (simSensorData[2]==null) sensorData[2]=movementSensors.get(i).getReferenceOrientation()[2];
+
 			}
-			if (movementSensors.get(i).getLatLong(time)!=null){
-				if (sensorData[3]==null)  sensorData[3]=movementSensors.get(i).getLatLong(time)[0];
-				if (sensorData[4]==null)  sensorData[4]=movementSensors.get(i).getLatLong(time)[1]; 
+			//latitude, longitude
+			if (latLong!=null){
+				if (sensorData[3]==null && latLong[0]!=null)  sensorData[3]=latLong[0];
+
+				if (sensorData[4]==null && latLong[1]!=null)  sensorData[4]=latLong[1]; 
 			}
+			//depth
+			if (position!=null){
+				if (sensorData[5]==null && position[2]!=null) sensorData[5]=position[2]-movementSensors.get(i).getReferencePosition()[2]; 
+			}
+			
 		}
 		return sensorData;
 	}

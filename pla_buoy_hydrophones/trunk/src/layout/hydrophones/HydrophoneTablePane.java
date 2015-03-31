@@ -77,8 +77,9 @@ public class HydrophoneTablePane extends TablePane<Hydrophone> implements Contro
 
 	@Override
 	public void dialogClosed(Hydrophone data) {
-		//Update hydrophones;  
-		System.out.println("Update hydrophones"); 
+		//Update hydrophones; 
+		mainPane.getArrayModelControl().getArrayModelManager().calculateHydrophonePositions(-1);
+		mainPane.getArrayModelControl().notifyModelChanged(ChangeType.HYDROPHONE_CHANGED);
 		mainPane.getArrayModelControl().updateArrayHydrophones();
 		
 	}

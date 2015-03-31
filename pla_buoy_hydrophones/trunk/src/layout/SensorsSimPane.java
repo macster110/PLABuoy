@@ -117,8 +117,8 @@ public class SensorsSimPane extends BorderPane implements ControlPane {
 	 * Called when user changed sim sensor control. 
 	 */
 	public void simDataControlChanged(){
-		mainView.getArrayModelControl().notifyModelChanged(ChangeType.SIM_SENSOR_TRIGGERED);
 		mainView.getArrayModelControl().getArrayModelManager().calculateHydrophonePositions(-1);
+		mainView.getArrayModelControl().notifyModelChanged(ChangeType.SIM_SENSOR_TRIGGERED);
 	}
 	
 	/**
@@ -224,6 +224,8 @@ public class SensorsSimPane extends BorderPane implements ControlPane {
 			if (movementSensor.getHasSensors()[5]){
 				this.getChildren().add(new Label("Depth (m)"));
 				this.getChildren().add(depthSlider= new Slider(0,100, 0));
+				depthSlider.setShowTickMarks(true);
+				depthSlider.setShowTickLabels(true);
 				depthSlider.valueProperty().addListener(( ov, ol_val ,new_val)->{
 					simDataControlChanged();
 				});
@@ -255,7 +257,7 @@ public class SensorsSimPane extends BorderPane implements ControlPane {
 				sensorData[4]=longitude.getValue();
 			}
 			if (movementSensor.getHasSensors()[5]){
-				sensorData[5]=depthSlider.getValue();
+				sensorData[5]=-depthSlider.getValue();
 			}
 			
 			return sensorData;

@@ -1,16 +1,7 @@
 package layout;
 
 import java.util.ArrayList;
-
-
-
-
-
-
-
-
 import org.fxyz.geometry.Point3D;
-
 import dataUnits.movementSensors.MovementSensor;
 import arrayModelling.ArrayPos;
 import javafx.event.EventHandler;
@@ -25,7 +16,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
-import javafx.scene.shape.Cylinder;
+
 import javafx.scene.shape.Sphere;
 import javafx.scene.text.Text;
 import javafx.scene.transform.Rotate;
@@ -255,12 +246,15 @@ public class Array3DPane extends BorderPane implements  ControlPane{
 			switch (type){
 			case ARRAY_CHANGED:
 				System.out.println("SensorSimPane: ARRAY_CHANGED");
+				drawArrays(this.mainView.getArrayModelControl().getArrayModelManager().getArrayPos()); 
 				break;
 			case HYDROPHONE_CHANGED:
 				System.out.println("SensorSimPane: HYDROPHONE_CHANGED");
+				drawArrays(this.mainView.getArrayModelControl().getArrayModelManager().getArrayPos()); 
 				break;
 			case SENSOR_CHANGED:
 				System.out.println("SensorSimPane: SENSOR_CHANGED");
+				drawArrays(this.mainView.getArrayModelControl().getArrayModelManager().getArrayPos()); 
 				break;
 			case NEW_ARRAY_POS_CALCULATED:
 				drawArrays(this.mainView.getArrayModelControl().getArrayModelManager().getArrayPos()); 

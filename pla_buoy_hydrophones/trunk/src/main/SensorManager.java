@@ -6,6 +6,7 @@ import javafx.collections.ObservableList;
 import layout.ControlPane.ChangeType;
 import dataUnits.movementSensors.MovementSensor;
 import dataUnits.movementSensors.OpenTagSensor;
+import dataUnits.movementSensors.VectorGPS;
 
 /**
  * Manages the create of new sensors. 
@@ -30,7 +31,7 @@ public class SensorManager {
 	 *
 	 */
 	public enum SensorType {
-		OPEN_TAG
+		OPEN_TAG, VECTOR_GPS
 	}; 
 	
 	public SensorManager(ArrayModelControl arrayModelControl){
@@ -57,12 +58,14 @@ public class SensorManager {
 		switch(type){
 		case OPEN_TAG:
 			return new OpenTagSensor(); 
+		case VECTOR_GPS:
+			return new VectorGPS(); 
 		default:
 			break;
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Get a current list of movement sensors. 
 	 * @return a list of current movement sensors. 

@@ -33,7 +33,7 @@ public class PositionRefPane extends VBox {
 	 * The prefferred width in pixels of text fields. 
 	 */
 	private double prefTextWidth=50; 
-	
+
 	/**
 	 * Position of sensor relative to it's parent array. 
 	 */
@@ -159,6 +159,31 @@ public class PositionRefPane extends VBox {
 		movmentSensor.zRefPositionProperty().setValue(zVal);
 
 		return 0; 
+	}
+	
+	
+	public TextField getxPosField() {
+		return xPos;
+	}
+
+	public TextField getyPosField() {
+		return yPos;
+	}
+
+	public TextField getzPosField() {
+		return zPos;
+	}
+
+	public TextField getHeadingField() {
+		return heading;
+	}
+
+	public TextField getPitchField() {
+		return pitch;
+	}
+
+	public TextField getRollField() {
+		return roll;
 	}
 
 	

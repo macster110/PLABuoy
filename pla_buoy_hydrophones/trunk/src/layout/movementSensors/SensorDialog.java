@@ -149,10 +149,12 @@ public class SensorDialog extends Dialog<MovementSensor>{
 		Label parentArrayLabel=new Label("Parent Array");
 		parentArrayLabel.setPadding(new Insets(sectionPadding,0,0,0));
 		parentArrayComboBox = new ParentArrayComboBox();
+		//FIXME - weird- only by adding a listener does the combo box update properly when arrays are renamed? Mayb actually be a bug in JavaFX source code? 
+		parentArrayComboBox.valueProperty().addListener((obs, t, t1)->{
+		}); 
 		
 		Label sensorLabel=new Label("Select Sensor");
 		sensorBox=new ComboBox<SensorType>();
-		
 		
 		sensorBox.setItems(FXCollections.observableArrayList(SensorType.values()));
 		/**

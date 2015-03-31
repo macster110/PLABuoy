@@ -47,6 +47,9 @@ public class OpenTagPane extends SensorPane<OpenTagSensor> {
 	 */
 	private final ArrayList<String> oTFileExtensions=new ArrayList<String>();
 
+	/**
+	 * Text field showing the file path. 
+	 */
 	private final TextField filePath; 
 	
 	/**

@@ -2,6 +2,7 @@ package layout.arrays;
 
 import layout.ArrayModelView;
 import layout.ControlPane;
+import layout.ControlPane.ChangeType;
 import layout.utils.TablePane;
 import main.ArrayModelControl;
 import dataUnits.hArray.HArray;
@@ -20,8 +21,12 @@ import javafx.scene.control.TableRow;
  */
 public class ArrayTablePane extends TablePane<HArray> implements ControlPane {
 	
+	private ArrayModelView mainPane;
+
 	public ArrayTablePane(ArrayModelView mainPane){
 		super(mainPane.getArrayModelControl().getArrays()); 
+		
+		this.mainPane=mainPane; 
 
 		TableColumn<HArray,String>  arrayID = new TableColumn<HArray,String>("Array Name");
 		arrayID.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
@@ -108,8 +113,8 @@ public class ArrayTablePane extends TablePane<HArray> implements ControlPane {
 
 	@Override
 	public void dialogClosed(HArray data) {
-		// TODO Auto-generated method stub
-		
+		mainPane.getArrayModelControl().getArrayModelManager().calculateHydrophonePositions(-1);
+		mainPane.getArrayModelControl().notifyModelChanged(ChangeType.ARRAY_CHANGED);
 	}
 	
 }
