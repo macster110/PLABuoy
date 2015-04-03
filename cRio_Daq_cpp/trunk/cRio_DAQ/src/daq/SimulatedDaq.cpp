@@ -33,11 +33,12 @@ SimulatedDaq::~SimulatedDaq() {
 
 void* SimulatedDaq::simThread(){
 
+
 	uint64_t samplesAcquired = 0;
 	uint64_t expectedSamples = 0;
 	short* p = bufstart;
 	short nextVal = 0;
-	short valStep = 0;
+	short valStep = 13;
 	simTimer->start();
 	daq_go = true;
 	samplesInBuff = 0;

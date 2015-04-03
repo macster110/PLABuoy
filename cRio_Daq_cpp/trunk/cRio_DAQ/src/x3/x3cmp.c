@@ -136,6 +136,10 @@ int		x3blkencode(BPack *b, short *ip, int *T, int n, int nch)
 	//			bfp_encode blk       - block floating point encode filtered stream
 
 	ma = sdiffmaxs(DBUFF,ip,n,nch) ;	 // apply filter and get max block magnitude
+//	if (ma != 104) {
+//		printf("Max diff signal = %d\n", ma);
+//		fflush(stdout);
+//	}
 	// sdiffmaxs retrieved a single channel of data.
 
 	if(ma <= T[2]) {			 // encode frame with variable-length Rice code
@@ -147,11 +151,12 @@ int		x3blkencode(BPack *b, short *ip, int *T, int n, int nch)
 
 	// block-floating point or pass-through encode the block
 	for(nb=0; ma>0; nb++, ma>>=1) ;  // find the number of bits needed to code ma
-	pack1(b,nb,6) ;                 // add 6 bit BFP header to the bit stream
+//	if (nb > 15) nb = 15;
+	pack1(b,nb&0xF,6) ;                 // add 6 bit BFP header to the bit stream
 	if(nb>=15)
 		packn(b,ip,n,16,nch) ;		     // pack 16 bit integers from source
 	else
-		packn(b,DBUFF,n,nb+1,1) ;	  // pack nb-bit filtered integers
+		packn(b,DBUFF,n,nb+1,1) ;	  // pack nb-bit filtered integers with an extra bit for a sign.
 
 	return(0) ;
 }

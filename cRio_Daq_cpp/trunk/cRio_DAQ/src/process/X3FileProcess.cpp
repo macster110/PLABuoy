@@ -42,7 +42,7 @@ int X3FileProcess::initProcess(int nChan, int sampleRate) {
 }
 
 int X3FileProcess::process(PLABuff* plaBuffer) {
-//	static int count = 0;
+	static int count = 0;
 	int nBytes = plaBuffer->soundFrames*plaBuffer->nChan*sizeof(short);
 	compressedBytes += plaBuffer->dataBytes;
 	uncompressedBytes += nBytes;
@@ -54,6 +54,11 @@ int X3FileProcess::process(PLABuff* plaBuffer) {
 			 (compressedBytes>>20), (uncompressedBytes>>20), (float) uncompressedBytes / (float) (compressedBytes+1));
 //		printf("Last block contained %d frames with %d channels = %d bytes, compressed to %d\n",
 //				plaBuffer->soundFrames, plaBuffer->nChan, nBytes, plaBuffer->dataBytes);
+	}
+	if (++count < 3) {
+		short* data = plaBuffer->data;
+		printf("Writing %d bytes (%d frames) of file data key %d, ch %d ns %d nw %d\n", plaBuffer->dataBytes, plaBuffer->soundFrames,
+				data[0], data[1], data[2], data[3]);
 	}
 
 
@@ -95,6 +100,7 @@ FILE* X3FileProcess::openFile(timeval timeStamp) {
 		headerData = (char*) realloc(headerData, headerDataLength);
 		dataBytes=mxmlSaveString(mainEl, headerData+X3_HDRLEN*2, headerDataLength-X3_HDRLEN*2, MXML_NO_CALLBACK);
 	}
+	printf("Write %d byte xml %s", dataBytes, headerData+X3_HDRLEN*2);
 	mxmlDelete(doc);
 	// number of bytes returned by mxmlSaveString may be odd, but we need to align on a short
 	// boundary - so set the next char to 0 as well (assume currently null terminated).
@@ -104,7 +110,16 @@ FILE* X3FileProcess::openFile(timeval timeStamp) {
 	int nw = (dataBytes+1)>>1;
 	int cd = crc16((short*) (headerData+X3_HDRLEN*2), nw);
 	nw += x3frameheader((short*) headerData,0,0,0,nw,NULL,cd) ;
-	fwrite(aFile, 2, nw, aFile);
+	/*
+	 * Now swap the bytes in the header, but NOT in the data
+	 * Since they were in character format and will therefore already
+	 * be in the correct byte order.
+	 */
+	short* swapBuff = (short*) headerData;
+	for (int i = 0; i < X3_HDRLEN; i++) {
+		swapBuff[i] = htons(swapBuff[i]);
+	}
+	fwrite(headerData, 2, nw, aFile);
 	uncompressedBytes = compressedBytes = 0;
 	printf("Opened new x3 file %s with xml information:\n", fileName.c_str());
 	printf(headerData+X3_HDRLEN*2);

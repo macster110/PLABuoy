@@ -140,6 +140,8 @@ public:
 protected:
 
 	int forwardData(PLABuff* plaBuffer);
+	char* fType;
+	int codec;
 
 private:
 	PLAProcess** childProcesses;

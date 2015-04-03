@@ -116,16 +116,19 @@ int  packn(BPack *b, short *in, int n, int nbits, int stride)
     return(1) ;
 
  for(k=0; k<n; k++, in+=stride) {
-    ow = (ow<<nbits) | (*in & msk) ;
-    bitcnt += nbits ;
+//	 printf("Pack %d in %d bits, ow 0x%x bitcnt %d\n", *in, nbits, ow, bitcnt);
+	 ow = (ow<<nbits) | (*in & msk) ;
+	 bitcnt += nbits ;
 
-    if(bitcnt>=16) {
-       bitcnt -= 16 ;
-       *buff++ = ow>>bitcnt ;
+	 if(bitcnt>=16) {
+//		 printf("Wind on buff array\n");
+		 bitcnt -= 16 ;
+		 *buff++ = ow>>bitcnt ;
 		 ow &= MASK[bitcnt] ;
 		 ++nw ;
-		 }
 	 }
+ }
+// if (n == 20) exit(0);
 
  b->curr = ow ;
  b->nb = bitcnt ;
@@ -155,12 +158,12 @@ int  packr(BPack *b, short *in, int n, int code, int stride)
     bitcnt += nb ;
 
     if(bitcnt >= 16) {           // if this completes a 16-bit word
-       bitcnt -= 16 ;
-       *buff++ = ow>>bitcnt ;          // add it to the buffer
-		 ow &= MASK[bitcnt] ;           // and mask off the saved bit in the accumulator
-		 ++nw ;
-		 }
-	 }
+    	bitcnt -= 16 ;
+    	*buff++ = ow>>bitcnt ;          // add it to the buffer
+    	ow &= MASK[bitcnt] ;           // and mask off the saved bit in the accumulator
+    	++nw ;
+    }
+ }
 
  b->curr = ow ;
  b->nb = bitcnt ;

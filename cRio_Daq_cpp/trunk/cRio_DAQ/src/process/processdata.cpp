@@ -143,6 +143,8 @@ class PLAProcess* findProcess(std::string processName) {
 PLAProcess::PLAProcess(const string processName, const string xmlName) : CommandList() {
 	this->processName = processName;
 	this->xmlName = xmlName;
+	fType = NULL;
+	codec = -1;
 	enabled = true;
 	processId = ++globalProcessId;
 	childProcesses = NULL;
@@ -238,28 +240,36 @@ mxml_node_t* PLAProcess::getXMLStartInfo(mxml_node_t *doc, mxml_node_t *parentNo
 	char txt[20];
 	sprintf(txt, "%d", processId);
 	mxmlElementSetAttr(node, "ID", txt);
-	mxmlElementSetAttr(node, "FTYPE",  getXmlName().c_str());
-	if (timeVal) {
-		el = mxmlNewElement(node, "TIME");
-		sprintf(txt, "%d", timeVal->tv_sec);
-		mxmlElementSetAttr(el, "S", txt);
-		sprintf(txt, "%d", timeVal->tv_usec);
-		mxmlElementSetAttr(el, "uS", txt);
+	if (fType) {
+		mxmlElementSetAttr(node, "FTYPE",  fType);
 	}
+	if (codec >= 0) {
+		sprintf(txt, "%d", codec);
+		mxmlElementSetAttr(node, "CODEC",  txt);
+	}
+//	if (timeVal) {
+//		el = mxmlNewElement(node, "TIME");
+//		sprintf(txt, "%d", timeVal->tv_sec);
+//		mxmlElementSetAttr(el, "S", txt);
+//		sprintf(txt, "%d", timeVal->tv_usec);
+//		mxmlElementSetAttr(el, "uS", txt);
+//	}
 	// work out the source process id ...
 	if (parentProcess) {
 		el = mxmlNewElement(node, "SRC");
 		mxmlNewInteger(el, parentProcess->processId);
 	}
 
-
-	el = mxmlNewElement(node, "PROC");
-	mxmlNewText(el, 0, getXmlName().c_str());
+	if (xmlName.length() > 0) {
+		el = mxmlNewElement(node, "PROC");
+		mxmlNewText(el, 0, getXmlName().c_str());
+	}
 	el = mxmlNewElement(node, "NCHS");
 	mxmlNewInteger(el, getNChan());
 	el = mxmlNewElement(node, "CHANBITMAP");
 	mxmlNewInteger(el, getChannelBitMap());
 	el = mxmlNewElement(node, "FS");
+	mxmlElementSetAttr(el, "UNIT",  "Hz");
 	mxmlNewInteger(el, sampleRate);
 	el = mxmlNewElement(node, "NBITS");
 	mxmlNewInteger(el, 16);

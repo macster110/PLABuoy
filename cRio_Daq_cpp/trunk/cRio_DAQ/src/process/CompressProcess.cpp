@@ -19,6 +19,8 @@
 
 #include <stdio.h>
 
+const char* X3TYPE = "X3V2";
+
 #define NET_AUDIO_DATA (10)
 
 #define NET_AUDIO_HEADINFO (1)
@@ -29,7 +31,8 @@
 // largest allowable frame.
 short    PBUFF[MAXFRAME+X3_HDRLEN] ;
 
-CompressProcess::CompressProcess() : PLAProcess("compress", "X3V2") {
+CompressProcess::CompressProcess() : PLAProcess("compress", X3TYPE) {
+	fType = (char*) X3TYPE;
 }
 
 CompressProcess::~CompressProcess() {
@@ -102,6 +105,7 @@ void CompressProcess::packtimeval(struct timeval timeVal, short* packedTime) {
 }
 
 mxml_node_t* CompressProcess::getXMLInfo(mxml_node_t *doc, mxml_node_t *parentNode, timeval* timeVal) {
+	codec = getParentProcess()->getProcessId();
 	mxml_node_t *node = getXMLStartInfo(doc, parentNode, timeVal);
 	mxml_node_t *el;
 	char txt[20];

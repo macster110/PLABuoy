@@ -258,6 +258,8 @@ FILE  *X3_open(char *fname)
 /**
  * Write an x3 header into data,
  * return the number of word16's written (always 10 = 20 bytes).
+ * These data will later be flipped with htons, so need to be
+ * wary that this may swap the byte ordering - i.e. is this cross endian compatible ?
  */
 int     x3frameheader(short *pb, int id, int nch, int ns, int nw, short *T, short cd)
 {
@@ -265,7 +267,7 @@ int     x3frameheader(short *pb, int id, int nch, int ns, int nw, short *T, shor
 	int     k ;
 
 	*pb++ = X3_KEY ;
-	*pb++ = (id<<8) | (nch&0x0ff) ;
+	*pb++ = (id<<8) | (nch&0x0ff) ; // possibly NOT cross endian compatible to do this !
 	*pb++ = ns ;
 	*pb++ = nw << 1 ;
 	if(T != NULL)
