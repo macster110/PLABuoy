@@ -14,6 +14,15 @@
 #include "../x3/crc16v3.h"
 #include "../RealTimer.h"
 
+#ifdef WINDOWS
+#include <Winsock2.h>
+#else
+//#include <stdio.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#endif
+
 #include <string>
 using namespace std;
 /**
@@ -87,7 +96,7 @@ FILE* X3FileProcess::openFile(timeval timeStamp) {
 	FILE* aFile = fopen(fileName.c_str(),"wb") ;
 	fprintf(aFile,X3_FILE_KEY);
 	/*
-	 * Get teh XML chain describing what's going into the file
+	 * Get the XML chain describing what's going into the file
 	 */
 	mxml_node_t *doc = mxmlNewXML("1.0");
 	mxml_node_t *mainEl = mxmlNewElement(doc, "CONFIG");

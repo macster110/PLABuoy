@@ -70,6 +70,10 @@ NetSender::NetSender() : PLAProcess("netsend", "NETTX") {
 	dataWritten = 0;
 	addCommand(new SetDestIP(this));
 	addCommand(new SetDestPort(this));
+	addCommand(new ClearNetQueue(this));
+
+	// start with it disabled.
+	setEnabled(false);
 
 	//	pthread_t netsendThread;
 	//	pthread_create(&netsendThread, NULL, netsendThreadFunction, this);
@@ -195,6 +199,7 @@ int NetSender::sendThreadLoop() {
 			free(data.data);
 			queuedBytes -= data.dataBytes;
 			networkQueue.pop(); // remove from queue.
+
 		}
 		else {
 			myusleep(10000); // sleep for 10 millisecond.
@@ -224,8 +229,8 @@ int NetSender::sendData(PLABuff* data) {
 	if (bytesWrote == data->dataBytes) {
 		nSends ++;
 		dataWritten += bytesWrote;
-		return true;
 		errors = 0;
+		return true;
 	}
 	return false;
 }
@@ -305,7 +310,7 @@ bool NetSender::sendX3Header(int socketId) {
 	dataBytes += writeSendHeader(hData, dataBytes, NET_AUDIO_HEADINFO);
 
 	int bytesWrote = send(socketId, hData, dataBytes, sendFlags);
-	reporter->report(0, "Wrote %d bytes %s\n", bytesWrote, hData+NET_HDR_LEN);
+//	reporter->report(0, "Wrote %d bytes %s\n", bytesWrote, hData+NET_HDR_LEN);
 	return bytesWrote == dataBytes;
 }
 
@@ -315,4 +320,30 @@ void NetSender::closeConnection() {
 	close(socketId);
 	socketId = 0;
 	hostEntity = NULL;
+}
+
+/**
+ * Clear the network output queue.
+ */
+int NetSender::clearQueue() {
+	int n = 0;
+	while (!networkQueue.empty()) {
+		networkQueue.pop();
+		n++;
+	}
+	return n;
+}
+
+
+ClearNetQueue::ClearNetQueue(NetSender* netSender) : Command(netSender, "clearqueue") {
+	this->netSender = netSender;
+}
+
+ClearNetQueue::~ClearNetQueue() {
+
+}
+
+std::string ClearNetQueue::execute(std::string command, struct sockaddr_in* udpSock) {
+	int n = netSender->clearQueue();
+	reporter->report(0, "Cleared %d packets from network send queue\n", n);
 }

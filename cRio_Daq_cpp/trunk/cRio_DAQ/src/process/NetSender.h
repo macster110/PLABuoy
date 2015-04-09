@@ -11,6 +11,7 @@
 #include "processdata.h"
 #include "../RealTimer.h"
 #include "../mythread.h"
+#include "../command/Command.h"
 
 #include <queue>
 #include <vector>
@@ -53,6 +54,8 @@ public:
 
 	bool setDestinationPort(int portId);
 
+	int clearQueue();
+
 private:
 	queue<PLABuff> networkQueue;
 
@@ -81,6 +84,21 @@ private:
 
 	int64_t dataWritten;
 
+};
+
+
+class ClearNetQueue: public Command {
+public:
+	ClearNetQueue(NetSender* netSender);
+	virtual ~ClearNetQueue();
+
+	std::string execute(std::string command, struct sockaddr_in* udpSock);
+
+	std::string getHint() {
+		return "Clear the TCPIP send queue";
+	}
+private:
+	NetSender* netSender;
 };
 
 #endif /* NETSENDER_H_ */
