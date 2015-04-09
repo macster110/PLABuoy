@@ -175,7 +175,8 @@ void DAQSystem::read_Data_Buffer(){
 		if (getStatus() == DAQ_STATUS_RUNNING){
 //			printf("processData %d samples at 0x%x\n", toWrite, cpr);
 //			fflush(stdout);
-			error = processData(cpr, toWrite, addMicroseconds(daqStart, totalSamples / getProcess(0)->getSampleRate()));
+			error = processData(cpr, toWrite, addMicroseconds(daqStart, totalSamples * 1000000L / getProcess(0)->getSampleRate()));
+			totalSamples += toWrite / 8;
 		}
 		else{
 //			printf("processEnd\n");
