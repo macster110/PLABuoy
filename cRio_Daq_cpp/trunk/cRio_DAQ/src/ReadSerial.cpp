@@ -33,16 +33,14 @@ using namespace std;
 
 /*The size of the read buffer*/
 const int read_size=255;
-/*The number of serial port reads before starting a new file*/
-const int reads_per_file=1000;
 
-bool volatile serial_go=false;
+bool volatile serial_go=true;
 
 /**
  * Open one of the serial ports on the cRio.
  * @param port The cRio 9068 has three serial ports and hence port indicates which port to open (0-2)
  */
-int open_Serial_Port(Serial_Port volatile *port)
+int openSerialPort(Serial_Port *port)
 {
 	/* Figure out which0 device to use*/
 	const char* device;
@@ -67,8 +65,8 @@ int open_Serial_Port(Serial_Port volatile *port)
 	port->fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
 	cout<<"Port fd is: "<<port->fd<<endl;
 	if(port->fd == -1) {
-		printf( "failed to open port\n" );
-		return -1;
+		printf( "ReadSerial: Failed to open port\n" );
+		return PORT_ERROR;
 	}
 
 	bzero(&newtio, sizeof(newtio)); /* clear struct for new port settings */
@@ -101,13 +99,13 @@ int open_Serial_Port(Serial_Port volatile *port)
 	tcflush(port->fd, TCIFLUSH);
 	tcsetattr(port->fd,TCSANOW,&newtio);
 
-	cout<<"Serial Port Opened: "<<device<<endl;
+	cout<<"Serial Port Opened: "<< device << " Baudrate: " << port->BAUDRATE << endl;
 
 	return 0;
 }
 
 
-int open_File(Serial_Port volatile *port){
+int openWriteFile(Serial_Port *port){
 	//create time stamped file.
 	string filename="";
 	filename+=s_file_location;
@@ -123,31 +121,33 @@ int open_File(Serial_Port volatile *port){
 	port->f= fopen(filename.c_str(), "w");
 	if (port->f  == NULL)
 	{
-	    printf("Error: opening file for serial data! \n");
+		fprintf(stderr,"Serial Read Error: Could not open file for serial data. \n");
 	    printf(filename.c_str());
-	    return -1;
+	    return NO_FILE_ERROR;
 	}
-    printf("Read Serial: Open file %s\n",filename.c_str());
+    printf("ReadSerial: Open file %s\n",filename.c_str());
 	return 0;
 }
 
-void readSerialPort(Serial_Port port, int n)
+int readSerialPort(Serial_Port port, int n)
 {
-	printf("Begin reading Serial Port %d\n",n);
+	printf("ReadSerial: Begin reading Serial Port. no. of lines %d\n",n);
 
+	int error=0;
 	int res;
 	char buf[read_size];
 	string time;
 	int count=0;
 	if (port.f  == NULL)
 	{
-		printf("Error: file for serial data is null!\n");
+		fprintf(stderr,"ReadSerial: Error: file for serial data is null!\n");
 	}
 
 	// NMEA command to output all sentences in case reading serial GPS.
 	write(port.fd, "$PTNLSNM,273F,01*27\r\n", 21);
 
 	while (serial_go && (count<n || n<0)) {
+
 		/* loop continuously */
 		/*  read blocks program execution until a line terminating character is
         input, even if more than 255 chars are input. If the number
@@ -168,68 +168,52 @@ void readSerialPort(Serial_Port port, int n)
 			time+=buf;
 			if (port.f  != NULL)
 			{
-				if (count%1000==0){
-					cout<<"Serial port data to write: "<<time << " count:"<< count <<endl; //print out statement very 100 reads
+				// print out serial port data every often.
+				if (count%1==0){
+					cout<<"ReadSerial: Serial port data to write: "<< time.c_str() << " loop count:"<< count << endl; //print out statement very 100 reads
 				}
+				//write to file
 				fprintf(port.f ,"%s\n",time.c_str());
+				usleep(1000000);
 			}
+			else return PORT_ERROR;
+
 			count++;
 		}
 
 	}
-	printf("Serial reading finished \n");
+	printf("ReadSerial: Serial reading finished \n");
 	if (port.f != NULL) fclose(port.f);
-	printf("Serial port closed \n");
+	else return PORT_ERROR;
+	printf("ReadSerial: Serial port closed \n");
+
+	return error;
 
 
 }
 
 
-/**
- * Entry function for pthread to read serial data
- */
-void *serial_Read_thread_function(void* port)
+void serialPortReadFunction(Serial_Port *port_ptr, const int n_lines)
 {
-	Serial_Port *port_ptr = (Serial_Port *) port; //cast serial port struct
-	open_Serial_Port(port_ptr); //open serial port.
-	while (serial_go){
-		open_File(port_ptr); //open file write to.
-		readSerialPort(*port_ptr, file_size); //start reading serial port.
+	printf( "ReadSerial: Start serial port thread\n" );
+	//	Serial_Port *port_ptr = (Serial_Port *) port; //cast serial port struct
+	int error=0;
+	error=openSerialPort(port_ptr); //open serial port.
+	printf( "ReadSerial: Start serial port thread 1\n");
+	if (error>=0){
+		while (serial_go){
+			printf( "ReadSerial: Start serial port thread 2\n");
+			error=openWriteFile(port_ptr); //open file write to.
+			error=readSerialPort(*port_ptr, n_lines); //start reading serial port.
+		}
+	}
+	else {
+		printf( "ReadSerial: Failed to read port\n" );
 	}
 
-	return NULL;
 }
 
-int record_Serial(int port, speed_t baudRate){
-
-	/*Allocate structure to memory. Remember serial port is on different thread so structure has to be volatile*/
-	Serial_Port* volatile ptr_port=(Serial_Port*) malloc(sizeof(Serial_Port));
-	ptr_port->f =(FILE*) malloc(sizeof(FILE));
-//	/**Define baud rate to use*/
-	ptr_port->BAUDRATE=baudRate;
-	/**Define port to use*/
-	ptr_port->port=port;
-
-	/*Test function for serial port*/
-//	cout<<"read serial port"<<endl;
-//	serial_Read_thread_function(ptr_port);
-
-//	/**Open serial port on new thread*/
-	/*create thread to read serial port data*/
-	pthread_t read_serial_thread;
-	/**launch thread*/
-//	if(pthread_create(&read_serial_thread, NULL, serial_Read_thread_function, ptr_port)){
-//		fprintf(stderr, "Error creating thread to read data serial data\n");
-//		return 1;  ;
-//	}
-
-//	//TEMP- debug only
-//	pthread_join(read_serial_thread,NULL);
-
-	return 0;
-}
-
-void set_serial_go(bool go){
+void setSerialGo(bool go){
 	serial_go=go;
 }
 

@@ -23,17 +23,20 @@ const int wavFormat=SF_FORMAT_WAV | SF_FORMAT_PCM_16;
 
 /* The folder on the external drive to save wav files in.*/
 /*const string wavlocation="/home/admin/cRioKE/";*/
-const string wav_location="/U";
+const string wav_location="/X";
 
 /* The prefix for the .wav files.*/
 const string wav_prefix="PAM";
 
 /**Error constants for writing .wav files**/
 /*The buffer array is not a multiple of the number of the channels*/
-const int BUFFER_SIZE_ERROR=1;
+const int BUFFER_SIZE_ERROR=-1;
 
 /*The number of written frames is not equal to the number of input frames- error in writing data*/
-const int NUM_WRITTEN_FRAMES_ERROR=2;
+const int NUM_WRITTEN_FRAMES_ERROR=-2;
+
+/*The current file does not exist/is not a .wav file*/
+const int NOT_WAV_FILE=-3;
 
 /**
 * Create a .wav file. This create a .wav file time stamped in PAMGUARD format and save to u/wav

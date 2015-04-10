@@ -67,6 +67,7 @@ protected:
 	timeval daqStart;
 
 private:
+
 	std::string name;
 
 	THREADID write_data_thread;

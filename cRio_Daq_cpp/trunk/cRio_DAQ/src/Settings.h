@@ -17,12 +17,14 @@
  * number of samples to acquire each loop much be a multiple of NCHANNELS
  */
 #define READBLOCKSIZE (4096)
+
 /**
  * Overall buffer size in samples - will generate a 10 MByte buffer. .
  * This is a large buffer that data are copied to from the 4096 byte FIFO buffer
  * on the FPGA.
  */
-#define READBUFFERLENGTH (DEFAULTNCHANNELS * 1024 * 1024)
+#define READBUFFERLENGTH (DEFAULTNCHANNELS * 2 * 1024 * 1024)
+
 
 
 #endif /* SETTINGS_H_ */

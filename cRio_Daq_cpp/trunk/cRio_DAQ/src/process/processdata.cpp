@@ -8,6 +8,7 @@
 #include "X3FileProcess.h"
 #include "CompressProcess.h"
 #include "NetSender.h"
+#include "SerialReadProcess.h"
 #include "../command/ProcessEnable.h"
 #include "../Utils.h"
 #include <stdio.h>
@@ -23,30 +24,50 @@ static int globalProcessId = 0;
 
 int nChannels = 0;
 
-#define NPROCESSES (4)
+#define NPROCESSES (2) //number of process
 
 /*
  * Create the processes
  */
 void processCreate() {
+
 	plaProcesses = (PLAProcess**) malloc(sizeof(PLAProcess*) * NPROCESSES);
+
+/***Processes setup to record raw wav files**/
 	plaProcesses[0] = new PLAProcess("Audio", "AUDIO");
-	plaProcesses[1] = new CompressProcess();
-	plaProcesses[2] = new X3FileProcess();
-	plaProcesses[3] = new NetSender();
-	/*
-	 * Add both the wav writing and the compression process to the
-	 * input process.
-	 */
+	plaProcesses[1] = new WavFileProcess();
+//	plaProcesses[2] = new NetSender();
+//	plaProcesses[3] = new SerialReadProcess();
+
+	//add wav files to input process
 	plaProcesses[0]->addChildProcess(plaProcesses[1]);
+//	// attach net sender to output of wav files.
+//	plaProcesses[1]->addChildProcess(plaProcesses[2]);
 
-//#ifndef WINDOWS
-	// attach x3 write process to compressor.
-	plaProcesses[1]->addChildProcess(plaProcesses[2]);
-//#endif
+/********************************************/
 
-	// attach net sender to output of compression.
-	plaProcesses[1]->addChildProcess(plaProcesses[3]);
+
+/***Processes set up for record and X3*******/
+
+//	plaProcesses[0] = new PLAProcess("Audio", "AUDIO");
+//	plaProcesses[1] = new CompressProcess();
+//	plaProcesses[2] = new X3FileProcess();
+//	plaProcesses[3] = new NetSender();
+//	/*
+//	 * Add both the wav writing and the compression process to the
+//	 * input process.
+//	 */
+//	plaProcesses[0]->addChildProcess(plaProcesses[1]);
+//
+////#ifndef WINDOWS
+//	// attach x3 write process to compressor.
+//	plaProcesses[1]->addChildProcess(plaProcesses[2]);
+////#endif
+//
+//	// attach net sender to output of compression.
+//	plaProcesses[1]->addChildProcess(plaProcesses[3]);
+//
+/*********************************************/
 
 	// set the default sample rates, etc.
 	plaProcesses[0]->setSampleRate(DEFAULTSAMPLERATE);
@@ -78,6 +99,7 @@ PLAProcess* getProcess(int iProcess) {
 	}
 	return plaProcesses[iProcess];
 }
+
 /*
  * Initialise the processes
  */
@@ -87,6 +109,16 @@ bool processInit(int nChan, int sampleRate) {
 		plaProcesses[i]->initProcess(nChan, sampleRate);
 	}
 	return true;
+}
+
+/**
+ * Check whether any processes have an error flagged.
+ */
+bool isProcessError(){
+	for (int i = 0; i < NPROCESSES; i++) {
+			if (plaProcesses[i]->getErrorStatus()!=0) return true;
+		}
+	return false;
 }
 
 /*
@@ -214,6 +246,11 @@ int PLAProcess::getChannelBitMap() {
 	}
 	return map;
 }
+
+int PLAProcess::getErrorStatus(){
+	return 0;
+}
+
 void PLAProcess::setNChan(int nChan) {
 	this->nChan = nChan;
 	for (int i = 0; i < nChildProcesses; i++) {

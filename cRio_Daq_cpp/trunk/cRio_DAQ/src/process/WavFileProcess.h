@@ -11,6 +11,8 @@
 #include "processdata.h"
 
 class WavFileProcess : public PLAProcess {
+
+
 public:
 	WavFileProcess();
 
@@ -20,10 +22,14 @@ public:
 
 	int process(PLABuff* plaBuffer);
 
+	int getErrorStatus();
+
 	void endProcess();
 
 private:
 	int nCalls;
+
+	volatile int error;
 };
 
 #endif /* WAVFILEPROCESS_H_ */

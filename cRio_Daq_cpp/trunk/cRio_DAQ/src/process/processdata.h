@@ -62,6 +62,12 @@ void processEnd();
 void processDelete();
 
 /**
+ * Check whether any of the processes have had an error flagged.
+ * @return true if at least one process has an erro flag which !=0;
+ */
+bool isProcessError();
+
+/**
  * Find a process with a given name.
  */
 class PLAProcess* findProcess(const std::string processName);
@@ -117,6 +123,9 @@ public:
 		this->enabled = enabled;
 	}
 
+	virtual int getErrorStatus();
+
+
 	int getProcessId() const {
 		return processId;
 	}
@@ -142,6 +151,11 @@ protected:
 	int forwardData(PLABuff* plaBuffer);
 	char* fType;
 	int codec;
+
+	/**
+	 * Set whether an error has occured.
+	 */
+	void setErrorStatus(int errorStaus);
 
 private:
 	PLAProcess** childProcesses;

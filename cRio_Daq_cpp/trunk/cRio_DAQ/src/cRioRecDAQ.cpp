@@ -3,8 +3,10 @@
 // Author      : Jamie Macaualay
 // Version     :
 // Copyright   : None
-// Description : Hello World in C++, Ansi-style
+// Description : Main class for cRio
 //============================================================================
+
+#include "cRioRecDAQ.h"
 
 /* Required for console interactions */
 #include <stdio.h>
@@ -14,8 +16,8 @@
 #include "mythread.h"
 #include <string.h>
 #include <unistd.h>
-#include <stdio.h>
-/* Includes high level functions for reading DAQ card*/
+/* Includes high level funct
+ * ions for reading DAQ card*/
 //#include "NiFpgaManager.h"
 ///*Includes high level functions for reading Serial port */
 //#include "ReadSerial.h"
@@ -25,6 +27,7 @@
 #include "RealTimer.h"
 #include "command/CommandManager.h"
 #include "Settings.h"
+#include "ReadSerial.h"
 
 #include "command/UDPCommands.h"
 #include "daq/SimulatedDaq.h"
@@ -36,16 +39,20 @@
 #endif
 
 using namespace std;
-//#include <thread>
 
+/**
+ * Data acquisition system
+ */
 DAQSystem* daqSystem;
 
 /*Define some functions*/
-void watchdog_monitor();
-void watchdog_thread();
 void get_user_commands();
 //void user_command(int command);
 int get_user_input_num();
+
+/**
+ * User input
+ */
 std::string get_user_input_string();
 
 /**
@@ -54,19 +61,20 @@ std::string get_user_input_string();
 bool volatile go=true;
 
 /**
- * flag for continuing to acquire data.
+ * Indicator for continuing to acquire data.
  */
 volatile bool acquire = false;
 
 /**
- * The user input- number rto specify command for cRio
+ * declare watch dog thread.
+ */
+DECLARETHREAD(processWatchDogFunction, PLAWatchDog, watchdog_monitor)
+
+/**
+ * The user input- number to specify command for cRio
  */
 int UserInput;
 
-/**
- * Command thread.
- */
-pthread_t user_input_thread;
 
 int main(int argc, char *argv[]){
 
@@ -112,14 +120,11 @@ int main(int argc, char *argv[]){
 //	set_user_LED_status(LED_USER1_OFF);
 //	set_user_LED_status(LED_STATUS_OFF);
 
+//	//create watch dog class.
+	processWatchDog = new PLAWatchDog();
+
 	// create the data processes.
 	processCreate();
-
-	/*
-	 * Start a watch dog thread to make sure we're not clocking up large number of errors and show
-	 * status leds.
-	 */
-	watchdog_thread();
 
 	/**
 	 * Create and launch the UDP command browser.
@@ -134,13 +139,6 @@ int main(int argc, char *argv[]){
 
 	/*Wait for commands on main thread;*/
 	get_user_commands();
-
-//	/*Test serial read*/
-//	record_Serial(1,B4800);
-
-//	/*Test write .wav file*/
-//	createSoundFile(8, 42000);
-//	testWavWrite();
 
 	/**Make sure LED's are off**/
 //	set_user_LED_status(LED_USER1_OFF);
@@ -190,9 +188,11 @@ void get_user_commands(){
 	printf("Leaving terminal control loop\n");
 }
 
+
 bool start() {
+	processWatchDog->startWatchDog();
 	if (acquire==true) {
-		printf("Daq system is already running\n");
+		printf("DAQ system is already running\n");
 		return false;
 	}
 	acquire=true;
@@ -203,18 +203,27 @@ bool start() {
 	/**Start FPGA tasks**/
 	daqSystem->prepare();
 	return daqSystem->start();
-//	FPGA_Tasks_Thread();
-//	return true;
 }
 
-bool stop() {
+/**
+ * Stop DAQ and processes.
+ * @param restart true- to start acquiring again after stop.
+ */
+bool stop(bool restart) {
 	if (acquire == false) return false;
 	acquire=false;
+	processWatchDog->stopWatchDog();
 	bool ans = daqSystem->stop();
 //	set_FPGA_go(false);
 //	set_serial_go(false);
 //	pthread_join(get_FPGA_thread(), NULL);
 	processEnd();
+
+	if (ans && restart){
+		start();
+		return true;
+	}
+
 	return ans;
 }
 
@@ -297,97 +306,143 @@ std::string get_user_input_string() {
 void exitTerminalLoop() {
 	go = false;
 }
-/**
- * Entry function for pthread to monitor FPGA
- */
-void *watchdog_thread_function(void *param)
-{
-	watchdog_monitor();
-	return NULL;
-}
-
-/**
- * Start FPGA monitor on new thread.
- */
-void watchdog_thread(){
-	pthread_t watchdog_monitor_thread;
-	int thread_var1 = 0;
-//	if(pthread_create(&watchdog_monitor_thread, NULL, watchdog_thread_function, &thread_var1)){
-//			fprintf(stderr, "Watchdog: creating watchdog thread\n");
-//			return;
-//	}
-}
-
-
-/**
- * Sits and monitors the FPGA every half second.
- */
-void watchdog_monitor(){
-	int countuSecs=500000; //us for each while loop iteration
-	int erroruSec=15000000; //us for checking total errors -10 exceeding threshold.
-	int errorThreshold=5; //number of errors in erruSec before a system restart.
-	int count=0;
-	int countCheck=erroruSec/countuSecs;
-	int led=0;
-	return;
-	while(acquire){
-		myusleep(500000); //sleep for half a second
-		if (daqSystem->getErrorCount()>0){
-			printf("Watchdog: FPGA error count>0: %d!\n",daqSystem->getErrorCount());
-			led=1;
-		}
-		else{
-			led=LED_USER1_GREEN;
-		}
-
-		set_user_LED_status(LED_USER1_OFF);
-		set_user_LED_status(led);
-
-		/*keep track of the total while loop iterations*/
-		count++;
-
-		if (count%countCheck==0 ){
-			printf(currentDateTime().c_str());
-			printf(" Watchdog: Checking error count. Total Errors = %d\n", daqSystem->getErrorCount());
-			if (daqSystem->getErrorCount()>errorThreshold){
-				/*
-				 * Gone over the max number of errors allowed in error period. Restart the cRio.
-				 * Although this can be achived using FPGA, if it is broken for whatever need to perform a restart using
-				 * OS.
-				 */
-//				acquire=false;
-//				set_FPGA_go(false);
-//				set_serial_go(false);
-				stop();
-				myusleep(500000); //sleep for half a second to allow things to finish up.
-				system("/sbin/reboot");
-			}
-			daqSystem->resetErrorCount(); //return the error count to zero.
-		}
-
-	}
-}
-
 
 ///**
-// * Entry function for pthread for user input
+// * Entry function for pthread to monitor FPGA
 // */
-//void *command_input_function(void *param)
+//void *watchdog_thread_function(void *param)
 //{
-//	get_user_commands();
+//	watchdog_monitor();
 //	return NULL;
 //}
 //
 ///**
 // * Start FPGA monitor on new thread.
 // */
-//void command_input_thread(){
+//void watchdog_thread(){
+//	pthread_t watchdog_monitor_thread;
 //	int thread_var1 = 0;
-//	if(pthread_create(&user_input_thread, NULL, command_input_function, &thread_var1)){
-//			fprintf(stderr, "User input: creating input thread\n");
-//			return;
-//	}
+////	if(pthread_create(&watchdog_monitor_thread, NULL, watchdog_thread_function, &thread_var1)){
+////			fprintf(stderr, "Watchdog: creating watchdog thread\n");
+////			return;
+////	}
 //}
+
+
+/**
+ * Constructor for the watch dog.
+ */
+PLAWatchDog::PLAWatchDog(){
+
+}
+
+/**
+ * Start a watch dog thread.
+ */
+void PLAWatchDog::startWatchDog(){
+	bool threadState;
+	STARTTHREAD(processWatchDogFunction, this, processWatchDogThrd, processWatchDogThrdHnd, threadState)
+	if (!threadState) {
+		fprintf(stderr, "Error starting read serial thread \n");
+	}
+}
+
+/**
+ * Stop watch dog thread.
+ */
+void PLAWatchDog::stopWatchDog(){
+	int threadReturn;
+	//set flag to false- this will stop serial processes.
+	WAITFORTHREAD(processWatchDogThrd, processWatchDogThrdHnd, threadReturn)
+}
+
+/**
+ * Sits and monitors the FPGA every half second.
+ */
+void PLAWatchDog::watchdog_monitor(){
+	int led=0;
+	int errorCount=0;
+	int errorCountMax=5;
+
+	while(acquire){
+		myusleep(500000); //sleep for half a second
+		/**
+		 * Check both the daq system and all processes. If there's an error in
+		 * either then give an error strike. After 5 strikes then the system attempts
+		 * DAQ restart. The reason we have strikes is to try giove the processes time to
+		 * fix themselves.
+		 */
+		if (daqSystem->getErrorCount() || isProcessError() ){
+			printf("Watchdog: FPGA error count>0: %d!\n",daqSystem->getErrorCount());
+			errorCount++;
+			//led flag to yellow.
+			led=LED_USER1_YELLOW;
+		}
+		else{
+			//reset error counter.
+			errorCount=0;
+			//led flag to green.
+			led=LED_USER1_GREEN;
+		}
+
+//		set_user_LED_status(LED_USER1_OFF);
+//		set_user_LED_status(led);
+//
+		if (errorCount>errorCountMax){
+			fprintf(stderr, "PLAWatchDog: error count has exceeded threshold: Going for DAQ reset");
+		}
+
+
+//		cout<< "Hello! I'm a running watchdog daqSystemError %d\n" << daqSystem->getErrorCount() << endl;
+//		cout<< "Hello! I'm a running watchdog processError %d\n" << isProcessError() << endl;
+
+	}
+
+//	int countuSecs=500000; //us for each while loop iteration
+//	int erroruSec=15000000; //us for checking total errors -10 exceeding threshold.
+//	int errorThreshold=5; //number of errors in erruSec before a system restart.
+//	int count=0;
+//	int countCheck=erroruSec/countuSecs;
+//	int led=0;
+//	return;
+//	while(acquire){
+//		myusleep(500000); //sleep for half a second
+//		if (daqSystem->getErrorCount()>0){
+//			printf("Watchdog: FPGA error count>0: %d!\n",daqSystem->getErrorCount());
+//			led=1;
+//		}
+//		else{
+//			led=LED_USER1_GREEN;
+//		}
+//
+//		set_user_LED_status(LED_USER1_OFF);
+//		set_user_LED_status(led);
+//
+//		/*keep track of the total while loop iterations*/
+//		count++;
+//
+//		if (count%countCheck==0 ){
+//			printf(currentDateTime().c_str());
+//			printf(" Watchdog: Checking error count. Total Errors = %d\n", daqSystem->getErrorCount());
+//			if (daqSystem->getErrorCount()>errorThreshold){
+//				/*
+//				 * Gone over the max number of errors allowed in error period. Restart the cRio.
+//				 * Although this can be achived using FPGA, if it is broken for whatever need to perform a restart using
+//				 * OS.
+//				 */
+////				acquire=false;
+////				set_FPGA_go(false);
+////				set_serial_go(false);
+//				stop(false);
+//				myusleep(500000); //sleep for half a second to allow things to finish up.
+//				system("/sbin/reboot");
+//			}
+//			daqSystem->resetErrorCount(); //return the error count to zero.
+//		}
+//
+//	}
+}
+
 
 
 

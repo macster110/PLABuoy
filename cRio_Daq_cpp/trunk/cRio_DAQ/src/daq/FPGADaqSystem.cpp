@@ -2,7 +2,7 @@
  * FPGADaqSystem.cpp
  *
  *  Created on: 22 Jan 2015
- *      Author: doug
+ *      Author: Doug Gillespie and Jamie Macaulay
  */
 
 #include "FPGADaqSystem.h"
@@ -136,8 +136,9 @@ void FPGADaqSystem::read_FIFO_threadFunction() {
 	printf("start to read_FIFO_Data .....\n");
 	read_FIFO_Data(session_FPGA, &status_DAQ, &irqContext_FPGA);
 	printf("Completed read_FIFO_Data .....\n");
-
 }
+
+
 NiFpga_Status FPGADaqSystem::prepare_FPGA()
 {
 
@@ -169,6 +170,7 @@ NiFpga_Status FPGADaqSystem::prepare_FPGA()
 	return status_FPGA;
 
 }
+
 /**
  * Read the FIFO as quickly as possible, removing data and storing in a data buffer. As little as possible happens in this function;
  * @param[in]		session		Uses FPGA session reference
@@ -250,6 +252,7 @@ void FPGADaqSystem::read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status
 //			std::cout << "Reset write buffer on call " << count <<std::endl;
 			cpw=bufstart;
 		}
+
 		if (Elements_Remaining < 1024) {
 			/**
 			 * can afford to have a bit of a kip and free up some CPU.
@@ -274,7 +277,7 @@ void FPGADaqSystem::read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status
 		}
 
 		/*print some info every 5000 counts*/
-		if (count%100000==0){
+		if (count%5000==0){
 			printf("FIFO Read Loop count = %dk, samples in buffer %d, %d remain in FIFO, managed %d wee kips\n",
 					(int) (count/1000), samplesInBuff, Elements_Remaining, weeKips);
 			weeKips = 0;
@@ -298,9 +301,10 @@ void FPGADaqSystem::read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status
 	 */
 	if (!NiFpga_IsNotError(status_DAQ)){
 		printf("Error in read FIFO thread %d!\n", *status);
+		errorCount_FPGA++;
 	}
 	else {
-		printf("LEaving read FIFO thread status %d, daqgo %d, timout %d\n", *status, (int) daq_go, (int) TimedOut);
+		printf("Leaving read FIFO thread status %d, daqgo %d, timout %d\n", *status, (int) daq_go, (int) TimedOut);
 	}
 
 }

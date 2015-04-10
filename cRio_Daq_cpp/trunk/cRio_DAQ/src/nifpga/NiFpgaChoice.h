@@ -16,7 +16,7 @@
 #ifndef NIFPGACHOICE_H_
 #define NIFPGACHOICE_H_
 
-#define CRIO9068
+#define CRIO9067
 
 #ifdef CRIO9067
 #include "NiFpga_Crio9067_8chan.h"

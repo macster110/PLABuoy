@@ -14,13 +14,10 @@
 #include <iostream>
 /*pthread library for running on different threads*/
 #include <unistd.h>
-
 #include "../Reporter.h"
 
 
-
 DECLARETHREAD(read_Buffer_thread_function, DAQSystem, read_Data_Buffer)
-
 
 /*Number of samples to Aquire from FIFO on each loop iteration*/
 const unsigned int Number_Acquire = READBLOCKSIZE;

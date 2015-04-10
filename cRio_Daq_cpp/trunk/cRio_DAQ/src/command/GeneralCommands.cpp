@@ -33,7 +33,7 @@ StopCommand::StopCommand() : Command(NULL, "stop") {
 }
 std::string StopCommand::execute(std::string command, struct sockaddr_in* udpSock) {
 
-	bool ok = stop();
+	bool ok = stop(false);
 	if (ok) {
 		return "stop ok";
 	}
@@ -83,7 +83,7 @@ ExitCommand::ExitCommand() : Command(NULL, "exit") {
 
 }
 std::string ExitCommand::execute(std::string command, struct sockaddr_in* udpSock) {
-	stop();
+	stop(false);
 	exitTerminalLoop();
 	return "exit";
 }

@@ -17,16 +17,18 @@ const string PORT0 ="/dev/ttyS0"; //cRio port 1 -rs232
 const string PORT1 ="/dev/ttyS1"; //cRio port 2 -rs232
 const string PORT2 ="/dev/ttyS2"; //cRio port 3 -rs485
 
-
 /* The prefix for the serial files.*/
 const string serial_prefix="GPS";
 
 /* The folder on the external drive to save wav files in.*/
 /*const string wavlocation="/home/admin/cRioKE/";*/
-const string s_file_location="/u";
+const string s_file_location="/V";
 
-/*The size of files in number of lines read */
-const int file_size=36000;
+/*The file could not be created or does not exist.*/
+const int NO_FILE_ERROR=-1;
+
+/*Failed to open port*/
+const int PORT_ERROR=-2;
 
 /**
  * Structure which contains info for serial port. The structure has a default baud rate of 9600.
@@ -47,36 +49,37 @@ typedef struct {
  * @param port Structure containing info for serial ports.
  * @return status
  */
-int open_Serial_Port(Serial_Port volatile *port);
+int openSerialPort(Serial_Port *port);
 
 /**
  * Read the current serial port, time stamps and saves the data to a txt file.
  * @param n- number fo serial port reads -1 to keep reading data.
+ * @return error flag. 0 if no error.
  */
-void readSerialPort(Serial_Port port, int n);
+int readSerialPort(Serial_Port port, int n);
 
 /**
  * Close the serial port and the file it is writting to.
  * @return status
  */
-int closeSerialPort(Serial_Port  volatile *port);
+int closeSerialPort(Serial_Port *port);
 
 /**
  * Open file to save serial port data.
  */
-int open_File(Serial_Port  volatile *port);
-
-/**
- * Open and read serial port on new thread- convenience function utilises openSerialPort, openFile and readSerialPort
- * @param[in] port- serial prt to use PORT0,PORT1,PORT2.
- * @param[in] baudRate baudrate for the serial port to record on.
- */
-int record_Serial(int port, speed_t baudRate);
+int openWriteFile(Serial_Port *port);
 
 /**
  * Set whether serial port should be monitored. False will cause all monitorting to stop.
  */
-void set_serial_go(bool go);
+void setSerialGo(bool go);
+
+/**
+ * Convenient entry function for a thread to read serial data. Reads and time stamps serial data and creates new files every n_lines read.
+ * @param port - serial port structure
+ * @param n_lines - the number of lines to read before starting a new file.
+ */
+void serialPortReadFunction(Serial_Port *port_ptr, const int n_lines);
 
 
 #endif

@@ -89,7 +89,7 @@ void set_user_LED_status(int ledstatus){
 	switch (ledstatus){
 	case LED_USER1_GREEN:
 		//		printf("Switch USER1 LED green \n");
-		LED = fopen("/sys/class/leds/nizynqcpld:user1:green/brightness","w");
+		//LED = fopen("/sys/class/leds/nizynqcpld:user1:green/brightness","w");
 		on=true;
 		break;
 	case LED_USER1_YELLOW:
