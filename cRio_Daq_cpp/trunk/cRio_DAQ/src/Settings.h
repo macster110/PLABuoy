@@ -5,6 +5,8 @@
  *      Author: doug
  */
 
+#include <stdio.h>
+
 #ifndef SETTINGS_H_
 #define SETTINGS_H_
 
@@ -25,6 +27,10 @@
  */
 #define READBUFFERLENGTH (DEFAULTNCHANNELS * 2 * 1024 * 1024)
 
+/**
+ * Where to save data
+ */
+const std::string SAVE_LOCATION ="/Y";
 
 
 #endif /* SETTINGS_H_ */

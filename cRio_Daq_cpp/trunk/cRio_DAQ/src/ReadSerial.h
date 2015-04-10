@@ -9,6 +9,7 @@
 #define READSERIAL_H_
 #include <iostream>
 #include <termios.h>
+#include "Settings.h" // needed for string
 
 using namespace std;
 
@@ -22,7 +23,7 @@ const string serial_prefix="GPS";
 
 /* The folder on the external drive to save wav files in.*/
 /*const string wavlocation="/home/admin/cRioKE/";*/
-const string s_file_location="/V";
+const string s_file_location=SAVE_LOCATION;
 
 /*The file could not be created or does not exist.*/
 const int NO_FILE_ERROR=-1;

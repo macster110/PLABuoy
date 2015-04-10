@@ -52,7 +52,7 @@ int WavFileProcess::process(PLABuff* plaBuffer) {
 }
 
 int WavFileProcess::getErrorStatus(){
-	//printf("Error WavFileProcess: %d\n", error);
+	printf("Error WavFileProcess: %d\n", error);
 	return error;
 }
 

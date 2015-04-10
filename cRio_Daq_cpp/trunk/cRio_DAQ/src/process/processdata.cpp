@@ -24,7 +24,7 @@ static int globalProcessId = 0;
 
 int nChannels = 0;
 
-#define NPROCESSES (2) //number of process
+#define NPROCESSES (4) //number of process
 
 /*
  * Create the processes
@@ -36,13 +36,13 @@ void processCreate() {
 /***Processes setup to record raw wav files**/
 	plaProcesses[0] = new PLAProcess("Audio", "AUDIO");
 	plaProcesses[1] = new WavFileProcess();
-//	plaProcesses[2] = new NetSender();
-//	plaProcesses[3] = new SerialReadProcess();
+	plaProcesses[2] = new NetSender();
+	plaProcesses[3] = new SerialReadProcess();
 
 	//add wav files to input process
 	plaProcesses[0]->addChildProcess(plaProcesses[1]);
 //	// attach net sender to output of wav files.
-//	plaProcesses[1]->addChildProcess(plaProcesses[2]);
+	plaProcesses[1]->addChildProcess(plaProcesses[2]);
 
 /********************************************/
 

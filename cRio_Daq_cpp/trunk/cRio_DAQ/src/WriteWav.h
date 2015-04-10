@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <sndfile.h> // was sndfile.hh !!
 #include <fstream> // needed for string
+#include "Settings.h" // needed for string
+
 
 using namespace std;
 
@@ -23,7 +25,7 @@ const int wavFormat=SF_FORMAT_WAV | SF_FORMAT_PCM_16;
 
 /* The folder on the external drive to save wav files in.*/
 /*const string wavlocation="/home/admin/cRioKE/";*/
-const string wav_location="/X";
+const string wav_location=SAVE_LOCATION;
 
 /* The prefix for the .wav files.*/
 const string wav_prefix="PAM";

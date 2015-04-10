@@ -74,7 +74,7 @@ int write_Sound_File(int16_t* dataBufVec, int size)
 
 	/*Check correct number of frames saved*/
 	if (writtenFrames != frames) {
-//	    fprintf(stderr, "Error write_Sound_File: Did not write enough frames for source: %s\n", sf_strerror(sndFile));
+	    fprintf(stderr, "Error write_Sound_File: Did not write enough frames for source: %s\n", sf_strerror(sndFile));
 //		cout << " Size " << size<< " frames " <<frames
 //				<< " writtenFrames " <<writtenFrames <<" buffer: "
 //				<< sizeof(dataBufVec) << " size: " << size << " channels: " << info.channels<< endl;
@@ -133,7 +133,7 @@ int create_Sound_File(int channels, int SR)
 	sndFile = sf_open(outfile_char, SFM_WRITE, &info);
 
 	if (sndFile == NULL){
-		//fprintf(stderr, "Error create_Sound_File : Not a .wav file %s\n", sf_strerror(sndFile));
+		fprintf(stderr, "Error create_Sound_File : Not a .wav file %s\n", sf_strerror(sndFile));
 		return NOT_WAV_FILE;
 	}
 

@@ -212,7 +212,6 @@ bool start() {
 bool stop(bool restart) {
 	if (acquire == false) return false;
 	acquire=false;
-	processWatchDog->stopWatchDog();
 	bool ans = daqSystem->stop();
 //	set_FPGA_go(false);
 //	set_serial_go(false);
@@ -366,14 +365,16 @@ void PLAWatchDog::watchdog_monitor(){
 
 	while(acquire){
 		myusleep(500000); //sleep for half a second
+		printf("Watchdog: Checking: %d!\n", errorCount);
+
 		/**
 		 * Check both the daq system and all processes. If there's an error in
 		 * either then give an error strike. After 5 strikes then the system attempts
 		 * DAQ restart. The reason we have strikes is to try giove the processes time to
 		 * fix themselves.
 		 */
-		if (daqSystem->getErrorCount() || isProcessError() ){
-			printf("Watchdog: FPGA error count>0: %d!\n",daqSystem->getErrorCount());
+		if (daqSystem->getErrorCount()>0 || isProcessError() ){
+			printf("Watchdog: FPGA error count>0: %d %d!\n", daqSystem->getErrorCount(),isProcessError() );
 			errorCount++;
 			//led flag to yellow.
 			led=LED_USER1_YELLOW;
@@ -390,6 +391,8 @@ void PLAWatchDog::watchdog_monitor(){
 //
 		if (errorCount>errorCountMax){
 			fprintf(stderr, "PLAWatchDog: error count has exceeded threshold: Going for DAQ reset");
+			stop(true);
+			break;
 		}
 
 
@@ -442,14 +445,3 @@ void PLAWatchDog::watchdog_monitor(){
 //
 //	}
 }
-
-
-
-
-
-
-
-
-
-
-
