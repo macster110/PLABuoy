@@ -1,17 +1,27 @@
 package pla_buoy_interface;
 
+import networkManager.NetworkManager;
+
 /**
  * Holds settings and controls network 
- * @author jamie
+ * @author Jamie Macaulay
  *
  */
 public class PLAControl {
 	
-	PLAInterfaceSettings plaInterfaceSettings; 
+	/**
+	 * Settings info for program
+	 */
+	private PLAInterfaceSettings plaInterfaceSettings;
+	
+	/**
+	 * Manages sending commands and recieving data. 
+	 */
+	private NetworkManager netWorkManager; 
 
 	public PLAControl(){
 		plaInterfaceSettings=new PLAInterfaceSettings();
-		//TODO -load settings here. 
+		netWorkManager=new NetworkManager(); 
 	}
 	
 	/**
@@ -24,6 +34,14 @@ public class PLAControl {
 
 	public void setPlaInterfaceSettings(PLAInterfaceSettings plaInterfaceSettings) {
 		this.plaInterfaceSettings = plaInterfaceSettings;
+	}
+
+	/**
+	 * Get the network manager.
+	 * @return the network manager. 
+	 */
+	public NetworkManager getNetworkManager() {
+		return netWorkManager;
 	}
 
 }

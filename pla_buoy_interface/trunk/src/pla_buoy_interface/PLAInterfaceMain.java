@@ -1,6 +1,7 @@
 package pla_buoy_interface;
 
 import com.guigarage.flatterfx.FlatterFX;
+import com.guigarage.flatterfx.FlatterInputType;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -15,18 +16,18 @@ public class PLAInterfaceMain extends Application {
 	    
 	    @Override
 	    public void start(Stage primaryStage) {
-	    	
-
+	    
 	        primaryStage.setTitle("PLA Buoy Interface");
 	        
 	        PLAControl plaControl=new PLAControl(); 
-	        PLAInterfaceView plaInterfaceView=new PLAInterfaceView(); 
+	        PLAInterfaceView plaInterfaceView=new PLAInterfaceView(plaControl); 
 	        
 	        StackPane root = new StackPane();
-	        root.getChildren().add(plaInterfaceView);
+//	        root.getChildren().add(plaInterfaceView);
 	        primaryStage.setScene(new Scene(root, 300, 250));
 	        primaryStage.show();
 			FlatterFX.style(); 
+			FlatterFX.style(FlatterInputType.TOUCH);
 
 	    }
 }
