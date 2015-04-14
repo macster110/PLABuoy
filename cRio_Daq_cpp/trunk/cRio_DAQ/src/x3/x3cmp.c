@@ -151,12 +151,14 @@ int		x3blkencode(BPack *b, short *ip, int *T, int n, int nch)
 
 	// block-floating point or pass-through encode the block
 	for(nb=0; ma>0; nb++, ma>>=1) ;  // find the number of bits needed to code ma
-//	if (nb > 15) nb = 15;
-	pack1(b,nb&0xF,6) ;                 // add 6 bit BFP header to the bit stream
-	if(nb>=15)
+	if(nb>=15) {
+		pack1(b,15,6) ;                 // add 6 bit BFP header to the bit stream
 		packn(b,ip,n,16,nch) ;		     // pack 16 bit integers from source
-	else
+	}
+	else {
+		pack1(b,nb,6) ;                 // add 6 bit BFP header to the bit stream
 		packn(b,DBUFF,n,nb+1,1) ;	  // pack nb-bit filtered integers with an extra bit for a sign.
+	}
 
 	return(0) ;
 }
@@ -206,11 +208,11 @@ int   sdiffmaxs(short *op, short *ip, int n, int nch)
 {
 	// De-emphasis filter to reverse the diff in the compressor.
 	// Filters operates in-place.
-	int    k, ma=0 ;
+	int   c, k, ma=0 ;
 
 	for(k=0; k<n; k++, ip+=nch) {
-		short c = *ip - *(ip-nch) ;
-		*op++ = c ;
+		c = *ip - *(ip-nch) ;
+		*op++ = (short) c ;
 		ma = MAX(ma,abs(c)) ;
 	}
 
