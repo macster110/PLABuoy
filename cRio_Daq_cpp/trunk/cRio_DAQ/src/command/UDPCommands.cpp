@@ -145,6 +145,7 @@ int UDPCommands::udpThread() {
 
 	openConnection();
 
+
 	struct sockaddr_in cli_addr;
 	socklen_t clientlen = sizeof(cli_addr);
 	char rxBuffer[UDP_RX_BUFF_LEN + 10];
@@ -157,7 +158,11 @@ int UDPCommands::udpThread() {
 				(struct sockaddr *) &cli_addr,
 				&clientlen)) < 0) {
 //			reporter->report(0, "UDP Receive socket returned %d\n", received);
-//			break;
+			/*
+			 * recvrom returns immediately if no data are in the queue so this thread
+			 * will eat a core - so go to sleep for a bit !
+			 */
+			myusleep(10000);
 		}
 		else {
 //			char str[INET_ADDRSTRLEN];
