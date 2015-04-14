@@ -11,7 +11,10 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import jidefx.scene.control.field.FormattedTextField;
+import jidefx.scene.control.field.verifier.IntegerRangePatternVerifier;
 import levelMeter.LevelMeterPane;
 
 public class PLAInterfaceView extends BorderPane {
@@ -44,6 +47,10 @@ public class PLAInterfaceView extends BorderPane {
 		//create GUI nodes. 
 		VBox mainControls=new VBox(); 
 		
+		
+		Label connectionLabel=new Label("Connection");
+		connectionLabel.setPadding(standardPadding);
+		
 		Label dataAquisition=new Label("Data Aquisition");
 		dataAquisition.setPadding(standardPadding);
 		
@@ -53,10 +60,12 @@ public class PLAInterfaceView extends BorderPane {
 		Label levelMeterLabel=new Label("Level Meters");
 		levelMeterLabel.setPadding(standardPadding);
 
-		mainControls.getChildren().addAll(dataAquisition, createStartStopPane(), serialLabel , createSerialPane() ,
+		mainControls.getChildren().addAll(connectionLabel, createStoredDataPane(), dataAquisition, 
+				createStartStopPane(), serialLabel , createSerialPane() ,
 				levelMeterLabel,  createLevelMeterPane());
 		
-		this.setTop(mainControls);
+		mainControls.setMaxWidth(500);
+		this.setLeft(mainControls);
 	
 	}
 	
@@ -67,10 +76,14 @@ public class PLAInterfaceView extends BorderPane {
 	private Node createStartStopPane(){
 		HBox startStop=new HBox(); 
 		startStop.setSpacing(10);
+		startStop.setMaxWidth(Double.MAX_VALUE);
 		startStop.setPadding(standardPadding);
 
 		Button start = new Button();
 		start.setText("Start");
+	     HBox.setHgrow(start, Priority.ALWAYS);
+		start.setMaxWidth(Double.MAX_VALUE);
+		start.setMaxWidth(Double.MAX_VALUE);
 		start.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
@@ -82,6 +95,8 @@ public class PLAInterfaceView extends BorderPane {
 
 		Button stop = new Button();
 		stop.setText("Stop");
+	    HBox.setHgrow(stop, Priority.ALWAYS);
+		stop.setMaxWidth(Double.MAX_VALUE);
 		stop.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
@@ -95,21 +110,47 @@ public class PLAInterfaceView extends BorderPane {
 	}
 	
 	private Node createSerialPane(){
+		HBox serialPane=new HBox(); 
+		serialPane.setSpacing(10);
+		serialPane.setPadding(standardPadding);
+		
 		serialTextField = new TextField(); 
 		serialTextField.setPadding(standardPadding);
 		serialTextField.setEditable(false);
-		return serialTextField; 
+	    HBox.setHgrow(serialTextField, Priority.ALWAYS);
+
+		
+		serialPane.getChildren().add(serialTextField);
+		
+		return serialPane; 
 	}
 	
 	private Pane createStoredDataPane(){
-		//TODO
-		return null; 
+		
+		HBox ipSettings=new HBox(); 
+		ipSettings.setSpacing(10);
+		ipSettings.setPadding(standardPadding);
+		
+		FormattedTextField field = new FormattedTextField<>();
+		field.setPattern("h.h.h.h");
+		field.getPatternVerifiers().put("h", new IntegerRangePatternVerifier(0, 255));
+	     HBox.setHgrow(field, Priority.ALWAYS);
+
+		
+		Button connect=new Button("Connect");
+		
+		ipSettings.getChildren().addAll(field, connect); 
+		
+		return ipSettings;
+		
+			
 	}
 	
 	
 	private Node createLevelMeterPane(){
 		leveMeterPane=new LevelMeterPane(Orientation.VERTICAL, 8); 
 		leveMeterPane.setPadding(standardPadding);
+		leveMeterPane.setMaxWidth(Double.MAX_VALUE);
 		return leveMeterPane;
 	}
 
