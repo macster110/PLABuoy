@@ -23,10 +23,9 @@ public class PLAInterfaceMain extends Application {
 	        PLAInterfaceView plaInterfaceView=new PLAInterfaceView(plaControl); 
 	        
 	        StackPane root = new StackPane();
-//	        root.getChildren().add(plaInterfaceView);
+	        root.getChildren().add(plaInterfaceView);
 	        primaryStage.setScene(new Scene(root, 300, 250));
 	        primaryStage.show();
-			FlatterFX.style(); 
 			FlatterFX.style(FlatterInputType.TOUCH);
 
 	    }

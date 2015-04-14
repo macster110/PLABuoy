@@ -52,9 +52,21 @@ public class NIUDPInterface {
 		DatagramPacket dp = new DatagramPacket(command.getBytes(), command.length(), inAddress, port);
 		try {
 			DatagramSocket socket = new DatagramSocket();
+			
+			
+			//try to clear buffer
+			socket.setSoTimeout(5);
+			byte[] rxBuffClear = new byte[RXBUFFLEN];
+			DatagramPacket clear = new DatagramPacket(rxBuffClear, RXBUFFLEN);			
+			while (true){
+				socket.receive(clear);
+				if (clear.getLength()==0) break; 
+			}
+			
+			//send command 
 			socket.send(dp);
 			byte[] rxBuff = new byte[RXBUFFLEN];
-			DatagramPacket rp = new DatagramPacket(rxBuff, RXBUFFLEN);
+			DatagramPacket rp = new DatagramPacket(rxBuff, RXBUFFLEN);			
 			socket.setSoTimeout(1000);
 			socket.receive(rp);
 			socket.close();
