@@ -55,12 +55,17 @@ public class NIUDPInterface {
 			
 			
 			//try to clear buffer
-			socket.setSoTimeout(5);
-			byte[] rxBuffClear = new byte[RXBUFFLEN];
-			DatagramPacket clear = new DatagramPacket(rxBuffClear, RXBUFFLEN);			
-			while (true){
-				socket.receive(clear);
-				if (clear.getLength()==0) break; 
+			try{
+				socket.setSoTimeout(5);
+				byte[] rxBuffClear = new byte[RXBUFFLEN];
+				DatagramPacket clear = new DatagramPacket(rxBuffClear, RXBUFFLEN);			
+				while (true){
+					socket.receive(clear);
+					if (clear.getLength()==0) break; 
+				}
+			}
+			catch(Exception e){
+
 			}
 			
 			//send command 

@@ -87,7 +87,7 @@ public class PLAInterfaceView extends BorderPane {
 		start.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				//plaControl.getNetworkManager().startDAQ();
+				plaControl.getNetworkManager().startDAQ();
 			}
 		});
 
@@ -100,7 +100,7 @@ public class PLAInterfaceView extends BorderPane {
 		stop.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				//plaControl.getNetworkManager().stopDAQ();
+				plaControl.getNetworkManager().stopDAQ();
 			}
 		});
 		
