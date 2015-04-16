@@ -1,11 +1,13 @@
 package pla_buoy_interface;
 
+import java.awt.TextArea;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
@@ -13,9 +15,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import jidefx.scene.control.field.FormattedTextField;
 import jidefx.scene.control.field.verifier.IntegerRangePatternVerifier;
-import levelMeter.LevelMeterPane;
 
 public class PLAInterfaceView extends BorderPane {
 	
@@ -29,24 +31,33 @@ public class PLAInterfaceView extends BorderPane {
 	 */
 	PLAControl plaControl;
 
-	/**
-	 * Serial text field 
-	 */
-	private TextField serialTextField;
 	
 	/**
-	 * Serial text field 
+	 * Shows last status update. 
 	 */
-	private LevelMeterPane leveMeterPane;
+	private Label statusLabel=new Label("");
 	
-	private Insets standardPadding=new Insets(10,10,0,10);
+	/**
+	 * Formatted text field which allows users to set IP address. 
+	 */
+	private FormattedTextField<Object> ipAddressField;
 	
+	/**
+	 * Holds process panes
+	 */
+	private VBox processPane;
+	
+	/**
+	 * Default insets for different panes. 
+	 */
+	public static Insets standardPadding=new Insets(10,10,0,10);
+
 	
 	public PLAInterfaceView(PLAControl plaControl){
 		this.plaControl=plaControl; 
-		//create GUI nodes. 
-		VBox mainControls=new VBox(); 
 		
+		//create main GUI nodes. 
+		VBox mainControls=new VBox(); 
 		
 		Label connectionLabel=new Label("Connection");
 		connectionLabel.setPadding(standardPadding);
@@ -54,20 +65,55 @@ public class PLAInterfaceView extends BorderPane {
 		Label dataAquisition=new Label("Data Aquisition");
 		dataAquisition.setPadding(standardPadding);
 		
-		Label serialLabel=new Label("Serial Data");
-		serialLabel.setPadding(standardPadding);
+		mainControls.getChildren().addAll(connectionLabel, createConnectionPane(), createStatusPane(), dataAquisition, 
+				createStartStopPane(), createRealTimePane());
 		
-		Label levelMeterLabel=new Label("Level Meters");
-		levelMeterLabel.setPadding(standardPadding);
+		//now add process nodes. 
+		processPane=new VBox(); 
+		mainControls.getChildren().add(processPane);
 
-		mainControls.getChildren().addAll(connectionLabel, createStoredDataPane(), dataAquisition, 
-				createStartStopPane(), serialLabel , createSerialPane() ,
-				levelMeterLabel,  createLevelMeterPane());
+		layoutProcessPanes(); 
 		
-		mainControls.setMaxWidth(500);
+		mainControls.setMaxWidth(500); //TODO- need dynamic layout- external libraries might be useful. 
 		this.setLeft(mainControls);
 	
 	}
+	
+
+	/**
+	 * Set status
+	 * @param input string- data string recieved from cRio; 
+	 */
+	public void setStatus(String inputstring){
+		boolean isError=false; 
+		String outputString; 
+		if (inputstring==null){
+			outputString="Error: Nothing recieved";
+			isError=true; 
+		}
+		else outputString =inputstring;
+	
+		statusLabel.setText(outputString);
+		if (isError) statusLabel.setTextFill(Color.RED);
+		else statusLabel.setTextFill(Color.LIMEGREEN);
+		
+	}
+	
+	/**
+	 * Add all current processInterface panes. If there are already process panes these are 
+	 * removed and new ones added. 
+	 */
+	public void layoutProcessPanes(){
+		//remove all current processInterface panes. 
+		processPane.getChildren().removeAll(processPane.getChildren());
+		//add new panes. 
+		for (int i=0; i<plaControl.getPLAProcessInterfaces().size(); i++){
+			processPane.getChildren().add(plaControl.getPLAProcessInterfaces().get(i).getProcessPane()); 
+		}
+	}
+	
+	
+	/******************Create Controls*************************/ 
 	
 	/**
 	 * Create pane with start and stop controls. 
@@ -87,7 +133,7 @@ public class PLAInterfaceView extends BorderPane {
 		start.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				plaControl.getNetworkManager().startDAQ();
+				setStatus(plaControl.getNetworkManager().startDAQ());
 			}
 		});
 
@@ -100,7 +146,7 @@ public class PLAInterfaceView extends BorderPane {
 		stop.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				plaControl.getNetworkManager().stopDAQ();
+				setStatus(plaControl.getNetworkManager().stopDAQ());
 			}
 		});
 		
@@ -109,56 +155,78 @@ public class PLAInterfaceView extends BorderPane {
 		return startStop;
 	}
 	
-	private Node createSerialPane(){
-		HBox serialPane=new HBox(); 
-		serialPane.setSpacing(10);
-		serialPane.setPadding(standardPadding);
-		
-		serialTextField = new TextField(); 
-		serialTextField.setPadding(standardPadding);
-		serialTextField.setEditable(false);
-	    HBox.setHgrow(serialTextField, Priority.ALWAYS);
 
-		
-		serialPane.getChildren().add(serialTextField);
-		
-		return serialPane; 
+	/**
+	 * Create pane to set IP address and attempt connection. 
+	 * @return pane allowing users to change IP address settings and test connection. 
+	 */
+	private Pane createConnectionPane(){
+
+		HBox ipSettings=new HBox(); 
+		ipSettings.setSpacing(10);
+		ipSettings.setPadding(standardPadding);
+
+		ipAddressField = new FormattedTextField<>();
+		ipAddressField.setPattern("h.h.h.h");
+		ipAddressField.getPatternVerifiers().put("h", new IntegerRangePatternVerifier(0, 255));
+		HBox.setHgrow(ipAddressField, Priority.ALWAYS);
+
+		Button connect=new Button("Connect");
+		connect.setOnAction((action)->{
+			plaControl.getPlaInterfaceSettings().ipAddress=ipAddressField.getText();
+			String string=plaControl.getNetworkManager().pingDAQ();
+			setStatus(string);
+		});
+
+		ipSettings.getChildren().addAll(ipAddressField, connect); 
+
+		return ipSettings;
 	}
-	
-	private Pane createStoredDataPane(){
+
+	/**
+	 * Creates a pane which shows current status updates. 
+	 * @return pane which shows current status updates. 
+	 */
+	private Pane createStatusPane(){
 		
 		HBox ipSettings=new HBox(); 
 		ipSettings.setSpacing(10);
 		ipSettings.setPadding(standardPadding);
-		
-		FormattedTextField field = new FormattedTextField<>();
-		field.setPattern("h.h.h.h");
-		field.getPatternVerifiers().put("h", new IntegerRangePatternVerifier(0, 255));
-	     HBox.setHgrow(field, Priority.ALWAYS);
-
-		
-		Button connect=new Button("Connect");
-		
-		ipSettings.getChildren().addAll(field, connect); 
+				
+		ipSettings.getChildren().addAll(new Label("Status: "), statusLabel); 
 		
 		return ipSettings;
+
+	}
+	
+	/**
+	 * Creates a pane which allows users to set whether real time polling should be on or off.  
+	 * @return
+	 */
+	private  Pane createRealTimePane(){
 		
-			
+		HBox realTime=new HBox(); 
+		realTime.setSpacing(10);
+		realTime.setPadding(standardPadding);
+		
+		CheckBox cb = new CheckBox("Real time data");
+		cb.setOnAction((action)->{
+			plaControl.setPolling(cb.isSelected());
+		});
+
+		realTime.getChildren().add(cb);
+				
+		return realTime;
 	}
 	
 	
-	private Node createLevelMeterPane(){
-		leveMeterPane=new LevelMeterPane(Orientation.VERTICAL, 8); 
-		leveMeterPane.setPadding(standardPadding);
-		leveMeterPane.setMaxWidth(Double.MAX_VALUE);
-		return leveMeterPane;
+
+	/**
+	 * Set params for the nodes. 
+	 */
+	public void setParams(PLAInterfaceSettings settings){
+		ipAddressField.setText(settings.ipAddress);
 	}
-
-
-
-
 	
-	
-
 
 }

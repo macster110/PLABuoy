@@ -16,8 +16,6 @@ import java.net.UnknownHostException;
  */
 public class NIUDPInterface {
 	
-	private String niAddress = "169.254.88.87";
-
 	private NetworkManager networkManager;
 	
 	private static final int RXBUFFLEN = 255;
@@ -31,7 +29,7 @@ public class NIUDPInterface {
 	}
 
 	public String sendCommand(String command) {
-		return sendCommand(command, niAddress, niUDPPort);
+		return sendCommand(command, networkManager.getCurrentIPaddress(), niUDPPort);
 	}
 	
 	/**
@@ -41,7 +39,8 @@ public class NIUDPInterface {
 	 * @param port - UDP port number
 	 * @return the address. 
 	 */
-	public String sendCommand(String command, String ipAddress, int port) {
+	public synchronized String sendCommand(String command, String ipAddress, int port) {
+		System.out.println(" NIUDPInterface:  Sending command: "+command);
 		InetAddress inAddress;
 		try {
 			inAddress = InetAddress.getByName(ipAddress);
@@ -65,14 +64,14 @@ public class NIUDPInterface {
 				}
 			}
 			catch(Exception e){
-
+				
 			}
 			
 			//send command 
 			socket.send(dp);
 			byte[] rxBuff = new byte[RXBUFFLEN];
 			DatagramPacket rp = new DatagramPacket(rxBuff, RXBUFFLEN);			
-			socket.setSoTimeout(1000);
+			socket.setSoTimeout(2000);
 			socket.receive(rp);
 			socket.close();
 			return new String(rxBuff, 0, rp.getLength());
@@ -87,20 +86,6 @@ public class NIUDPInterface {
 		} 
 		return null;
 	}
-	
-	/**
-	 * Get current IP address for cRio. 
-	 * @return
-	 */
-	public String getNiAddress() {
-		return niAddress;
-	}
-
-	/**
-	 * Set the current IP address for cRio. 
-	 * @param niAddress
-	 */
-	public void setNiAddress(String niAddress) {
-		this.niAddress = niAddress;
-	}
 }
+	
+	

@@ -21,6 +21,7 @@ public class PLAInterfaceMain extends Application {
 	        
 	        PLAControl plaControl=new PLAControl(); 
 	        PLAInterfaceView plaInterfaceView=new PLAInterfaceView(plaControl); 
+	        plaInterfaceView.setParams(plaControl.getPlaInterfaceSettings());
 	        
 	        StackPane root = new StackPane();
 	        root.getChildren().add(plaInterfaceView);
