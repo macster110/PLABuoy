@@ -11,12 +11,14 @@
 #define SETTINGS_H_
 
 #define DEFAULTSAMPLERATE (500000)
+
 /*
  * Number of channels for acquisition.
  */
 #define DEFAULTNCHANNELS (8)
+
 /*
- * number of samples to acquire each loop much be a multiple of NCHANNELS
+ * Number of samples to acquire each loop much be a multiple of NCHANNELS
  */
 #define READBLOCKSIZE (4096)
 
@@ -28,9 +30,9 @@
 #define READBUFFERLENGTH (DEFAULTNCHANNELS * 2 * 1024 * 1024)
 
 /**
- * Where to save data
+ * Root folder for saving dat.
  */
-const std::string SAVE_LOCATION ="/Y";
+const std::string SAVE_LOCATION ="/V";
 
 
 #endif /* SETTINGS_H_ */

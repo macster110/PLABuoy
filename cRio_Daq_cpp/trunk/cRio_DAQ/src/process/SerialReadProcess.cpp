@@ -29,12 +29,14 @@ const int port=0;
 /**
  * Number of lines to write for each file.
  */
-const int n_size=36000;
+ const int n_size=36000;
 
 /**
  * BAUDRATE-keep B but change number to change.
  */
 speed_t baudRate=B4800;
+
+char* volatile last_string;
 
 SerialReadProcess::SerialReadProcess() : PLAProcess("serialRead", "SERIAL") {
 
@@ -80,8 +82,32 @@ int SerialReadProcess::recordSerialThread(){
 	ptr_port->port=port;
 
 	// begin recording thread;
-	serialPortReadFunction(ptr_port, n_size);
+	serialPortReadFunction(ptr_port, n_size, this);
 
 	return 0;
 }
+
+std::string SerialReadProcess::getSummaryData(){
+	if (last_string!=NULL){
+		std::string str(last_string);
+		return str;
+	}
+	else return "";
+}
+
+void SerialReadProcess::setSummaryString(std::string time){
+	char * str_new = new char[time.size() + 1];
+	std::copy(time.begin(), time.end(), str_new);
+	last_string=str_new;
+	//printf("setSummaryString2: %s",last_string);
+}
+
+int SerialReadProcess::getErrorStatus(){
+//	std::string hello=SerialReadProcess::getSummaryData();
+//	printf("getError Serial: %s", hello.c_str());
+	return 0;
+}
+
+
+
 

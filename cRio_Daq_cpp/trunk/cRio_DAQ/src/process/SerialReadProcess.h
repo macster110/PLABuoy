@@ -10,6 +10,7 @@
 
 #include "processdata.h"
 #include "../mythread.h"
+#include <iostream>
 
 
 class SerialReadProcess : public PLAProcess {
@@ -24,7 +25,13 @@ public:
 
 	int process(PLABuff* plaBuffer);
 
+	std::string getSummaryData();
+
+	int getErrorStatus();
+
 	void endProcess();
+
+	void setSummaryString(std::string time);
 
 private:
 

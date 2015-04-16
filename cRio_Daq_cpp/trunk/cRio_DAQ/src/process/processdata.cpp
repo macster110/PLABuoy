@@ -10,12 +10,16 @@
 #include "NetSender.h"
 #include "SerialReadProcess.h"
 #include "../command/ProcessEnable.h"
+#include "../command/ProcessSummary.h"
 #include "../Utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "../x3/xml_if.h"
 #include "../mxml/mxml.h"
 #include "../Settings.h"
+#include "../AudioLevels.h";
+#include <sstream>      // std::stringstream, std::stringbuf
+
 
 
 PLAProcess** plaProcesses;
@@ -23,6 +27,18 @@ PLAProcess** plaProcesses;
 static int globalProcessId = 0;
 
 int nChannels = 0;
+
+/**
+ * Average levels in units (2^16/2=max -2^16/2=min)
+ */
+volatile int16_t* avrgLevels;
+
+/**
+ * Keeps a count of audio data packets processed. Should be good for a few
+ * hundred thousand million of continuous recording.
+ */
+long count=0;
+
 
 #define NPROCESSES (4) //number of process
 
@@ -105,6 +121,7 @@ PLAProcess* getProcess(int iProcess) {
  */
 bool processInit(int nChan, int sampleRate) {
 	nChannels = nChan;
+
 	for (int i = 0; i < NPROCESSES; i++) {
 		plaProcesses[i]->initProcess(nChan, sampleRate);
 	}
@@ -185,6 +202,7 @@ PLAProcess::PLAProcess(const string processName, const string xmlName) : Command
 	nChan = 0;
 	sampleRate = 0;
 	addCommand(new ProcessEnable(this));
+	addCommand(new ProcessSummary(this));
 }
 
 PLAProcess::~PLAProcess() {
@@ -195,6 +213,8 @@ PLAProcess::~PLAProcess() {
 int PLAProcess::initProcess(int nChan, int sampleRate) {
 	this->nChan = nChan;
 	this->sampleRate = sampleRate;
+	//allocate some memory levels array.
+	avrgLevels=(int16_t*)malloc(nChan*sizeof(int16_t));
 	return 0;
 }
 
@@ -203,6 +223,10 @@ int PLAProcess::process(PLABuff* plaBuffer) {
 	 * Base function just forwards the data on. all downstream
 	 * processes will need to override this.
 	 */
+	if (count%1000==0){
+		calcAudioLevels(avrgLevels, plaBuffer);
+	}
+	count++;
 	return forwardData(plaBuffer);
 }
 
@@ -249,6 +273,24 @@ int PLAProcess::getChannelBitMap() {
 
 int PLAProcess::getErrorStatus(){
 	return 0;
+}
+
+string PLAProcess::getSummaryData(){
+	//return a string of levels
+	//order goes like this//
+	//channels,level ch 1, level ch2, ....
+
+	string levelString;
+	stringstream strStream (stringstream::in | stringstream::out);
+
+	strStream << nChan << ",";
+	for (int i=0; i < nChan; i++)
+	{
+	    strStream << avrgLevels[i] << ",";
+	}
+	levelString = strStream.str();
+
+	return levelString;
 }
 
 void PLAProcess::setNChan(int nChan) {

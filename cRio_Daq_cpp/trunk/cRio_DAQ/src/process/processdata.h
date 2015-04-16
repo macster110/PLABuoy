@@ -125,6 +125,7 @@ public:
 
 	virtual int getErrorStatus();
 
+	virtual std::string getSummaryData();
 
 	int getProcessId() const {
 		return processId;
@@ -151,7 +152,7 @@ protected:
 	int forwardData(PLABuff* plaBuffer);
 	char* fType;
 	int codec;
-
+	int16_t* avrgLevels;  //average levels
 	/**
 	 * Set whether an error has occured.
 	 */

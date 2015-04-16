@@ -37,7 +37,7 @@ std::string currentDateTime();
 
 /**
  * Get the string of the current data and time based on current system time.
- * @ param format. Data format. e.g "%Y%m%d_%H%M%S.%%02u" for output 20140623_145859.551128 yyyymmdd_HHMMSS.SSSS
+ * @param format. Data format. e.g "%Y%m%d_%H%M%S.%%02u" for output 20140623_145859.551128 yyyymmdd_HHMMSS.SSSS
  * @return current data and time in string format
  */
 std::string currentDateTime(timeval timeStamp, const char* format);

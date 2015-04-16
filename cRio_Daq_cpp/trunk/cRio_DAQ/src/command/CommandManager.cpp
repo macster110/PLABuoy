@@ -2,7 +2,7 @@
  * CommandManager.cpp
  *
  *  Created on: 22 Jan 2015
- *      Author: doug
+ *      Author: Doug Gillespie
  */
 
 #include "CommandManager.h"

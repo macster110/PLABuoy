@@ -34,6 +34,7 @@ using namespace std;
 /*The size of the read buffer*/
 const int read_size=255;
 
+/*Serial data is being recorded*/
 bool volatile serial_go=true;
 
 /**
@@ -129,7 +130,7 @@ int openWriteFile(Serial_Port *port){
 	return 0;
 }
 
-int readSerialPort(Serial_Port port, int n)
+int readSerialPort(Serial_Port port, int n, SerialReadProcess readProcess)
 {
 	printf("ReadSerial: Begin reading Serial Port. no. of lines %d\n",n);
 
@@ -168,13 +169,14 @@ int readSerialPort(Serial_Port port, int n)
 			time+=buf;
 			if (port.f  != NULL)
 			{
+				readProcess.setSummaryString(time);
 				// print out serial port data every often.
-				if (count%1==0){
-					cout<<"ReadSerial: Serial port data to write: "<< time.c_str() << " loop count:"<< count << endl; //print out statement very 100 reads
+				if (count%10==0){
+					cout<<"ReadSerial: Serial port data to write: "<< time.c_str() << endl; //print out statement very 10 reads
 				}
 				//write to file
 				fprintf(port.f ,"%s\n",time.c_str());
-				usleep(1000000);
+				usleep(500000);
 			}
 			else return PORT_ERROR;
 
@@ -193,7 +195,7 @@ int readSerialPort(Serial_Port port, int n)
 }
 
 
-void serialPortReadFunction(Serial_Port *port_ptr, const int n_lines)
+void serialPortReadFunction(Serial_Port *port_ptr, const int n_lines, SerialReadProcess *readProcess)
 {
 	printf( "ReadSerial: Start serial port thread\n" );
 	//	Serial_Port *port_ptr = (Serial_Port *) port; //cast serial port struct
@@ -204,18 +206,15 @@ void serialPortReadFunction(Serial_Port *port_ptr, const int n_lines)
 		while (serial_go){
 			printf( "ReadSerial: Start serial port thread 2\n");
 			error=openWriteFile(port_ptr); //open file write to.
-			error=readSerialPort(*port_ptr, n_lines); //start reading serial port.
+			error=readSerialPort(*port_ptr, n_lines, *readProcess); //start reading serial port.
 		}
 	}
 	else {
 		printf( "ReadSerial: Failed to read port\n" );
 	}
-
 }
 
 void setSerialGo(bool go){
 	serial_go=go;
 }
-
-
 

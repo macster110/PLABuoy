@@ -10,6 +10,7 @@
 #include <iostream>
 #include <termios.h>
 #include "Settings.h" // needed for string
+#include "process/SerialReadProcess.h"
 
 using namespace std;
 
@@ -57,7 +58,7 @@ int openSerialPort(Serial_Port *port);
  * @param n- number fo serial port reads -1 to keep reading data.
  * @return error flag. 0 if no error.
  */
-int readSerialPort(Serial_Port port, int n);
+int readSerialPort(Serial_Port port, int n, SerialReadProcess* readProcess);
 
 /**
  * Close the serial port and the file it is writting to.
@@ -80,7 +81,7 @@ void setSerialGo(bool go);
  * @param port - serial port structure
  * @param n_lines - the number of lines to read before starting a new file.
  */
-void serialPortReadFunction(Serial_Port *port_ptr, const int n_lines);
+void serialPortReadFunction(Serial_Port *port_ptr, const int n_lines, SerialReadProcess* readProcess);
 
 
 #endif

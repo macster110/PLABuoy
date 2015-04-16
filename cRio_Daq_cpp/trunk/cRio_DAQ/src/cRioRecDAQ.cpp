@@ -66,6 +66,12 @@ bool volatile go=true;
 volatile bool acquire = false;
 
 /**
+ * indicates the watchdog has detected an error.
+ */
+volatile bool watch_dog_error = false;
+
+
+/**
  * declare watch dog thread.
  */
 DECLARETHREAD(processWatchDogFunction, PLAWatchDog, watchdog_monitor)
@@ -121,7 +127,7 @@ int main(int argc, char *argv[]){
 //	set_user_LED_status(LED_STATUS_OFF);
 
 //	//create watch dog class.
-	processWatchDog = new PLAWatchDog();
+	cRioWatchDog = new PLAWatchDog();
 
 	// create the data processes.
 	processCreate();
@@ -136,6 +142,10 @@ int main(int argc, char *argv[]){
 		string allCommands = joinstrings(argc-1, &argv[1]);
 		commandManager->processCommand(allCommands, NULL);
 	}
+
+//	/*Print console to output file*/
+//	string consoleOut=SAVE_LOCATION+ "/console_out.txt";
+//    freopen(consoleOut.c_str(),"w",stdout);
 
 	/*Wait for commands on main thread;*/
 	get_user_commands();
@@ -190,7 +200,7 @@ void get_user_commands(){
 
 
 bool start() {
-	processWatchDog->startWatchDog();
+	cRioWatchDog->startWatchDog();
 	if (acquire==true) {
 		printf("DAQ system is already running\n");
 		return false;
@@ -363,9 +373,11 @@ void PLAWatchDog::watchdog_monitor(){
 	int errorCount=0;
 	int errorCountMax=5;
 
+	watch_dog_error=false;
+
 	while(acquire){
 		myusleep(500000); //sleep for half a second
-		printf("Watchdog: Checking: %d!\n", errorCount);
+		//printf("Watchdog: Checking: %d!\n", errorCount);
 
 		/**
 		 * Check both the daq system and all processes. If there's an error in
@@ -374,7 +386,7 @@ void PLAWatchDog::watchdog_monitor(){
 		 * fix themselves.
 		 */
 		if (daqSystem->getErrorCount()>0 || isProcessError() ){
-			printf("Watchdog: FPGA error count>0: %d %d!\n", daqSystem->getErrorCount(),isProcessError() );
+			printf("PLAWatchDog: FPGA error count>0: daq: %d processes: %d total error count %d\n", daqSystem->getErrorCount(), isProcessError(),errorCount);
 			errorCount++;
 			//led flag to yellow.
 			led=LED_USER1_YELLOW;
@@ -390,8 +402,9 @@ void PLAWatchDog::watchdog_monitor(){
 //		set_user_LED_status(led);
 //
 		if (errorCount>errorCountMax){
-			fprintf(stderr, "PLAWatchDog: error count has exceeded threshold: Going for DAQ reset");
-			stop(true);
+			printf("PLAWatchDog: error count has exceeded threshold: Going for DAQ reset\n");
+			watch_dog_error=true;
+			stop(true); //be careful here- recipe for threading issues.
 			break;
 		}
 
