@@ -56,7 +56,7 @@ public class SerialProcessInterface implements PLAProcessInterface {
 	@Override
 	public void updatePane(String command, String response) {
 		//only summarydataa so far but could change 
-		serialTextField.setText(response);
+		if (response!=null) serialTextField.setText(response);
 
 	}
 

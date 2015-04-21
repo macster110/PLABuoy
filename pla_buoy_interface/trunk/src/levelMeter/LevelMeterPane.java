@@ -103,7 +103,7 @@ public class LevelMeterPane extends BorderPane {
 			});
 			
 
-			System.out.println("Levels dB "+levelsdB[i] + " units: " +unitLevels[i]); 
+			//System.out.println("Levels dB "+levelsdB[i] + " units: " +unitLevels[i]); 
 		}
 		
 	}

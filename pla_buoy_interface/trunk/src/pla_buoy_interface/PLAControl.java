@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import plaProcess.PLAProcessInterface;
 import plaProcess.RawAudioProcessInterface;
 import plaProcess.SerialProcessInterface;
+import plaProcess.WavProcessInterface;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import networkManager.NetworkManager;
 
@@ -63,7 +65,9 @@ public class PLAControl {
 		 * TODO Ideally this could happen automatically but that will require some structural changes to cRio code. 
 		 * For now that means processes are added automatically. 
 		 */
+		
 		plaProcessInterfaces.add(new SerialProcessInterface());
+		plaProcessInterfaces.add(new WavProcessInterface());
 		plaProcessInterfaces.add(new RawAudioProcessInterface());
 		
 	}
@@ -129,8 +133,11 @@ public class PLAControl {
 	            	if (isCancelled()) break; 
 	            	 System.out.println("Thread : do something here"); 
 	            	 for (int i=0; i<plaProcessInterfaces.size(); i++){
+	            		 final int n=i ;
 	            		 String data=netWorkManager.getSummaryData(plaProcessInterfaces.get(i).getProcessTypeName());
-	            		 plaProcessInterfaces.get(i).updatePane("summarydata", data);
+	            		 Platform.runLater(() -> {
+	            			 plaProcessInterfaces.get(n ).updatePane("summarydata", data);
+	            		 });
 	            		 //if (i==1) System.out.println("Levels: "+data);
 	            	 }
 	            	 Thread.sleep(500);

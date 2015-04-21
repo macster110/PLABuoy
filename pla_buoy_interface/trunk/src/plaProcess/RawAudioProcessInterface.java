@@ -51,9 +51,10 @@ public class RawAudioProcessInterface implements PLAProcessInterface {
 		//need to surround with try catch in case corrupted string won't convert to number
 		try{
 
+			String[] splitArray = null;
 			//only summary data so far so don't need to comman string but could change 
-			String[] splitArray = response.split(",");
-			if (splitArray.length==0){
+			if (response!=null)	splitArray = response.split(",");
+			if (response==null || splitArray.length==0){
 				System.err.println("RawAudioProcessInterface: No level information recieved"); 
 				return; 
 			}
@@ -70,7 +71,6 @@ public class RawAudioProcessInterface implements PLAProcessInterface {
 			}
 			
 			leveMeters.setUnitLevels(amplitudeData, 16, 18,20, -201);
-
 			
 		}
 		catch(Exception e){
