@@ -20,13 +20,16 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include "Settings.h"
+#include "nifpga/NiFpgaChoice.h"
+
 
 using namespace std;
 
 #ifdef WINDOWS
 const string wav_location = "C:/PLATest";
 #else
-const string wav_location="/U";
+const string wav_location=SAVE_LOCATION;
 #endif
 
 #define MAX(a,b) (a>b?a:b)
@@ -85,11 +88,24 @@ void set_user_LED_status(int ledstatus){
 
 	FILE *LED = NULL;
 
+	#if defined(CRIO9067)
+	/**Select led to switch on/off*/
+		switch (ledstatus){
+		case LED_USER1_GREEN:
+			//printf("Switch USER1 LED green on cRio9067 \n");
+			LED = fopen("/sys/class/leds/nilrt:user1:green/brightness","w");
+			on=true;
+			break;
+		}
+	#endif
+
+
+	#if defined(CRIO9068)
 	/**Select led to switch on/off*/
 	switch (ledstatus){
 	case LED_USER1_GREEN:
 		//		printf("Switch USER1 LED green \n");
-		//LED = fopen("/sys/class/leds/nizynqcpld:user1:green/brightness","w");
+		LED = fopen("/sys/class/leds/nizynqcpld:user1:green/brightness","w");
 		on=true;
 		break;
 	case LED_USER1_YELLOW:
@@ -108,6 +124,8 @@ void set_user_LED_status(int ledstatus){
 		on=true;
 		break;
 	}
+	#endif
+
 
 	if (on){
 		fwrite(LED_ON,sizeof(char),4,LED);
@@ -116,6 +134,20 @@ void set_user_LED_status(int ledstatus){
 	}
 
 	else{
+
+	#if defined(CRIO9067)
+		switch (ledstatus){
+		case LED_USER1_OFF:
+			//printf("Switch USER1 LED off 9067 \n");
+			LED = fopen("/sys/class/leds/nilrt:user1:green/brightness","w");
+			fwrite(LED_OFF,sizeof(char),2,LED);
+			fflush(LED);
+			fclose(LED);
+			break;
+		}
+	#endif
+
+	#if defined(CRIO9068)
 		switch (ledstatus){
 		case LED_USER1_OFF:
 			//			printf("Switch USER1 LED off \n");
@@ -127,7 +159,6 @@ void set_user_LED_status(int ledstatus){
 			fwrite(LED_OFF,sizeof(char),2,LED);
 			fflush(LED);
 			fclose(LED);
-			on=true;
 			break;
 		case LED_STATUS_OFF:
 			//			printf("Switch STATUS LED off \n");
@@ -139,11 +170,12 @@ void set_user_LED_status(int ledstatus){
 			fwrite(LED_OFF,sizeof(char),2,LED);
 			fflush(LED);
 			fclose(LED);
-			on=true;
 			break;
 		}
-	}
+	#endif
 
+	}
+	return;
 
 }
 
@@ -171,6 +203,7 @@ bool checkFolder(const char* folderName) {
 	return (chdir(folderName) == 0);
 
 }
+
 // http://stackoverflow.com/questions/675039/how-can-i-create-directory-tree-in-c-linux
 bool mkpath( std::string path )
 {

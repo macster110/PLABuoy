@@ -10,6 +10,7 @@
 #include <stdio.h>
 /*Basic math functions*/
 #include "WriteWav.h"
+#include "Settings.h"
 /*Required to use a vector, a resizable array which is used as the buffer holding data between the FIFO read and .wav write threads*/
 #include <vector>
 /*Sound file library installed on cRio through opkg package manager*/
@@ -128,7 +129,7 @@ int create_Sound_File(int channels, int SR)
 	/*Create file for out file*/
 	// Set file settings, 16bit Mono PCM
 	info.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
-	info.channels = 1;
+	info.channels = DEFAULTNCHANNELS;
 	info.samplerate = SR;
 	sndFile = sf_open(outfile_char, SFM_WRITE, &info);
 
@@ -143,58 +144,58 @@ int create_Sound_File(int channels, int SR)
 	return 0;
 }
 
-//void testWavWrite()
-//{
-//	if (not wavFile){
-//	   cout << "Error: Not a .wav file" << endl;
-//	   return;
-//	}
-//
-//	int channels=wavFile.channels();
-//	int SR=wavFile.samplerate();
-//	double duration = 10;
-//
-//	/**Create a buffer for 'duration' seconds of data**/
-//	int bufferSize=duration*SR*channels;
-//	int numFrames=duration*SR;
-//
-//	/*Create a vector of frequencies*/
-//	vector<double> freq;
-//	for (long n=0; n<channels; n++){
-//		/*Random frequency between 1000 and 20000*/
-//		double freqS=(rand()%20+1)*1000;
-//		freq.push_back(freqS);
-//	}
-//
-//	/*Create the buffer*/
-//	int16_t* buffer = (int16_t *) malloc(bufferSize * sizeof(int16_t));
-//	if (buffer == NULL) {
-//		fprintf(stderr, "Could not allocate test buffer for output\n");
-//	}
-//
-//	/*Fill the buffer array*/
-//	long f;
-//	long i=0;
-//	for (f=0 ; f<numFrames ; f++) {
-//		double time = f * duration / numFrames;
-//		for (long j=0; j<channels; j++){
-//			int pos=i+j;
-//			buffer[pos] = 0.4*pow(2, 16)*sin(2.0 * M_PI * time * freq.at(j));   // Channel 1
-//		}
-//		i+=channels;
-//	}
-//
-//
-//	cout << "Total test samples in buffer: "  << i <<endl;
-//
-//	/*Now write the file*/
-//	write_Sound_File(buffer,bufferSize);
-//
-//	/*Close the file and clean up*/
-//	sf_close(wavFile.rawHandle());
-//    free(buffer);
-//
-//}
+void testWavWrite()
+{
+	if (sndFile == NULL){
+	   cout << "Error: Not a .wav file" << endl;
+	   return;
+	}
+
+	int channels=info.channels;
+	int SR=info.samplerate;
+	double duration = 10;
+
+	/**Create a buffer for 'duration' seconds of data**/
+	int bufferSize=duration*SR*channels;
+	int numFrames=duration*SR;
+
+	/*Create a vector of frequencies*/
+	vector<double> freq;
+	for (long n=0; n<channels; n++){
+		/*Random frequency between 1000 and 20000*/
+		double freqS=(rand()%20+1)*1000;
+		freq.push_back(freqS);
+	}
+
+	/*Create the buffer*/
+	int16_t* buffer = (int16_t *) malloc(bufferSize * sizeof(int16_t));
+	if (buffer == NULL) {
+		fprintf(stderr, "Could not allocate test buffer for output\n");
+	}
+
+	/*Fill the buffer array*/
+	long f;
+	long i=0;
+	for (f=0 ; f<numFrames ; f++) {
+		double time = f * duration / numFrames;
+		for (long j=0; j<channels; j++){
+			int pos=i+j;
+			buffer[pos] = 0.4*pow(2, 16)*sin(2.0 * M_PI * time * freq.at(j));   // Channel 1
+		}
+		i+=channels;
+	}
+
+
+	cout << "Total test samples in buffer: "  << i <<endl;
+
+	/*Now write the file*/
+	write_Sound_File(buffer,bufferSize);
+
+	/*Close the file and clean up*/
+	sf_close(sndFile);
+    free(buffer);
+
+}
 
 
 bool is_Sound_File_Error(int error){

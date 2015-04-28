@@ -11,6 +11,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sndfile.h>
+#include <iostream>
+#include <math.h>
+#include <sstream>
+
+
+/*total number of megabytes written since process was first started*/
+double wav_mbyte_count=0;
+
+/*total number of files written - note this is from the first call of init to the program exiting*/
+int file_count=0;
 
 WavFileProcess::WavFileProcess() : PLAProcess("wavrecord", "WAV") {
 	nCalls = 0;
@@ -36,6 +46,7 @@ int WavFileProcess::process(PLABuff* plaBuffer) {
 		close_Sound_File();
 		//create a new sound file.
 		error=create_Sound_File(getNChan(), getSampleRate());
+		file_count++;
 		nCalls = 0;
 	}
 
@@ -47,12 +58,16 @@ int WavFileProcess::process(PLABuff* plaBuffer) {
 		//problem here is that the computer create thousands of empty sound files if there's an error
 		//create_Sound_File(getNChan(), getSampleRate());
 	}
+	else {
+		wav_mbyte_count=wav_mbyte_count+(plaBuffer->dataBytes/ 1024.) / 1024.;
+	}
 
 	return error;
 }
 
 int WavFileProcess::getErrorStatus(){
-	//printf("Error WavFileProcess: %d\n", error);
+//	std::string summary= getSummaryData();
+//	printf("Error WavFileProcess: %s\n", summary.c_str());
 	return error;
 }
 
@@ -60,3 +75,13 @@ int WavFileProcess::getErrorStatus(){
 void WavFileProcess::endProcess() {
 	close_Sound_File();
 }
+
+/**
+ * Return tow numbers, 1. the number of wac files written and 2. the size of all wav files.
+ */
+std::string WavFileProcess::getSummaryData() {
+    std::stringstream ss;
+    ss << file_count << "," << wav_mbyte_count;
+    return ss.str();
+}
+

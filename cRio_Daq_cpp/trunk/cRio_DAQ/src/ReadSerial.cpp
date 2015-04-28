@@ -171,12 +171,12 @@ int readSerialPort(Serial_Port port, int n, SerialReadProcess readProcess)
 			{
 				readProcess.setSummaryString(time);
 				// print out serial port data every often.
-				if (count%10==0){
+				if (count%100==0){
 					cout<<"ReadSerial: Serial port data to write: "<< time.c_str() << endl; //print out statement very 10 reads
 				}
 				//write to file
 				fprintf(port.f ,"%s\n",time.c_str());
-				usleep(500000);
+				usleep(10000);
 			}
 			else return PORT_ERROR;
 

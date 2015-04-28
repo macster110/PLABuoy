@@ -9,6 +9,8 @@
 #define WAVFILEPROCESS_H_
 
 #include "processdata.h"
+#include <iostream>
+
 
 class WavFileProcess : public PLAProcess {
 
@@ -25,6 +27,8 @@ public:
 	int getErrorStatus();
 
 	void endProcess();
+
+	std::string getSummaryData();
 
 private:
 	int nCalls;

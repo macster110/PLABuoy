@@ -43,9 +43,9 @@ void calcAudioLevels(int16_t * audio, PLABuff* plaBuffer){
 	int16_t newLevel;
 	//now apply decaying average and set in int array
 	for (int16_t i=0; i<plaBuffer->nChan; ++i){
-		newLevel=decayConst*maxLevels[i]+(1-decayConst)*audio[i];
+		//newLevel=decayConst*maxLevels[i]+(1-decayConst)*audio[i];
 		//printf("Audio Level: %d %d", i, newLevel);
-		audio[i]=newLevel;
+		audio[i]=maxLevels[i];
 	}
 
 

@@ -28,6 +28,10 @@
 #include "command/CommandManager.h"
 #include "Settings.h"
 #include "ReadSerial.h"
+#include "WriteWav.h"
+#include "nifpga/NiFpgaChoice.h"
+
+
 
 #include "command/UDPCommands.h"
 #include "daq/SimulatedDaq.h"
@@ -84,6 +88,10 @@ int UserInput;
 
 int main(int argc, char *argv[]){
 
+//create_Sound_File(8, 500000);
+//testWavWrite();
+
+
 //	cout<<"Number of arguments "<<argc<<endl;
 //	for (int i=0; i<argc ; i++){
 //		cout<<"Argument "<<i<<" "<<*argv[i]<<endl;
@@ -127,7 +135,7 @@ int main(int argc, char *argv[]){
 //	set_user_LED_status(LED_STATUS_OFF);
 
 //	//create watch dog class.
-	cRioWatchDog = new PLAWatchDog();
+	cRioDAQWatchDog = new PLAWatchDog();
 
 	// create the data processes.
 	processCreate();
@@ -147,6 +155,9 @@ int main(int argc, char *argv[]){
 //	string consoleOut=SAVE_LOCATION+ "/console_out.txt";
 //    freopen(consoleOut.c_str(),"w",stdout);
 
+	/*Switch on LED to show program is on*/
+	set_user_LED_status(LED_USER1_GREEN);
+
 	/*Wait for commands on main thread;*/
 	get_user_commands();
 
@@ -159,7 +170,7 @@ int main(int argc, char *argv[]){
 	// clean up processes.
 	processDelete();
 
-	printf("This is the last line of the program !\n");
+//	printf("This is the last line of the program !\n");
 	return 0;
 }
 
@@ -200,7 +211,7 @@ void get_user_commands(){
 
 
 bool start() {
-	cRioWatchDog->startWatchDog();
+	cRioDAQWatchDog->startWatchDog();
 	if (acquire==true) {
 		printf("DAQ system is already running\n");
 		return false;
@@ -375,6 +386,8 @@ void PLAWatchDog::watchdog_monitor(){
 
 	watch_dog_error=false;
 
+	set_user_LED_status(LED_USER1_OFF);
+
 	while(acquire){
 		myusleep(500000); //sleep for half a second
 		//printf("Watchdog: Checking: %d!\n", errorCount);
@@ -388,8 +401,12 @@ void PLAWatchDog::watchdog_monitor(){
 		if (daqSystem->getErrorCount()>0 || isProcessError() ){
 			printf("PLAWatchDog: FPGA error count>0: daq: %d processes: %d total error count %d\n", daqSystem->getErrorCount(), isProcessError(),errorCount);
 			errorCount++;
-			//led flag to yellow.
+			//led flag to yellow if possible, otherwise switch off
+			#if defined(CRIO9068)
 			led=LED_USER1_YELLOW;
+			#else
+			led=LED_USER1_OFF;
+			#endif
 		}
 		else{
 			//reset error counter.
@@ -398,9 +415,9 @@ void PLAWatchDog::watchdog_monitor(){
 			led=LED_USER1_GREEN;
 		}
 
-//		set_user_LED_status(LED_USER1_OFF);
-//		set_user_LED_status(led);
-//
+		//set_user_LED_status(LED_USER1_OFF);
+		set_user_LED_status(led);
+
 		if (errorCount>errorCountMax){
 			printf("PLAWatchDog: error count has exceeded threshold: Going for DAQ reset\n");
 			watch_dog_error=true;
@@ -413,6 +430,9 @@ void PLAWatchDog::watchdog_monitor(){
 //		cout<< "Hello! I'm a running watchdog processError %d\n" << isProcessError() << endl;
 
 	}
+
+	set_user_LED_status(LED_USER1_OFF);
+
 
 //	int countuSecs=500000; //us for each while loop iteration
 //	int erroruSec=15000000; //us for checking total errors -10 exceeding threshold.

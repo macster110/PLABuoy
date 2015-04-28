@@ -275,6 +275,7 @@ void FPGADaqSystem::read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status
 		if (samplesInBuff>bufferSize){
 			printf("FPGADAQSystem: Error in read FIFO thread. Buffer overflow error! buffer samples: %d loop count: %d", samplesInBuff, count);
 			*status=NiFpga_Status_Read_Buffer_Overflow; //tell status there has been an error.
+			errorCount_FPGA++;
 			break;
 		}
 

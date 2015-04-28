@@ -32,7 +32,7 @@
 /**
  * Root folder for saving dat.
  */
-const std::string SAVE_LOCATION ="/V";
+const std::string SAVE_LOCATION ="/U";
 
 
 #endif /* SETTINGS_H_ */
