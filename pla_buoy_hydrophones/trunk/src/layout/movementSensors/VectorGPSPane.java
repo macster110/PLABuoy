@@ -1,26 +1,22 @@
 package layout.movementSensors;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import main.ArrayModelControl;
 
 import org.controlsfx.glyphfont.Glyph;
 
-import dataUnits.movementSensors.AbstractMovementSensor;
 import dataUnits.movementSensors.VectorGPS;
 
 public class VectorGPSPane extends SensorPane<VectorGPS>{
