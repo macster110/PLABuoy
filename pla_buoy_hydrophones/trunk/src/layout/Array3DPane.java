@@ -53,6 +53,7 @@ public class Array3DPane extends BorderPane implements  ControlPane{
 	private double scaleFactor=20; 
 	private double axisSize=10*scaleFactor; 
 
+	//keep track of mouse positions
     double mousePosX;
     double mousePosY;
     double mouseOldX;
@@ -76,7 +77,7 @@ public class Array3DPane extends BorderPane implements  ControlPane{
 	Group axisGroup; 
 
 	/**
-	 * The camera to 
+	 * The camera transforms 
 	 */
 	private Rotate rotateY;
 	private Rotate rotateX;
@@ -102,14 +103,12 @@ public class Array3DPane extends BorderPane implements  ControlPane{
         
         //create main 3D group 
 		root3D=new Group();
-		arrayGroup=new Group(); 
+		arrayGroup=buildAxes(axisSize); //create axis group
 		axisGroup=new Group();
 		
 		root3D.getChildren().add(arrayGroup);
 		root3D.getChildren().add(axisGroup);
 		
-		//build axis. 
-		buildAxes();
 
         //Use a SubScene to mix 3D and 2D stuff.        
 		//note- make sure depth buffer in sub scene is enabled. 
@@ -135,9 +134,11 @@ public class Array3DPane extends BorderPane implements  ControlPane{
 	}
 	
 	/**
-	 * Create axis
+	 * Create a 3D axis. 
+	 * @param- size of the axis
 	 */
-	private void buildAxes() {
+	public static Group buildAxes(double axisSize) {
+		Group axisGroup=new Group(); 
         double length = 2d*axisSize;
         double width = axisSize/100d;
         double radius = 2d*axisSize/100d;
@@ -183,6 +184,7 @@ public class Array3DPane extends BorderPane implements  ControlPane{
         axisGroup.getChildren().addAll(xAxis, yAxis, zAxis);
         axisGroup.getChildren().addAll(xText, yText, zText);
         axisGroup.getChildren().addAll(xSphere, ySphere, zSphere);
+        return axisGroup;
     }
 	
 	
@@ -238,7 +240,7 @@ public class Array3DPane extends BorderPane implements  ControlPane{
 	               
 	            }
 	        });
-	    }
+	  }
 	
 	@Override
 	public void notifyChange(ChangeType type) {
