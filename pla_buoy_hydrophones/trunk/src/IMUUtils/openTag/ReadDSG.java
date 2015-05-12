@@ -1,4 +1,4 @@
-package openTag;
+package IMUUtils.openTag;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -9,18 +9,28 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import IMUUtils.MadwickAlgorithm.MadwickAlgorithm;
+
 /**
  * Read DSG file from open tag. 
  * @author Jamie Macaulay
  */
 public class ReadDSG {
 
+	//Some test files. 
 	private static String filename="C:/Users/jamie/Desktop/Open_Tag_Heading_Test/op3/33.DSG"; 
+	private static 	String pTCalFilename="C:/Users/jamie/Desktop/Open_Tag_Heading_Test/op3/PRESSTMP.CAL";
+	
+	
+	/**
+	 * In order to speed things up need to allocate big arrays and then trim after all data has been added. 
+	 */
+	private static int maxMemoryAlloc=5000000;
 
 	/**
-	 * Load raw data from a DSG binary file. 
-	 * @param file- DSG file. 
-	 * @return OTData class containing header, sensor specification and recorded data. 
+	 * Load raw binary data and time header from a DSG binary file. 
+	 * @param file- the .DSG file. 
+	 * @return OTBinaryData class containing header, sensor specification and raw recorded data. 
 	 */
 	private OTBinaryData oDSG(File file){
 
@@ -217,21 +227,77 @@ public class ReadDSG {
 		}
 		catch (Exception e){
 			e.printStackTrace();
+			return null; 
 		}
 		return pTMPCal; 
+	}
+	
+	/**
+	 * Take raw PTMP sensor measurements and calibrate using calibration values form calibration file. Really this has to be used for PTMP data, otherwise
+	 * it makes no sense. 
+	 * @param ptmp - data from pressure and temperature sensors. 
+	 * @param ptmpCalData - clibration data from PTMP file. 
+	 */
+	private OTData calibratePTMPData(PTMP ptmp, PTMPCalData ptmpCalData){
+		//allocate arrays 
+		double[] pressure=new double[maxMemoryAlloc];  
+		double[] temp=new double[maxMemoryAlloc]; 
+		long[] timePT=new long[maxMemoryAlloc]; 
+		//iterate through pressure and temperature data
+		int count=0;
+		for (int n=0; n<ptmp.data.length; n=n+6){
+			//next bit copied direct from MATLAB code. - i'm sure this could be neater. 
+			
+			//do some programming magic to pressure number
+			Long p2bits = (Long.parseUnsignedLong(Long.toString((long) ptmp.data[n])) << 16) | (Long.parseUnsignedLong(Long.toString((long) ptmp.data[n+1])) << 8);
+			double pressraw=p2bits | Long.parseUnsignedLong(Long.toString((long) ptmp.data[n+2]));
+			
+			//do some programming magic to temperature number
+			Long t2bits = (Long.parseUnsignedLong(Long.toString((long) ptmp.data[n+3])) << 16) | (Long.parseUnsignedLong(Long.toString((long) ptmp.data[n+4])) << 8);
+			double tempraw=t2bits | Long.parseUnsignedLong(Long.toString((long) ptmp.data[n+5]));
+			
+			//calibrate temperature. 
+			double dT=tempraw-ptmpCalData.TREF*256;
+			temp[count]= (2000+dT*ptmpCalData.TEMPSENS/8388608)/100;  //celsius 
+		
+			
+			//calibrate pressure (depends on temperature)
+			double OFF=ptmpCalData.POFF*65536+(ptmpCalData.TCOFF*dT)/128; 
+			double SENS=ptmpCalData.PSENS*32768+(dT*ptmpCalData.TCSENS)/256;
+			pressure[count]=(pressraw*SENS/2097152-OFF)/81920; // mbar (i.e. a value of 1 = 1 mbar = ~1 cm depth resolution) 
+			
+			count++; 
+		}
+		
+		//trim arrays, 
+		pressure=Arrays.copyOf(pressure, count);
+		temp=Arrays.copyOf(temp, count);
+		
+		for (int i=0; i<count; i++){
+			timePT[i]=(long) (i/(1000/(double) ptmp.SPus));
+		} 
+		
+		//add to OTData class. 
+		OTData otData=new OTData(); 
+		otData.timesPT=timePT;
+		otData.pressure=pressure;
+		otData.temperature=temp;
+
+		return otData; 
 	}
 
 
 	/**
-	 * Get data from binary file and convert to readable format. Packaages data in a OTData class. 
-	 * @param file - the dsg file. 
+	 * Get data from binary file and convert to readable format. Packages data in a OTData class. 
+	 * @param file - the .DSG file. 
 	 * @return OTData. 
 	 */
-	private OTData otLoadDat(File file){
+	private OTData otLoadDat(File file, File calFile){
 
 		//open file and load binary data. 
 		OTBinaryData otBinaryDat = oDSG(file);
 
+		OTData otData=new OTData(); //holds IMU and pressure/temp data
 
 		if (otBinaryDat==null){
 			System.err.println("DSG otLoadData: Error: File could not be loaded"); 
@@ -253,7 +319,7 @@ public class ReadDSG {
 		double[] dsgdata3=null; int n3=0;
 
 		//iterate through recorded and create long list of different data types. 
-		for (int i=0; i<20/*otBinaryDat.sidRecArray.size()*/; i++){ //TODO
+		for (int i=0; i<otBinaryDat.sidRecArray.size(); i++){ 
 			//otBinaryDat.sidRecArray.size();
 			if (i%5000==0) System.out.println("Loading data: "+i+ " of " +otBinaryDat.sidRecArray.size());
 
@@ -261,42 +327,42 @@ public class ReadDSG {
 
 			if (cur_sid==0){
 				//add to end of list. 
-				if (dsgdata0==null) dsgdata0=new double[5000000];
+				if (dsgdata0==null) dsgdata0=new double[maxMemoryAlloc];
 				addData(dsgdata0, otBinaryDat.sidRecArray.get(i).data, n0);
 				n0+=otBinaryDat.sidRecArray.get(i).data.length;
 			}
 
 			if (cur_sid==1){
-				if (dsgdata1==null) dsgdata1=new double[5000000];
+				if (dsgdata1==null) dsgdata1=new double[maxMemoryAlloc];
 				addData(dsgdata1, otBinaryDat.sidRecArray.get(i).data, n1);
 				n1+=otBinaryDat.sidRecArray.get(i).data.length;
 			}
 			if (cur_sid==2){
-				if (dsgdata2==null) dsgdata2=new double[5000000];
+				if (dsgdata2==null) dsgdata2=new double[maxMemoryAlloc];
 				addData(dsgdata2, otBinaryDat.sidRecArray.get(i).data, n2);
 				n2+=otBinaryDat.sidRecArray.get(i).data.length;
 			}		
 			if (cur_sid==3){
-				if (dsgdata3==null) dsgdata3=new double[5000000];
+				if (dsgdata3==null) dsgdata3=new double[maxMemoryAlloc];
 				addData(dsgdata3, otBinaryDat.sidRecArray.get(i).data, n3);
 				n3+=otBinaryDat.sidRecArray.get(i).data.length;
 			}
 
 		}
 		
-		//now trim the array back.
-		dsgdata0=Arrays.copyOf(dsgdata0, n0);
-		dsgdata1=Arrays.copyOf(dsgdata0, n1);
-		dsgdata2=Arrays.copyOf(dsgdata0, n2);
-		dsgdata3=Arrays.copyOf(dsgdata0, n3);
+		//now trim the array back top save memory and make life easy
+		if (dsgdata0!=null) dsgdata0=Arrays.copyOf(dsgdata0, n0);
+		if (dsgdata1!=null) dsgdata1=Arrays.copyOf(dsgdata1, n1);
+		if (dsgdata2!=null) dsgdata2=Arrays.copyOf(dsgdata2, n2);
+		if (dsgdata3!=null) dsgdata3=Arrays.copyOf(dsgdata3, n3);
 
-		//holds tempory data on accelerometer, gyroscope and magnotometer in format ready to be converted to human readable form. 
+		//holds temporary data on accelerometer, gyroscope and magnetometer in format ready to be converted to human readable form. 
 		INER iner=new INER(); 
-		//holds tempory pressure and temperature data
+		//holds temporary pressure and temperature data
 		PTMP ptmp=new PTMP(); 
 
 		long[] imuTime;
-		double[] times_IMU;
+		long[] times_IMU;
 		double[][] accelerometer=null; // 3 axis accelerometer data
 		double[][] magnetometer=null; //3 axis magnetometer
 		double[][] gyroscope=null; //3 axis gyroscope
@@ -310,6 +376,7 @@ public class ReadDSG {
 
 				
 			if (String.valueOf(otBinaryDat.sidSpecArray.get(j).SID).equals("HYD1")){
+				//nothing here yet
 				double[] A0; 
 				if(j==0) A0=dsgdata0;  
 				if(j==1) A0=dsgdata1;
@@ -392,12 +459,19 @@ public class ReadDSG {
 				
 				//create an array of times for data. Remember all these are sampled at same rate 
 				//in open tag.
-				times_IMU=new double[N]; 
+				times_IMU=new long[N]; 
 				for (int i=0; i<N; i++){
-					times_IMU[i]=i/(1000000/(double) iner.SPus);
+					times_IMU[i]=(long) (i/(1000/(double) iner.SPus));
 				}
+				
+				//now add all data to OTDATA class.
+				otData.times=times_IMU; 
+				otData.accelerometer=accelerometer; 
+				otData.magnotometer=magnetometer; 
+				otData.gyroscope=gyroscope; 
 
 			}
+		
 											
 //			//print out data
 //			System.out.println("Print data: ");
@@ -421,14 +495,36 @@ public class ReadDSG {
 				if(j==0) ptmp.data=dsgdata0; ptmp.SPus=otBinaryDat.sidSpecArray.get(j).SPus;
 				if(j==1) ptmp.data=dsgdata1; ptmp.SPus=otBinaryDat.sidSpecArray.get(j).SPus;
 				if(j==2) ptmp.data=dsgdata2; ptmp.SPus=otBinaryDat.sidSpecArray.get(j).SPus;
-				if(j==3) ptmp.data=dsgdata3; ptmp.SPus=otBinaryDat.sidSpecArray.get(j).SPus;
-			}
+				if(j==3) iner.data=dsgdata3; ptmp.SPus=otBinaryDat.sidSpecArray.get(j).SPus; //TODO- should that really be iner or bug in MALTAB code? 
+				
+//				for (int i=0; i<ptmp.data.length; i++){
+//					System.out.println("PTMP val: "+ i + ":  "+((int)dsgdata1[i]) + " j "+j);
+//				}
+				
+				//try and extract pressure and temperature data. Requires a calibration file. 
+				OTData ptOTData;
+				if (calFile!=null){
+					PTMPCalData ptmpCalData= oPTMPCal(calFile);
+					ptOTData =calibratePTMPData( ptmp, ptmpCalData);
+					//add to main OTData class. 
+					otData.timesPT=ptOTData.timesPT;
+					otData.pressure=ptOTData.pressure;
+					otData.temperature=ptOTData.temperature;
+					
+//					for (int i=0; i<otData.pressure.length; i++){
+//						System.out.println("PTMP val: time: "+ otData.timesPT[i] + " pressure: "+otData.pressure[i] + " temperature "+otData.temperature[i]);
+//					}
 
+				}
+				else{ 
+					System.err.println("Calibration file could not be loaded. Temperature and pressure data has been ignored"); 
+				}
+		
+			}
+			
 		}
 		
-		//now add all data to OTDATA class so can be made sense of. 
-		OTData otData=new OTData();
-
+	
 		return otData;
 	}
 
@@ -565,30 +661,48 @@ public class ReadDSG {
 	public class OTData {
 		
 		/**
-		 * Accelerometer data
-		 */
-		double[][] accelerometer; 
-
-		/**
-		 * Gyroscope data
-		 */
-		double[][] gyroscope; 
-		
-		/**
-		 * Magbnotometer data
-		 */
-		double[][] magnotometer; 
-		
-		/**
-		 * Milliseconds of measurments, measured from start time. 
-		 */
-		long[] times;
-		
-		/**
 		 * The start time of the file in millis 
 		 */
 		long startTime; 
 		
+		/**
+		 * Milliseconds of measurements, measured from start time for IMU sensors
+		 */
+		long[] times;
+		
+		
+		/**
+		 * Accelerometer data in g (units of gravitational field strength)
+		 */
+		double[][] accelerometer; 
+
+		/**
+		 * Gyroscope data in deg/s
+		 */
+		double[][] gyroscope; 
+		
+		/**
+		 * Magnetometer data in Flux (G)
+		 */
+		double[][] magnotometer; 
+		
+
+		/**
+		 * Milliseconds of measurments, measured from start time for pressure and temperature sensors 
+		 */
+		long[] timesPT;
+		
+		/**
+		 * Pressure data in millibar
+		 */
+		double[] pressure;
+		
+		/**
+		 * Temperature data in celsius
+		 */
+		double[] temperature;
+
+
 
 	}  
 	
@@ -750,9 +864,20 @@ public class ReadDSG {
 	}
 
 	public static void main(String[] args) {
-		ReadDSG readDSG=new ReadDSG(); 
-		File file =new File(filename);
-		readDSG.otLoadDat(file);
+//		ReadDSG readDSG=new ReadDSG(); 
+//		File file =new File(filename);
+//		File fileCal =new File(pTCalFilename);
+//
+//		readDSG.otLoadDat(file, fileCal);
+		
+//		String number=Long.toString((long) 345); 
+//		String number2=Long.toString((long) 3); 
+//		Long l1 = (Long.parseUnsignedLong(number) << 16) | (Long.parseUnsignedLong(number2) << 8);
+//		System.out.println("Long: "+l1);
+		
+			float hello=MadwickAlgorithm.invSqrt(0.15625f);
+			System.out.println(" Fast inv square root: "+hello);
+		
 	}
 
 }

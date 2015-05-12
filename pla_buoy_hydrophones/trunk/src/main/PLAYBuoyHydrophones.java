@@ -23,7 +23,7 @@ public class PLAYBuoyHydrophones extends Application {
         
         StackPane root = new StackPane();
         root.getChildren().add(mainView);
-        primaryStage.setScene(new Scene(root, 1000, 900));
+        primaryStage.setScene(new Scene(root, 1200, 900));
         primaryStage.show();
     }
 }
