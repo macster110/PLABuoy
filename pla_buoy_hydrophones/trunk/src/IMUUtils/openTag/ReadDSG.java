@@ -21,7 +21,6 @@ public class ReadDSG {
 	private static String filename="C:/Users/jamie/Desktop/Open_Tag_Heading_Test/op3/33.DSG"; 
 	private static 	String pTCalFilename="C:/Users/jamie/Desktop/Open_Tag_Heading_Test/op3/PRESSTMP.CAL";
 	
-	
 	/**
 	 * In order to speed things up need to allocate big arrays and then trim after all data has been added. 
 	 */
@@ -292,7 +291,7 @@ public class ReadDSG {
 	 * @param file - the .DSG file. 
 	 * @return OTData. 
 	 */
-	private OTData otLoadDat(File file, File calFile){
+	public OTData otLoadDat(File file, File calFile){
 
 		//open file and load binary data. 
 		OTBinaryData otBinaryDat = oDSG(file);
@@ -319,7 +318,7 @@ public class ReadDSG {
 		double[] dsgdata3=null; int n3=0;
 
 		//iterate through recorded and create long list of different data types. 
-		for (int i=0; i<otBinaryDat.sidRecArray.size(); i++){ 
+		for (int i=0; i<2000/*otBinaryDat.sidRecArray.size()*/; i++){ //TODO
 			//otBinaryDat.sidRecArray.size();
 			if (i%5000==0) System.out.println("Loading data: "+i+ " of " +otBinaryDat.sidRecArray.size());
 
@@ -449,7 +448,7 @@ public class ReadDSG {
 						int n=r; 
 						N=0;
 						while (n<iner.data.length){
-							gyroscope[N][r-6]=iner.data[n]*gyroCal;
+							gyroscope[N][r-6]=Math.toRadians(iner.data[n]*gyroCal);
 							iner.data[n]=iner.data[n]*gyroCal;
 							n=n+iner.nChan; 
 							N++;
@@ -663,34 +662,34 @@ public class ReadDSG {
 		/**
 		 * The start time of the file in millis 
 		 */
-		long startTime; 
+		public long startTime; 
 		
 		/**
 		 * Milliseconds of measurements, measured from start time for IMU sensors
 		 */
-		long[] times;
+		public long[] times;
 		
 		
 		/**
 		 * Accelerometer data in g (units of gravitational field strength)
 		 */
-		double[][] accelerometer; 
+		public double[][] accelerometer; 
 
 		/**
-		 * Gyroscope data in deg/s
+		 * Gyroscope data in RADIANS/s
 		 */
-		double[][] gyroscope; 
+		public double[][] gyroscope; 
 		
 		/**
 		 * Magnetometer data in Flux (G)
 		 */
-		double[][] magnotometer; 
+		public double[][] magnotometer; 
 		
 
 		/**
 		 * Milliseconds of measurments, measured from start time for pressure and temperature sensors 
 		 */
-		long[] timesPT;
+		public long[] timesPT;
 		
 		/**
 		 * Pressure data in millibar
@@ -700,7 +699,7 @@ public class ReadDSG {
 		/**
 		 * Temperature data in celsius
 		 */
-		double[] temperature;
+		public double[] temperature;
 
 
 
@@ -711,7 +710,7 @@ public class ReadDSG {
 	 * @author Jamie Macaulay
 	 *
 	 */
-	public class PTMPCalData  {
+	private class PTMPCalData  {
 		
 		int PSENS;
 		int POFF;
@@ -726,7 +725,7 @@ public class ReadDSG {
 	 * @author Jamie Macaulay
 	 *
 	 */
-	public class INER {
+	private class INER {
 
 		int nChan; 
 
@@ -743,7 +742,7 @@ public class ReadDSG {
 	 * @author Jamie Macaulay
 	 *
 	 */
-	public class PTMP {
+	private class PTMP {
 
 		int nChan; 
 
@@ -760,7 +759,7 @@ public class ReadDSG {
 	 * @author Jamie Macaulay
 	 *
 	 */
-	public class OTBinaryData{
+	private class OTBinaryData{
 
 		DFHead dfHead;
 
@@ -775,7 +774,7 @@ public class ReadDSG {
 	 * @author Jamie Macaulay 
 	 *
 	 */
-	public class SIDSpec {
+	private class SIDSpec {
 
 		public char[] SID;
 
@@ -802,7 +801,7 @@ public class ReadDSG {
 	 * @author Jamie Macaulay
 	 *
 	 */
-	public class SIDRec {
+	private class SIDRec {
 
 		public int nSID;
 
@@ -822,7 +821,7 @@ public class ReadDSG {
 	 * @author Jamie Macaulay 
 	 *
 	 */
-	public class DFHead {
+	private class DFHead {
 
 		/**Header**/
 		public long version; 
