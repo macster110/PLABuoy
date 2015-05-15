@@ -318,7 +318,7 @@ public class ReadDSG {
 		double[] dsgdata3=null; int n3=0;
 
 		//iterate through recorded and create long list of different data types. 
-		for (int i=0; i<2000/*otBinaryDat.sidRecArray.size()*/; i++){ //TODO
+		for (int i=0; i<otBinaryDat.sidRecArray.size(); i++){ //TODO- can change amount of data loaded here. 
 			//otBinaryDat.sidRecArray.size();
 			if (i%5000==0) System.out.println("Loading data: "+i+ " of " +otBinaryDat.sidRecArray.size());
 

@@ -155,7 +155,7 @@ public double[] MadgwickAHRSupdate(double gx, double gy, double gz, double ax, d
 }
 
 
-public float[] MadgwickAHRSupdate2(float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz) {
+public float[] MadgwickAHRSupdatef(float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz) {
 	float recipNorm;
 	float s0, s1, s2, s3;
 	float qDot1, qDot2, qDot3, qDot4;

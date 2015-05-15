@@ -134,30 +134,48 @@ public class Array3DPane extends BorderPane implements  ControlPane{
 	}
 	
 	/**
+	 * Create a 3D axis with default colours set. 
+	 * @param- size of the axis
+	 */
+	public Group buildAxes(double axisSize) {
+		 return buildAxes( axisSize,Color.DARKRED, Color.RED,
+				 Color.DARKGREEN, Color.GREEN,
+				 Color.DARKBLUE, Color.BLUE,
+				 Color.BLACK); 
+	}
+		
+	
+	/**
 	 * Create a 3D axis. 
 	 * @param- size of the axis
 	 */
-	public static Group buildAxes(double axisSize) {
+	public static Group buildAxes(double axisSize, Color xAxisDiffuse, Color xAxisSpectacular,
+			Color yAxisDiffuse, Color yAxisSpectacular,
+			Color zAxisDiffuse, Color zAxisSpectacular,
+			Color textColour) {
 		Group axisGroup=new Group(); 
         double length = 2d*axisSize;
         double width = axisSize/100d;
         double radius = 2d*axisSize/100d;
         final PhongMaterial redMaterial = new PhongMaterial();
-        redMaterial.setDiffuseColor(Color.DARKRED);
-        redMaterial.setSpecularColor(Color.RED);
+        redMaterial.setDiffuseColor(xAxisDiffuse);
+        redMaterial.setSpecularColor(xAxisSpectacular);
         final PhongMaterial greenMaterial = new PhongMaterial();
-        greenMaterial.setDiffuseColor(Color.DARKGREEN);
-        greenMaterial.setSpecularColor(Color.GREEN);
+        greenMaterial.setDiffuseColor(yAxisDiffuse);
+        greenMaterial.setSpecularColor( yAxisSpectacular);
         final PhongMaterial blueMaterial = new PhongMaterial();
-        blueMaterial.setDiffuseColor(Color.DARKBLUE);
-        blueMaterial.setSpecularColor(Color.BLUE);
+        blueMaterial.setDiffuseColor(zAxisDiffuse);
+        blueMaterial.setSpecularColor(zAxisSpectacular);
         
         Text xText=new Text("x"); 
-        xText.setStyle("-fx-font: 10px Tahoma; -fx-text-fill: green;");
+        xText.setStyle("-fx-font: 20px Tahoma;");
+        xText.setFill(textColour);
         Text yText=new Text("z"); 
-        yText.setStyle("-fx-font: 10px Tahoma; -fx-text-fill: green;");
+        yText.setStyle("-fx-font: 20px Tahoma; ");
+        yText.setFill(textColour);
         Text zText=new Text("y"); 
-        zText.setStyle("-fx-font: 10px Tahoma; -fx-text-fill: green;");
+        zText.setStyle("-fx-font: 20px Tahoma; ");
+        zText.setFill(textColour);
 
         xText.setTranslateX(axisSize+5);
         yText.setTranslateY(-(axisSize+5));
