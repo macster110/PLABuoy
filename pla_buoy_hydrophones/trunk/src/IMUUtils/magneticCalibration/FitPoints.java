@@ -92,6 +92,11 @@ public class FitPoints
 		radii = findRadii(evals);
 	}
 	
+	/**
+	 * Convert a 2D double array to a threeSpacePoint array
+	 * @param points - Nx3 double array
+	 * @return ThreeSpace[Point  array. 
+	 */
 	public static ArrayList<ThreeSpacePoint> convertToThreeSpace(double[][] points){
 		if (points.length<=0 || points[0].length!=3){
 			System.err.println("FitPoints: array must be a double[>0][3]");

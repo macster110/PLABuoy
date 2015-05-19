@@ -25,7 +25,7 @@ import javafx.scene.transform.Translate;
 /**
  * Create a 3D visualisation of the array.
  * <p>
- * Co-rodinate systems:
+ * Co-ordinate systems:
  * <p><p>
  * Because the pla_buoy_hydrophones is a program designed to integaret with PAMGUARD we use the PAMGUARD co-rdinate system. This is;
  * <p>
@@ -103,8 +103,8 @@ public class Array3DPane extends BorderPane implements  ControlPane{
         
         //create main 3D group 
 		root3D=new Group();
-		arrayGroup=buildAxes(axisSize); //create axis group
-		axisGroup=new Group();
+		axisGroup=buildAxes(axisSize); //create axis group
+		arrayGroup=new Group();
 		
 		root3D.getChildren().add(arrayGroup);
 		root3D.getChildren().add(axisGroup);

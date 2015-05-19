@@ -16,7 +16,8 @@ import javafx.stage.Stage;
 public class MagneticCalibrationTest extends Application {
 	
 	//Some test files from and OpenTag
-	private static String filename="F:/Wales_2015/pla_buoy/20150422/Open_Tags/op7/14.DSG"; 
+//	private static String filename="F:/Wales_2015/pla_buoy/20150422/Open_Tags/op7/14.DSG"; 
+	private static String filename="C:/Users/jamie/Google Drive/SMRU_research/Open_Tag/Open Tag Madgwick Test/Heading Test/42.DSG";
 	private static 	String pTCalFilename="C:/Users/jamie/Desktop/Open_Tag_Heading_Test/op3/PRESSTMP.CAL";
 
 	@Override
@@ -27,9 +28,10 @@ public class MagneticCalibrationTest extends Application {
 		OTData otData=readDSG.otLoadDat(new File(filename), new File(pTCalFilename));
 
 		MagneticCalibration magCal=new MagneticCalibration(); 
-		MagneticCalibrationPane magCalPane=new MagneticCalibrationPane(magCal); 
+		MagneticCalibrationPane magCalPane=new MagneticCalibrationPane(); 
+		magCalPane.setPercentileKeep(0.9);
 		
-		magCalPane.addMagnetomterData(otData.magnotometer, false);
+		magCalPane.setMagnetomterData(otData.magnotometer);
 		
 		FitPoints fitPoints=new FitPoints();
 		fitPoints.fitEllipsoid( FitPoints.convertToThreeSpace(otData.magnotometer));

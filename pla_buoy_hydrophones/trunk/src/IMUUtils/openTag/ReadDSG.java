@@ -17,9 +17,9 @@ import IMUUtils.MadwickAlgorithm.MadwickAlgorithm;
  */
 public class ReadDSG {
 
-	//Some test files. 
-	private static String filename="C:/Users/jamie/Desktop/Open_Tag_Heading_Test/op3/33.DSG"; 
-	private static 	String pTCalFilename="C:/Users/jamie/Desktop/Open_Tag_Heading_Test/op3/PRESSTMP.CAL";
+//	//Some test files. 
+//	private static String filename="C:/Users/jamie/Desktop/Open_Tag_Heading_Test/op3/33.DSG"; 
+//	private static 	String pTCalFilename="C:/Users/jamie/Desktop/Open_Tag_Heading_Test/op3/PRESSTMP.CAL";
 	
 	/**
 	 * In order to speed things up need to allocate big arrays and then trim after all data has been added. 
@@ -289,7 +289,7 @@ public class ReadDSG {
 	/**
 	 * Get data from binary file and convert to readable format. Packages data in a OTData class. 
 	 * @param file - the .DSG file. 
-	 * @return OTData. 
+	 * @return OTData - open tag data containing accelerometer, gyroscope and magnetometer data and, if a cal file is present and tag has sensors, also pressure and temperature data. 
 	 */
 	public OTData otLoadDat(File file, File calFile){
 
@@ -546,9 +546,9 @@ public class ReadDSG {
 	 * @param b - array 2
 	 * @return new array
 	 */
-	public static double[] concat(double[] a, double[] b){
+	public static double[][] concat(double[][] a, double[][] b){
         int length = a.length + b.length;
-        double[] result = new double[length];
+        double[][] result = new double[length][];
         System.arraycopy(a, 0, result, 0, a.length);
         System.arraycopy(b, 0, result, a.length, b.length);
         return result;
@@ -862,21 +862,21 @@ public class ReadDSG {
 
 	}
 
-	public static void main(String[] args) {
-//		ReadDSG readDSG=new ReadDSG(); 
-//		File file =new File(filename);
-//		File fileCal =new File(pTCalFilename);
-//
-//		readDSG.otLoadDat(file, fileCal);
-		
-//		String number=Long.toString((long) 345); 
-//		String number2=Long.toString((long) 3); 
-//		Long l1 = (Long.parseUnsignedLong(number) << 16) | (Long.parseUnsignedLong(number2) << 8);
-//		System.out.println("Long: "+l1);
-		
-			float hello=MadwickAlgorithm.invSqrt(0.15625f);
-			System.out.println(" Fast inv square root: "+hello);
-		
-	}
+//	public static void main(String[] args) {
+////		ReadDSG readDSG=new ReadDSG(); 
+////		File file =new File(filename);
+////		File fileCal =new File(pTCalFilename);
+////
+////		readDSG.otLoadDat(file, fileCal);
+//		
+////		String number=Long.toString((long) 345); 
+////		String number2=Long.toString((long) 3); 
+////		Long l1 = (Long.parseUnsignedLong(number) << 16) | (Long.parseUnsignedLong(number2) << 8);
+////		System.out.println("Long: "+l1);
+//		
+//			float hello=MadwickAlgorithm.invSqrt(0.15625f);
+//			System.out.println(" Fast inv square root: "+hello);
+//		
+//	}
 
 }
