@@ -110,9 +110,9 @@ public class PositionRefPane extends VBox {
 		xPos.setText(Double.toString(movmentSensor.xRefPositionProperty().get()));
 		yPos.setText(Double.toString(movmentSensor.yRefPositionProperty().get()));
 		zPos.setText(Double.toString(movmentSensor.zRefPositionProperty().get()));
-		heading.setText(Double.toString(movmentSensor.headingRefProperty().get()));
-		pitch.setText(Double.toString(movmentSensor.pitchRefProperty().get()));
-		roll.setText(Double.toString(movmentSensor.rollRefProperty().get()));
+		heading.setText(Double.toString(Math.toDegrees(movmentSensor.headingRefProperty().get())));
+		pitch.setText(Double.toString(Math.toDegrees(movmentSensor.pitchRefProperty().get())));
+		roll.setText(Double.toString(Math.toDegrees(movmentSensor.rollRefProperty().get())));
 	}
 	
 	/**

@@ -26,7 +26,7 @@ public class RigidModel implements ArrayModel  {
 			ArrayList<Hydrophone> hydrophones,
 			ArrayList<MovementSensor> movementSensors, long time) {
 		
-		System.out.println("Rigid Model: no. hydrophones: "+hydrophones.size()+  " no. child arrays: "+childArrays.size());
+		//System.out.println("Rigid Model: no. hydrophones: "+hydrophones.size()+  " no. child arrays: "+childArrays.size());
 		
 		ArrayList<double[]> hydrophonePositions=new ArrayList<double[]>(); 
 		for (int i=0; i<hydrophones.size(); i++ ){
@@ -186,9 +186,14 @@ public class RigidModel implements ArrayModel  {
 				
 				if (sensorData[1]==null && simSensorData[1]!=null)  sensorData[1]=simSensorData[1]-movementSensors.get(i).getReferenceOrientation()[1]; 
 				else if (simSensorData[1]==null) sensorData[1]=movementSensors.get(i).getReferenceOrientation()[1];
+				//now if pitch is less than -90 degrees or >90 degrees then need to deal with this by switch heading.  
+				
 
 				if (sensorData[2]==null && simSensorData[2]!=null)  sensorData[2]=simSensorData[2]-movementSensors.get(i).getReferenceOrientation()[2]; 
 				else if (simSensorData[2]==null) sensorData[2]=movementSensors.get(i).getReferenceOrientation()[2];
+				
+//				//wrap heading as between 0 and 360; 
+//				sensorData[0] = sensorData[0] % Math.PI;
 
 			}
 			//latitude, longitude

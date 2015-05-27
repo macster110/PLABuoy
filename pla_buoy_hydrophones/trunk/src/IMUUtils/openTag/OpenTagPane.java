@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.controlsfx.glyphfont.Glyph;
 
+import IMUUtils.magneticCalibration.FitPoints;
 import IMUUtils.magneticCalibration.MagneticCalibration;
 import IMUUtils.magneticCalibration.MagneticCalibrationPane;
 import IMUUtils.openTag.ReadDSG.OTData;
@@ -16,6 +17,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -30,7 +32,14 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 
 /**
- * Pane which allows a user to load a folder of open tag data and perform magnetic plus gyroscope calibrations for an OpenTag  
+ * Pane which allows a user to load a folder setup the loading of open tag data.
+ * <p>
+ * The Pane allows users to calibrate the magnetomter and gyroscope of a tag (or enter info manually). It 
+ * also allows  users to select a calibration file and folder of .DSG files.
+ * <p><p>
+ * The pane therefore allows users to select all information required to load .DSG files and convert to Euler angles. It can therefore be added
+ * to another program to allow users to batch process OpenTag data. 
+ * 
  * @author Jamie Macaulay
  */
 public class OpenTagPane extends VBox {
@@ -49,7 +58,12 @@ public class OpenTagPane extends VBox {
 	/**
 	 * Text field showing the file path. 
 	 */
-	private TextField filePath;
+	private ComboBox<String> filePath;
+	
+	/**
+	 * Text field to cal file 
+	 */
+	private TextField calfilePath;
 
 	
 	private TextField magCalX;
@@ -117,7 +131,6 @@ public class OpenTagPane extends VBox {
             new DirectoryChooser();
 
 
-	private TextField calfilePath;
 	
 
 	
@@ -193,7 +206,8 @@ public class OpenTagPane extends VBox {
 
 		//openFilePath.setMaxWidth(Double.MAX_VALUE);
 		openFilePath.setSpacing(10);
-		filePath=new TextField(); 
+		filePath=new ComboBox<String>(); 
+		filePath.setEditable(true);
 		filePath.setMaxWidth(Double.MAX_VALUE);
 		//filePath.setEditable(false);
 		HBox.setHgrow(filePath, Priority.ALWAYS);
@@ -207,12 +221,13 @@ public class OpenTagPane extends VBox {
 	           
 	    		if (folderPath!=null){
 		    		if (AbstractMovementSensor.getFiles(oTFileExtensions, folderPath, true).size()<=0) showErrorWarning(NO_FILES_ERROR);
-	    			filePath.setText(folderPath.getAbsolutePath());
+	    			filePath.getItems().add(0,folderPath.getAbsolutePath());
+	    			filePath.getSelectionModel().select(0);
 	    			filePath.setTooltip(new Tooltip(folderPath.getAbsolutePath()));
-	    			openTagSettings.folderPath=folderPath; 
+	    			openTagSettings.folderPaths.add(0,folderPath); 
 	    		}
 	    		else{
-	    			filePath.setText("");
+	    			//filePath.setText("");
 	    			filePath.setTooltip(new Tooltip("No folder set"));
 	    		}
 	    		
@@ -249,6 +264,9 @@ public class OpenTagPane extends VBox {
 		selectMagCalFiles.setOnAction((action)->{
 			configureFileChooser(
 					fileChooser, "Open files for Magnetic Calibration") ;
+			//set initial directory
+			if (openTagSettings.magCalFiles!=null && openTagSettings.magCalFiles.size()>0) fileChooser.setInitialDirectory(openTagSettings.magCalFiles.get(0).getParentFile());
+			//open file chooser. 
 			List<File> files =fileChooser.showOpenMultipleDialog(this.getScene().getWindow());
 			if (files==null || files.size()<=0) return; 
 			else calibrateMag(files);
@@ -284,6 +302,7 @@ public class OpenTagPane extends VBox {
 		selectGyroCalFiles.setOnAction((action)->{
 			configureFileChooser(
 					fileChooser, "Open files for Gyroscope Calibration") ;
+			
 		});
 		gyroCalValues.getChildren().add(selectGyroCalFiles); 
 
@@ -292,7 +311,7 @@ public class OpenTagPane extends VBox {
 	
 	/**
 	 * Allows users to set a time offset. 
-	 * @return
+	 * @return 
 	 */
 	private Pane createtimeOffsetPane(){
 		HBox timeCalValues=new HBox(); 
@@ -309,48 +328,47 @@ public class OpenTagPane extends VBox {
 	
 	
 	/**
-	 * Configure a file chooser to only open .dsg files. 
+	 * Configure a file chooser to only open .DSG files. 
 	 * @param fileChooser - file chooser to configure
 	 * @param title - the title of the file chooser. 
 	 */
-	 private static void configureFileChooser(
-		        final FileChooser fileChooser, String title) {      
-		            fileChooser.setTitle(title);
-		            fileChooser.setInitialDirectory(
-		                new File(System.getProperty("user.home"))
-		            );                 
-		            fileChooser.getExtensionFilters().removeAll( fileChooser.getExtensionFilters());
-		            fileChooser.getExtensionFilters().addAll(
-		                new FileChooser.ExtensionFilter("DSG", "*.dsg"));
-		    }
+	private static void configureFileChooser(
+			final FileChooser fileChooser, String title) {      
+		fileChooser.setTitle(title);
+		fileChooser.setInitialDirectory(
+				new File(System.getProperty("user.home"))
+				);                 
+		fileChooser.getExtensionFilters().removeAll( fileChooser.getExtensionFilters());
+		fileChooser.getExtensionFilters().addAll(
+				new FileChooser.ExtensionFilter("DSG", "*.dsg"));
+	}
 	 
-	 /**
-		 * Configure a file chooser to only open .dsg files. 
-		 * @param fileChooser - file chooser to configure
-		 * @param title - the title of the file chooser. 
-		 */
-		 private static void configureFileChooserPT(
-			        final FileChooser fileChooser) {      
-			            fileChooser.setTitle("Select PT Cal file." );
-			            fileChooser.setInitialDirectory(
-			                new File(System.getProperty("user.home"))
-			            );                 
-			            fileChooser.getExtensionFilters().removeAll( fileChooser.getExtensionFilters());
-			            fileChooser.getExtensionFilters().addAll(
-			                new FileChooser.ExtensionFilter("CAL", "*.cal"));
-			    }
+	/**
+	 * Configure a file chooser to only open .DSG files. 
+	 * @param fileChooser - file chooser to configure
+	 * @param title - the title of the file chooser. 
+	 */
+	private static void configureFileChooserPT(
+			final FileChooser fileChooser) {      
+		fileChooser.setTitle("Select PT Cal file." );
+		fileChooser.setInitialDirectory(
+				new File(System.getProperty("user.home"))
+				);                 
+		fileChooser.getExtensionFilters().removeAll( fileChooser.getExtensionFilters());
+		fileChooser.getExtensionFilters().addAll(
+				new FileChooser.ExtensionFilter("CAL", "*.cal"));
+	}
 		
 	
-
 	public int getParams(OpenTagSettings otSettinggs) {
 					
 		//get File path- remember user may have edited it. 
 		int error=0; 
-		System.out.println("Folder path "+ this.openTagSettings.folderPath.getAbsolutePath() + "  file path text"+filePath.getText());
-		if (openTagSettings.folderPath==null ) error= NO_FILES_ERROR;
+		//System.out.println("Folder path "+ this.openTagSettings.folderPaths.get(0).getAbsolutePath() + "  file path text"+filePath.getItems().get(0));
+		if (openTagSettings.folderPaths==null || openTagSettings.folderPaths.size()==0) error= NO_FILES_ERROR;
 		
 		//check at least some files exist. 
-		else if (AbstractMovementSensor.getFiles(oTFileExtensions, openTagSettings.folderPath , true).size()<=0) error= NO_FILES_ERROR;
+		else if (AbstractMovementSensor.getFiles(oTFileExtensions, openTagSettings.folderPaths.get(0) , true).size()<=0) error= NO_FILES_ERROR;
 		
 		
 		
@@ -359,40 +377,75 @@ public class OpenTagPane extends VBox {
 		return error;
 	}
 	
+	/**
+	 * Set magnetic calibration text boxes. These only show the centre of the fitted ellipsoid, i.e. 
+	 * the hard iron calibration. 
+	 * @param fitPoints- ellipsoid fit. 
+	 */
+	private void setMagCalTextBoxes(FitPoints fitPoints){
+		
+		//get center of ellipse {0,0,0} if no fit. 
+		double[] center=fitPoints.getCenter();  
 
+		//magnetic calibration settings. 
+		magCalX.setText(Double.toString(center[0]));
+		magCalY.setText(Double.toString(center[1]));
+		magCalZ.setText(Double.toString(center[2]));
+
+	} 
+	
+	/**
+	 * Set file paths. 
+	 * @param dsgFiles - list of .dsg files. 
+	 */
+	private void setFilePaths(ArrayList<File> dsgFiles){
+		for (int i=0; i<dsgFiles.size(); i++){
+			this.filePath.getItems().add(dsgFiles.get(i).getAbsolutePath()); 
+		}
+	} 
+
+	
 	public void setParams(OpenTagSettings otSettings) {
 		
 		this.openTagSettings=otSettings;
 		
-		if (otSettings.folderPath!=null){
-			filePath.setText(otSettings.folderPath.getAbsolutePath());
-		}
-		else{
-			filePath.setText("");
-		}
+		//magnetic calibration 
+		setMagCalTextBoxes(otSettings.magneticCal);
+
+		//gyroscope calibration settings
+		gyroCalX.setText(Double.toString(otSettings.gyroCal[0]));
+		gyroCalY.setText(Double.toString(otSettings.gyroCal[0]));
+		gyroCalZ.setText(Double.toString(otSettings.gyroCal[0]));
+		
+		mTime.setText(Double.toString(otSettings.timeOffset[0]));
+		constantTime.setText(Double.toString(otSettings.timeOffset[1]));
+		
+		setFilePaths(otSettings.folderPaths);
 	}
+	
 	
 	/**
 	 * Calibrate magnetometer using a bunch of files. 
-	 * @param files - dsg files. Note that calss assumes .dsg file and will throw exception otherwise. 
+	 * @param files - dsg files. Note that function assumes .DSG file and will throw exception otherwise. 
 	 */
 	private void calibrateMag(List<File> files) {
+		//set files. 
+		openTagSettings.magCalFiles=files; 
 		//first read all files and concat into one big matrix
 		OTData otData; 
 		double[][] magnetometerData=new double[0][0];
 		System.out.println("No. Files: "+files.size());
 		for (int i=0; i<files.size(); i++){
-			 otData=	readDSG.otLoadDat(files.get(i), openTagSettings.calFIlePath);
+			 otData=readDSG.otLoadDat(files.get(i), openTagSettings.calFilePath);
 			 //now add to an array for magnetometer data 
 			 magnetometerData=concat(otData.magnotometer, magnetometerData);
-			 //System.out.println("OTData size: "+otData.magnotometer.length+ " concat size: "+magnetometerData.length);
+			 System.out.println("OTData size: "+otData.magnotometer.length+ " concat size: "+magnetometerData.length);
 		}
 		
 		//create dialog with magnetic calibration. 
 		Dialog<MagneticCalibration> dialog = new Dialog<>();
 		dialog.setTitle("Magnetic Calibration");
 		dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-		
 		
 		//FIXME- had to do this to get magnetic calibration pane working in border pane. 
 		BorderPane borderPane=new BorderPane(this.magCalPane);
@@ -411,12 +464,15 @@ public class OpenTagPane extends VBox {
 		    return null;
 		});
 
-		
-		magCalPane.addMagnetomterData(magnetometerData, false);
+		magCalPane.setPercentileKeep(0.75);
+		magCalPane.setMagnetomterData(magnetometerData);
 		
 		Optional<MagneticCalibration> result = dialog.showAndWait();
 		result.ifPresent(magCal -> {
-		   //TODO do some magCal stuff
+			//set magnetic calibration values. 
+			this.setMagCalTextBoxes(result.get().getCurrentCalValues());
+			this.openTagSettings.magneticCal=result.get().getCurrentCalValues();
+
 		});
 	
 	}

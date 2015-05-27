@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import IMUUtils.magneticCalibration.FitPoints;
+
 /**
  * Holds settings for an OpenTag 
  * @author Jamie Macaulay 
@@ -14,7 +16,7 @@ public class OpenTagSettings {
 	/**
 	 * Magnetic calibration, x,y,z
 	 */
-	double[] magneticCal={0,0,0};
+	FitPoints magneticCal=new FitPoints(); 
 	
 	/**
 	 * Gyroscope calibration x,y,z
@@ -27,15 +29,14 @@ public class OpenTagSettings {
 	double[] timeOffset={1,0};
 	
 	/**
-	 * Path to open tag data. 
+	 * Path to open tag data. Note that the here element[0] is the last selected path. 
 	 */
-	public File folderPath; 
-	
+	public ArrayList<File> folderPaths=new 	ArrayList<File>(); 
 	
 	/**
 	 * Path to open tag calibration file for temperature and pressure. 
 	 */
-	public File calFIlePath=null; 
+	public File calFilePath=null; 
 	
 	
 	/**

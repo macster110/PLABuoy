@@ -2,7 +2,8 @@ package dataUnits.movementSensors;
 
 import java.io.File;
 
-import layout.movementSensors.OpenTagPane;
+import IMUUtils.openTag.OpenTagSettings;
+import layout.movementSensors.OpenTagSensorPane;
 import layout.movementSensors.SensorPane;
 import main.SensorManager.SensorType;
 
@@ -13,6 +14,11 @@ public class OpenTagSensor extends AbstractMovementSensor {
 	private SensorPane otSensorPane; 
 	
 	/**
+	 * Settings reference for the open tag. 
+	 */
+	private OpenTagSettings openTagSettings=new OpenTagSettings(); 
+	
+	/**
 	 * List of sensor types the open tag has. Ignore the depth sensor as this is an add on to open tags.
 	 * TODO If depth sensor is ever used can create an 'OPEN_TAG_DEPTH' sensor type. 
 	 */
@@ -20,7 +26,7 @@ public class OpenTagSensor extends AbstractMovementSensor {
 
 	public OpenTagSensor() {
 		super("", SensorType.OPEN_TAG);
-		otSensorPane=new OpenTagPane(); 
+		otSensorPane=new OpenTagSensorPane(); 
 	}
 
 	@Override
@@ -70,6 +76,10 @@ public class OpenTagSensor extends AbstractMovementSensor {
 	public Double[] getLatLong(long time) {
 		//open tag has no lat long
 		return null ;
+	}
+
+	public OpenTagSettings getOpenTagSettings() {
+		return openTagSettings;
 	}
 
 	

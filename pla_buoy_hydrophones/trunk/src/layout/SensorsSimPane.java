@@ -181,7 +181,7 @@ public class SensorsSimPane extends BorderPane implements ControlPane {
 				
 			if (movementSensor.getHasSensors()[1]){
 				this.getChildren().add(new Label("Pitch "+"\u00B0"));
-				this.getChildren().add(pitchSlider= new Slider(-90,90, 0));
+				this.getChildren().add(pitchSlider= new Slider(-150,90, 0));
 				pitchSlider.setPadding(new Insets(0,0,10,0));
 				pitchSlider.setShowTickMarks(true);
 				pitchSlider.setShowTickLabels(true);

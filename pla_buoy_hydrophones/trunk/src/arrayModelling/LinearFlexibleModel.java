@@ -173,8 +173,12 @@ public class LinearFlexibleModel implements ArrayModel {
 	 * @param dim - the dimensions of stream (x,y,z)  ->(0,1,2)
 	 * @return new transformed hydrophone positions. 
 	 */
-	private ArrayPos transformPositions(double[] childArrayPos, double[] hydrophonePos, double[] sensorPos,
-			ArrayList<Double[]> angles, int n, int dim){
+	protected ArrayPos transformPositions(double[] childArrayPos, double[] hydrophonePos, double[] sensorPos,
+			ArrayList<Double[]> anglesRaw, int n, int dim){
+		
+		
+		ArrayList<Double[]> angles=new ArrayList<Double[]>(anglesRaw);
+		angles=wrapPitch(angles);
 		
 		/**
 		 * TODO Note: for clarity descriptions assume a vertical array model (i.e. dim=2), however it should be remembered that this 
@@ -232,6 +236,7 @@ public class LinearFlexibleModel implements ArrayModel {
 			    chunkAngles[i][1]= angles.get(sensorPos.length-1)[1]; 
 				chunkAngles[i][2]= angles.get(sensorPos.length-1)[2]; 
 			}
+			
 			//check if the chunk is 'below' (if vertical dimension) the last tag. 
 			else if (chunkPosStart<sensorPos[0]){
 				//System.out.println("LinearFelxibleModel: Above shallowest tag "+chunkPosStart+" sensorPos[0] "+sensorPos[0]);
@@ -239,7 +244,8 @@ public class LinearFlexibleModel implements ArrayModel {
 			    chunkAngles[i][1]= angles.get(0)[1]; 
 				chunkAngles[i][2]= angles.get(0)[2]; 
 			}
-			//the chunk is between two tags.
+			
+			//check if the chunk is between two tags.
 			else {
 				int sensIndxEnd=-1; 
 				int sensIndxStart=-1; 
@@ -265,11 +271,18 @@ public class LinearFlexibleModel implements ArrayModel {
 							//System.out.println("LinearFelxibleModel: Between Sensors: "+chunkPosStart+" Calculateding angles between sensors " +sensIndxStart+ " and  "+sensIndxEnd);
 							
 							//figure out differences in angles. 
-							double headingDiff=angles.get(sensIndxEnd)[0]-angles.get(sensIndxStart)[0]; 
+							double headingDiff=angles.get(sensIndxEnd)[0]-angles.get(sensIndxStart)[0];
+//							/**
+//							 * Say angle 1=10 degrees and angle 2=330 degrees. In this case we want to change to got from 10 0 35 340 330- not all the way round 
+//							 * (Of course an array may twist that way but we gotta assume it take least twisted path). So need to check the heading diff and if 
+//							 * smaller going going backward through angles make chunk heading change go other way and have different magnitude. 
+//							 */
+//							if (Math.abs(headingDiff)>Math.PI) headingDiff = headingDiff>0? headingDiff=headingDiff-2*Math.PI : headingDiff+2*Math.PI; 
+										
 							double pitchDiff=angles.get(sensIndxEnd)[1]-angles.get(sensIndxStart)[1]; 
-							double rollPitch=angles.get(sensIndxEnd)[2]-angles.get(sensIndxStart)[2]; 
+							double rollPitch=angles.get(sensIndxEnd)[2]-angles.get(sensIndxStart)[2]; //at moment roll is not used in this algorithm but added anyway
 							
-							// Vertical array. For a vertical array we only consider tag heading and pitch. It is assumed the 
+							// Vertical array. For a vertical array we only consider tag heading and pitch. It is assumed the roll is twist in cable so makes little or no difference
 							double chunkFraction=(i-sensorChunkPos[sensIndxStart])/(double) (sensorChunkPos[sensIndxEnd]-sensorChunkPos[sensIndxStart]); 
 							
 							//work out angles of the chunk
@@ -329,6 +342,24 @@ public class LinearFlexibleModel implements ArrayModel {
 		
 	}
 	
+	//TODO- need to make sure this works for +90
+	/**
+	 * Make sure the pitch is between -90 and 90. If <90 then need to turn heading 180 and make pitch >90
+	 * @param angles - angles
+	 * @return
+	 */
+	protected ArrayList<Double[]> wrapPitch(ArrayList<Double[]> angles) {
+		for (int i=0; i<angles.size(); i++){
+			System.out.println("Old pitch: "+Math.toDegrees(angles.get(i)[1])+" old heading "+Math.toDegrees(angles.get(i)[0]));
+			if (angles.get(i)[1]<0){
+				angles.get(i)[1]=Math.abs(angles.get(i)[1]);
+				angles.get(i)[0]=(angles.get(i)[0]+Math.PI);
+				System.out.println("New pitch: "+Math.toDegrees(angles.get(i)[1])+" new heading "+Math.toDegrees(angles.get(i)[0]));
+			}
+		}
+		return angles;
+	}
+
 	/**
 	 * Get the positions on array. 
 	 * @param positions - the positions to transform on the one linear array - one dimensional as linear. 
@@ -336,7 +367,7 @@ public class LinearFlexibleModel implements ArrayModel {
 	 * @param chunkPositions - unit vector of each chunk. Could calc this but to prevent repeat calcs is 
 	 * @return the transofmred positions in 3D. 
 	 */
-	private double[][] getPositonsOnArray(double[] positions, double[][] chunkPositions, double[][] chunkUnitVectors){
+	protected double[][] getPositonsOnArray(double[] positions, double[][] chunkPositions, double[][] chunkUnitVectors){
 		//create array for new positions
 		double[][] newPositions=new double[positions.length][3];
 		
@@ -401,7 +432,7 @@ public class LinearFlexibleModel implements ArrayModel {
 	 * Convert 'chunks' to streamer format. 
 	 * @return transformed streamer,. 
 	 */
-	private ArrayList<ArrayList<Point3D>> chunkToStreamer(double[][] chunkPosition){
+	protected ArrayList<ArrayList<Point3D>> chunkToStreamer(double[][] chunkPosition){
 		
 		//initial chunk is at 0,0,0
 		Point3D point=new Point3D(0,0,0);
@@ -427,7 +458,7 @@ public class LinearFlexibleModel implements ArrayModel {
 	 * @param pitch - pitch in RADIANS.
 	 * @return unit vector [x,y,z]. 
 	 */
-	private double[] calcVertUnitVector(double heading, double pitch){
+	protected double[] calcVertUnitVector(double heading, double pitch){
 		//have to get heading into correct format here. 
 		double x=Math.sin(pitch)*Math.cos(1.5*Math.PI-heading); 
 		double y=Math.sin(pitch)*Math.sin(1.5*Math.PI-heading); 
@@ -450,7 +481,7 @@ public class LinearFlexibleModel implements ArrayModel {
 		return array;
 	}
 	
-	private double findMaxLength(double[] a){
+	protected double findMaxLength(double[] a){
 		
 	   double max = Double.MIN_VALUE;   
 	   int index=-1; 

@@ -304,7 +304,7 @@ public class Array3DPane extends BorderPane implements  ControlPane{
 			}
 		}
 		
-		System.out.println("Draw 3D hydrophone array");
+		//System.out.println("Draw 3D hydrophone array");
 	}
 	
 	/**

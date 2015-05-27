@@ -31,7 +31,17 @@ public class MagneticCalibrationTest extends Application {
 		MagneticCalibrationPane magCalPane=new MagneticCalibrationPane(); 
 		magCalPane.setPercentileKeep(0.9);
 		
-		magCalPane.setMagnetomterData(otData.magnotometer);
+//		int start=6500; 
+//		int end=15000; 
+		int start=0; 
+		int end=80000; 
+		double[][] magCalSection=new double[end-start][3];
+		for (int i=0; i<end-start; i++){
+			magCalSection[i]=otData.magnotometer[i+start]; 
+		}
+		
+		magCalPane.setPercentileKeep(0.75);
+		magCalPane.setMagnetomterData(magCalSection);
 		
 		FitPoints fitPoints=new FitPoints();
 		fitPoints.fitEllipsoid( FitPoints.convertToThreeSpace(otData.magnotometer));

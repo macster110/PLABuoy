@@ -83,7 +83,7 @@ public class ArrayModelManager {
 			n++; 
 		}
 		
-		System.out.println("ArrayModelManager: TieredArray: "+tieredArray + " n "+n);
+		//System.out.println("ArrayModelManager: TieredArray: "+tieredArray + " n "+n);
 		
 		/**
 		 * Now sanity check - are the number of arrays in the tiered array the same as the 
@@ -135,7 +135,7 @@ public class ArrayModelManager {
 				
 		//print results.
 		//System.out.println("Print transformed array positions "+currentArrayPos);
-		printCurrentArrayPos(); 
+		//printCurrentArrayPos(); 
 	
 		return 0; 
 	}

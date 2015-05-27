@@ -73,7 +73,7 @@ public class MagneticCalibrationPane extends BorderPane {
 	/**
 	 * Only show every nth point on the graph- keeps things fast. e..g 4 only show every fourth m3d magnetic point.
 	 */
-	private int pointFilter=2;
+	private int pointFilter=1;
 	
 	/**
 	 * Button to calculate calibration ellipse
@@ -139,8 +139,12 @@ public class MagneticCalibrationPane extends BorderPane {
 		//button to calculate 
 		calcCompValues=new Button("Calibrate Values"); 
 		calcCompValues.setOnAction((action)->{
-			magCal.calcCalValues(magnetomterData); 
-			magCal.calibrateValues(magnetomterData); 
+			//perform actual calibration. 
+			double[][] magDataFilt=magnetomterData= filterPercentile(this.magnetomterData, this.percentileKeep);
+			FitPoints fitPoints=magCal.calcCalValues(magDataFilt); 
+			double[][] magCalv=magCal.calibrateMagData(magDataFilt, fitPoints);
+			System.out.println("Calibrated data:  length: "+magCalv.length+" original data: "+magDataFilt.length);
+			addCalibratedMagData(magCalv, true);
 		}); 
 
 		calibrationValues=new Label("Calibration values: "); 
@@ -171,14 +175,16 @@ public class MagneticCalibrationPane extends BorderPane {
         
         //create main 3D group 
 		root3D=new Group();
+		
+		//group for raw magnetic measurements 
 		magneticMeasurments=new Group(); 
+		//group for calibrated measurments, 
 		calMagMeasurments=new Group(); 
 //		axisGroup=Array3DPane.buildAxes(100, Color.RED, Color.SALMON, Color.BLUE, Color.CYAN, Color.LIMEGREEN, Color.LIME, Color.WHITE);
 		axisGroup=Array3DPane.buildAxes(100, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE);
 		axisGroup.getChildren().add(sphereAxisSphere=createAxisSphere());
 		
-		root3D.getChildren().add(magneticMeasurments);
-		root3D.getChildren().add(axisGroup);
+		root3D.getChildren().addAll(magneticMeasurments, calMagMeasurments, axisGroup);
 		
 
         //Use a SubScene to mix 3D and 2D stuff.        
@@ -234,7 +240,7 @@ public class MagneticCalibrationPane extends BorderPane {
 	 * @param magnetomterData - Nx3 array of magnetometer data.
 	 * @return the filtered array; 
 	 */
-	public double[][] getPercentileMagArray(double[][] magnetomterData, double percentile){
+	public double[][] filterPercentile(double[][] magnetomterData, double percentile){
 		if (percentile>=1 || percentile<=0) return magnetomterData;
 		
 		double[] magMagnitude=new double[magnetomterData.length]; 
@@ -297,7 +303,7 @@ public class MagneticCalibrationPane extends BorderPane {
 	 */
 	public void setMagnetomterData(double[][] magnetomterDataIn){
 		this.magnetomterData=magnetomterDataIn; 
-		addMagnetomterData(magnetomterDataIn, true)
+		addMagnetomterData(magnetomterDataIn, true);
 	}
 	
 
@@ -337,7 +343,7 @@ public class MagneticCalibrationPane extends BorderPane {
 	 */
 	private  void addMagnetomterData(double[][] magnetomterDataIn, boolean remove){
 		
-		double[][] magnetomterData= getPercentileMagArray(magnetomterDataIn, this.percentileKeep);
+		double[][] magnetomterData= filterPercentile(magnetomterDataIn, this.percentileKeep);
 		
 		if (remove) magneticMeasurments.getChildren().removeAll(magneticMeasurments.getChildren());
 		

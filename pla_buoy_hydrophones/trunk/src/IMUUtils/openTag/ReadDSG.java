@@ -58,10 +58,10 @@ public class ReadDSG {
 			dfHead.year=		data_in.readUnsignedByte();
 			dfHead.timezone=	data_in.readByte();
 
-			System.out.println("DSG file Reader: version: "+ dfHead.version+ " openTagData.userID "+dfHead.userID);
-
-			System.out.println("DSG file Reader: start time: "+" year: "+ dfHead.year+ " month: "+dfHead.month+ " day: "+dfHead.day+
-					" hour: "+dfHead.hour + " min "+dfHead.min+" sec "+dfHead.sec + " timezone: "+ dfHead.timezone );
+//			System.out.println("DSG file Reader: version: "+ dfHead.version+ " openTagData.userID "+dfHead.userID);
+//
+//			System.out.println("DSG file Reader: start time: "+" year: "+ dfHead.year+ " month: "+dfHead.month+ " day: "+dfHead.day+
+//					" hour: "+dfHead.hour + " min "+dfHead.min+" sec "+dfHead.sec + " timezone: "+ dfHead.timezone );
 
 			//extra info for later versions
 			if(dfHead.version>=1010) {
@@ -72,8 +72,8 @@ public class ReadDSG {
 				dfHead.hydroCal=data_in.readFloat();
 				dfHead.lpFilt=	data_in.readFloat();
 
-				System.out.println("DSG file Reader: lat: "+dfHead.lat+ " lon: "+dfHead.lon+ " depth: "+dfHead.depth+
-						" DSGCal: "+dfHead.DSGCal + " hydroCal "+dfHead.hydroCal+" lpFilt "+dfHead.lpFilt);
+//				System.out.println("DSG file Reader: lat: "+dfHead.lat+ " lon: "+dfHead.lon+ " depth: "+dfHead.depth+
+//						" DSGCal: "+dfHead.DSGCal + " hydroCal "+dfHead.hydroCal+" lpFilt "+dfHead.lpFilt);
 			}
 
 			//read info on sensors used. 
@@ -91,7 +91,7 @@ public class ReadDSG {
 				SID[3]=(char) data_in.readUnsignedByte();
 				currnetSidSpec.SID=SID; 
 
-				System.out.println(" SID: "+SID[0]+SID[1]+SID[2]+SID[3]); 
+//				System.out.println(" SID: "+SID[0]+SID[1]+SID[2]+SID[3]); 
 
 				currnetSidSpec.nBytes=		readUINT32(data_in);
 				currnetSidSpec.numChan=		readUINT32(data_in);
@@ -109,17 +109,17 @@ public class ReadDSG {
 				sidSpecArray.add(currnetSidSpec);
 			}
 
-			System.out.println("DSG file Reader: number of sensors used: "+sidSpecArray.size());
-			for (int i=0; i<sidSpecArray.size(); i++){
-				System.out.println("currnetSidSpec.nBytes: "+sidSpecArray.get(i).nBytes);
-				System.out.println("currnetSidSpec.numChan: "+sidSpecArray.get(i).numChan);
-				System.out.println("currnetSidSpec.storeType: "+sidSpecArray.get(i).storeType);
-				System.out.println("currnetSidSpec.sensorType: "+sidSpecArray.get(i).sensorType);
-				System.out.println("currnetSidSpec.DForm: "+sidSpecArray.get(i).DForm);
-				System.out.println("currnetSidSpec.SPus: "+sidSpecArray.get(i).SPus);
-				System.out.println("currnetSidSpec.RECPTS: "+sidSpecArray.get(i).RECPTS);
-				System.out.println("currnetSidSpec.RECINT: "+sidSpecArray.get(i).RECINT);
-			}
+//			System.out.println("DSG file Reader: number of sensors used: "+sidSpecArray.size());
+//			for (int i=0; i<sidSpecArray.size(); i++){
+//				System.out.println("currnetSidSpec.nBytes: "+sidSpecArray.get(i).nBytes);
+//				System.out.println("currnetSidSpec.numChan: "+sidSpecArray.get(i).numChan);
+//				System.out.println("currnetSidSpec.storeType: "+sidSpecArray.get(i).storeType);
+//				System.out.println("currnetSidSpec.sensorType: "+sidSpecArray.get(i).sensorType);
+//				System.out.println("currnetSidSpec.DForm: "+sidSpecArray.get(i).DForm);
+//				System.out.println("currnetSidSpec.SPus: "+sidSpecArray.get(i).SPus);
+//				System.out.println("currnetSidSpec.RECPTS: "+sidSpecArray.get(i).RECPTS);
+//				System.out.println("currnetSidSpec.RECINT: "+sidSpecArray.get(i).RECINT);
+//			}
 
 			//now get data
 			boolean eofstat=true; 

@@ -90,6 +90,8 @@ public class FitPoints
 
 		// Find the radii of the ellipsoid.
 		radii = findRadii(evals);
+		
+		//printLog();
 	}
 	
 	/**
@@ -103,7 +105,7 @@ public class FitPoints
 			return null;
 		}
 		ArrayList<ThreeSpacePoint> threePoints=new ArrayList<ThreeSpacePoint>();
-		for (int i=0; i<points.length; i++){
+		for (int i=0; i<points.length; i++){ //TODO
 			threePoints.add(new ThreeSpacePoint(points[i][0], points[i][1], points[i][2]));
 		}
 		return threePoints; 
@@ -265,6 +267,21 @@ public class FitPoints
 		RealMatrix r = t.multiply(a).multiply(t.transpose());
 
 		return r;
+	}
+	
+	/*
+	 *Get the center of the ellipse.  
+	 *@return double array of ellipse center -> {x,y,z}
+	 */
+	public double[] getCenter(){
+		double[] centerDbl={0,0,0};
+		if (center==null) return centerDbl; 
+		
+		centerDbl[0]=center.getEntry(0);
+		centerDbl[1]=center.getEntry(1);
+		centerDbl[2]=center.getEntry(2);
+		
+		return centerDbl; 
 	}
 
 
