@@ -34,7 +34,7 @@ public class LinearFlexibleModel implements ArrayModel {
 	/**
 	 * Number of iterations
 	 */
-	int iterations=100;
+	int iterations=20;
 
 	/**
 	 * Reference to the array. 
@@ -417,7 +417,7 @@ public class LinearFlexibleModel implements ArrayModel {
 	 * @param point2 - point 2 {x,y,z}
 	 * @return distance between point1 and point2; 
 	 */
-	private static double calcDistance(double[] point1, double[] point2)
+	protected static double calcDistance(double[] point1, double[] point2)
 	{
 		double dx = point1[0] - point2[0];
 		double dy = point1[1] - point2[1];
