@@ -4,12 +4,24 @@ import java.util.ArrayList;
 
 import dataUnits.hArray.HArray;
 
-@Deprecated
-public class LinearFlexibleModel2 extends LinearFlexibleModel {
+/**
+ * Models arrays based on vector math rather than Euler angles (although these provide the raw data). This gets round many of the problems interpolating between
+ * angles which introduces a plethera of issues, including U shaped arrays when headings are 180 apart, taking the shortest route to new angles, 
+ * pitch going wrong when arrays change angles etc etc...
+ * <p>
+ * Note, this model is currently only implemented for vertical linear arrays although, now vector math has been properly implmented adapting for other array types should
+ * be trivial. 
+ * 
+ * @author Jamie Macaulay
+ *
+ */
+public class LinearFlexibleModel3 extends LinearFlexibleModel {
 
-	public LinearFlexibleModel2(HArray array) {
+	public LinearFlexibleModel3(HArray array) {
 		super(array);
+		// TODO Auto-generated constructor stub
 	}
+	
 	
 	/**
 	 * Calculate new hydrophone and child array reference positions. 
@@ -38,7 +50,7 @@ public class LinearFlexibleModel2 extends LinearFlexibleModel {
 		//we assume streamer starts at (0,0,0), the reference point of the current array (remember this can be attached to parent array so isn't (0,0,0) of the reference 
 		//co-ordinate system.
 		
-		//want to get max size - must remmeber to include sensors as sensor might be below last hydrophone
+		//want to get max size - must remember to include sensors as sensor might be below last hydrophone
 		double maxLength1=findMaxLength(hydrophonePos);
 		double maxLength2=findMaxLength(sensorPos);
 		
@@ -47,7 +59,7 @@ public class LinearFlexibleModel2 extends LinearFlexibleModel {
 		double chunkSize=(maxLength)/iterations; 
 		
 		//angles of chunks (heading, pitch, roll)
-		double[][] chunkAngles=new double[iterations+1][3];
+		double[][] chunkVectors=new double[iterations+1][3];
 		//positons of chunks relative to (0,0,0) of array. x,y,z of chunk end. 
 		double[][] chunkPositions=new double[iterations+1][3];
 		//unit vector of each chunk
@@ -70,9 +82,7 @@ public class LinearFlexibleModel2 extends LinearFlexibleModel {
 		 }
 		
 		//now model streamer. 
-		int sensIndxEnd=-1; 
-		int sensIndxStart=-1; 
-		double[] H=null; 
+		 double[] unitVector;
 		for (int i=0; i<iterations+1; i++){
 			
 			chunkPosStart=i*chunkSize;
@@ -84,33 +94,31 @@ public class LinearFlexibleModel2 extends LinearFlexibleModel {
 			//check if the chunk is 'above' (if vertical dimension) the first tag
 			if (chunkPosEnd>sensorPos[sensorPos.length-1]){
 				//System.out.println("LinearFelxibleModel: Below deepest tag"+chunkPosStart+" sensorPos[sensorPos.length-1]] "+sensorPos[sensorPos.length-1]);
-				chunkAngles[i][0]= angles.get(sensorPos.length-1)[0]; 
-			    chunkAngles[i][1]= angles.get(sensorPos.length-1)[1]; 
-				chunkAngles[i][2]= angles.get(sensorPos.length-1)[2]; 
+				unitVector= calcVertUnitVector(angles.get(sensorPos.length-1)[0] , angles.get(sensorPos.length-1)[1]); 
+				chunkUnitVectors[i]=unitVector;
 			}
 			
 			//check if the chunk is 'below' (if vertical dimension) the last tag. 
 			else if (chunkPosStart<sensorPos[0]){
 				//System.out.println("LinearFelxibleModel: Above shallowest tag "+chunkPosStart+" sensorPos[0] "+sensorPos[0]);
-				chunkAngles[i][0]= angles.get(0)[0]; 
-			    chunkAngles[i][1]= angles.get(0)[1]; 
-				chunkAngles[i][2]= angles.get(0)[2]; 
+				unitVector= calcVertUnitVector(angles.get(sensorPos.length-1)[0] , angles.get(sensorPos.length-1)[1]); 
+				chunkUnitVectors[i]=unitVector;
 			}
 			
 			//check if the chunk is between two tags.
 			else {
-				//find the two tags the chunk is between. Iterate through tag chunk positions. 
+				int sensIndxEnd=-1; 
+				int sensIndxStart=-1; 
+				//find the two tags the two tags the chunk is between. Iterate through tag chunk positions. 
 				for (int j=0; j<sensorChunkPos.length-1; j++){
 					if (i<=sensorChunkPos[j] && i>=sensorChunkPos[j+1]){
-
-						//record whether we have changed chunks
-						boolean calcFunction=false; 
-						if (sensIndxStart!=j+1 && sensIndxEnd!=j) calcFunction=true;
-							
-						//record index of sensors chunks are between. 
 						sensIndxEnd=j;
 						sensIndxStart=j+1;
 						
+						//calc unit vector for start and end sensors
+						double[] unitVectorVec1= calcVertUnitVector(angles.get(sensIndxStart)[0] , angles.get(sensIndxStart)[1]); 
+						double[] unitVectorVec2= calcVertUnitVector(angles.get(sensIndxEnd)[0] , angles.get(sensIndxEnd)[1]); 
+
 						/**
 						 * We have chunk position of the tag above (sensIndexStart), the tag below (sensIndexEnd) and the current chunk (i).
 						 * Now we need to figure out the angles of the chunk. This will depend on the dimension. 
@@ -124,52 +132,36 @@ public class LinearFlexibleModel2 extends LinearFlexibleModel {
 							break;
 						case 2:
 							
-							//System.out.println("LinearFelxibleModel: Between Sensors: "+chunkPosStart+" Calculateding angles between sensors " +sensIndxStart+ " and  "+sensIndxEnd);
-							
-							//figure out differences in angles. 
-							double headingDiff=angles.get(sensIndxEnd)[0]-angles.get(sensIndxStart)[0];
-//							/**
-//							 * Say angle 1=10 degrees and angle 2=330 degrees. In this case we want to change to got from 10 0 35 340 330- not all the way round 
-//							 * (Of course an array may twist that way but we gotta assume it take least twisted path). So need to check the heading diff and if 
-//							 * smaller going going backward through angles make chunk heading change go other way and have different magnitude. 
-//							 */
-							if (Math.abs(headingDiff)>Math.PI) headingDiff = headingDiff>0? headingDiff=headingDiff-2*Math.PI : headingDiff+2*Math.PI; 
-							
-							double pitchDiff=angles.get(sensIndxEnd)[1]-angles.get(sensIndxStart)[1]; 
-							double rollPitch=angles.get(sensIndxEnd)[2]-angles.get(sensIndxStart)[2]; //at moment roll is not used in this algorithm but added anyway
-							
-							// Vertical array. For a vertical array we only consider tag heading and pitch. It is assumed the roll is twist in cable so makes little or no difference
+							//Interpolate between different vectors. 
 							double chunkFraction=(i-sensorChunkPos[sensIndxStart])/(double) (sensorChunkPos[sensIndxEnd]-sensorChunkPos[sensIndxStart]); 
+							double x = chunkFraction*(unitVectorVec2[0]-unitVectorVec1[0])+unitVectorVec1[0]; 
+							double y = chunkFraction*(unitVectorVec2[1]-unitVectorVec1[1])+unitVectorVec1[1]; 
+							double z = chunkFraction*(unitVectorVec2[2]-unitVectorVec1[2])+unitVectorVec1[2]; 
+							double magnitude=Math.sqrt(x*x+y*y+z*z);
 							
-							if (!calcFunction || H==null) H=angleFunction((sensorChunkPos[sensIndxEnd]-sensorChunkPos[sensIndxStart]), headingDiff); 
-							double chunkFractionH = getHeadingChunkFrac(H, (i-sensorChunkPos[sensIndxStart]), (sensorChunkPos[sensIndxEnd]-sensorChunkPos[sensIndxStart]));
-							
-							//work out angles of the chunk
-							chunkAngles[i][0]=chunkFractionH*headingDiff+angles.get(sensIndxStart)[0];
-							chunkAngles[i][1]=chunkFraction*pitchDiff+angles.get(sensIndxStart)[1];
-							chunkAngles[i][2]=chunkFraction*rollPitch+angles.get(sensIndxStart)[2];
-							
+							chunkUnitVectors[i][0]=x/magnitude; 
+							chunkUnitVectors[i][1]=y/magnitude; 
+							chunkUnitVectors[i][2]=z/magnitude; 
+
 							break; 
 						}
 						break; 
 					}
-					//on sensor chunk
+					
+					//the chunk contains a sensor
 					else if (i==sensorChunkPos[j]){
-						chunkAngles[i][0]=angles.get(j)[0];
-						chunkAngles[i][1]=angles.get(j)[1];
-						chunkAngles[i][2]=angles.get(j)[2];
+						unitVector= calcVertUnitVector(angles.get(j)[0] , angles.get(j)[1]); 
+						chunkUnitVectors[i]=unitVector;
 					}
 						
 				}
 
 			}
 			
-			//now work out unit vector for each chunk. 
-			double[] unitVector= calcVertUnitVector(chunkAngles[i][0], chunkAngles[i][1]); 
-			chunkUnitVectors[i]=unitVector;
+			//now we have the unit vector, can multiply by chunk size and then add to prev ious chunk
 			//create true chunk vector
 			double[] vector=new double[3]; 
-			vector[0]=unitVector[0]*chunkSize; vector[1]=unitVector[1]*chunkSize; vector[2]=unitVector[2]*chunkSize;
+			vector[0]=chunkUnitVectors[i][0]*chunkSize; vector[1]=chunkUnitVectors[i][1]*chunkSize; vector[2]=chunkUnitVectors[i][2]*chunkSize;
 			
 			//now find 'true' position by adding to last chunk
 			if (i==0){
@@ -201,48 +193,16 @@ public class LinearFlexibleModel2 extends LinearFlexibleModel {
 		
 	}
 	
-	
-	
 	/**
-	 * Find chunk fraction for the heading, with a compensation factor. 
-	 * @param H - the step angle function
-	 * @param i - the ith chunk
-	 * @param N-  the total number of chunks. 
+	 * Calculate unit vector between two points
+	 * @param point1 - point 1 {x,y,z}
+	 * @param point2 - point 2 {x,y,z}
+	 * @return the unit vector {x,y,z}
 	 */
-	private double getHeadingChunkFrac(double[] H, int i, int N){
-		
-		if (i==N) return 1; 
-		double c;
-		if (H[i]>=0){
-			c=1-H[i]; 
-		}
-		else {
-			c=H[i]*(1-N/(double) i)+1; 
-		}
-		//System.out.println(" H: "+H.length+" i "+i+ " N "+N +" old chunk fraction: "+(i/(double) N) + " new chunk fraction "+(c*(i/(double) N))); 
-
-		return c*(i/(double) N); 
+	private static double[] calcUnitVector(double[] point1, double[] point2){
+		double magnitude=calcDistance(point1,point2); 
+		double[] unitVector = {(point2[0] - point1[0])/magnitude, (point2[1] - point1[1])/magnitude, (point2[2] - point1[2])/magnitude};
+		return unitVector; 
 	}
-	
-	/**
-	 * Calculates a step like function to compensate angle difference. For 180 degree difference this is a step funcion and for 90-180 the function
-	 * gradually turns into a linear line. This is used to distribute changes in heading angle for vertical linear arrays. 
-	 * @param N - the number of chunks
-	 * @param angleDiff - total difference in heading between chunks (RADIANS)
-	 * @return function to compensate heading angles. 
-	 */
-	private double[] angleFunction(int N, double angleDiff){
-		
-		double e=Math.pow(0.27*(2*Math.PI-angleDiff),15); 
-		
-		double[] H=new double[N]; 
-		for (int i=0; i<N; i++){
-		     H[i]=(2/Math.PI)*Math.atan2(e,i-N/2)-1; 
-		}
-		return H;
-	}
-	
-
-	
 
 }

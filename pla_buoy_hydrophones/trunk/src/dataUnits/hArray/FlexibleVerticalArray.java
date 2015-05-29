@@ -8,6 +8,7 @@ import main.ArrayManager.ArrayType;
 import arrayModelling.ArrayModel;
 import arrayModelling.LinearFlexibleModel;
 import arrayModelling.LinearFlexibleModel2;
+import arrayModelling.LinearFlexibleModel3;
 import arrayModelling.RigidModel;
 
 public class FlexibleVerticalArray extends HArray {
@@ -25,7 +26,7 @@ public class FlexibleVerticalArray extends HArray {
 		this.hArrayTypeProperty().setValue(ArrayType.FLEXIBLE_VERTICAL_ARRAY);
 		flexVertPane=new FlexVertPane(); 
 		//flexModel=new LinearFlexibleModel2(this); 
-		flexModel=new LinearFlexibleModel2(this); 
+		flexModel=new LinearFlexibleModel3(this); 
 
 	}
 

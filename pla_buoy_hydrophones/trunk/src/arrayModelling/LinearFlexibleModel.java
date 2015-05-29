@@ -34,7 +34,7 @@ public class LinearFlexibleModel implements ArrayModel {
 	/**
 	 * Number of iterations
 	 */
-	int iterations=20;
+	int iterations=100;
 
 	/**
 	 * Reference to the array. 
