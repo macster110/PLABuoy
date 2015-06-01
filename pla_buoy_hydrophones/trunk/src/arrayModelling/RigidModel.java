@@ -177,6 +177,8 @@ public class RigidModel implements ArrayModel  {
 			
 			simSensorData=movementSensors.get(i).getOrientationData(time); 
 			latLong=movementSensors.get(i).getLatLong(time);
+			
+			//note- the position should pretty much stay exactly same for most methods. 
 			position=movementSensors.get(i).getPosition(time);
 
 			//orientation

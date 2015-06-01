@@ -91,9 +91,9 @@ public interface MovementSensor {
 	public Double[] getPosition(long time); 
 	
 	/**
-	 * Get the latitude/longitude reading fo the sensors. 
+	 * Get the latitude/longitude and depth reading fo the sensors. 
 	 * @param time - time in millis. -1 is used when simulating array positions 
-	 * @return the latitude and longitude of the sensors.  
+	 * @return the latitude and longitude and depth of the sensors.  
 	 */
 	public Double[] getLatLong(long time); 
 	
@@ -128,7 +128,7 @@ public interface MovementSensor {
 	public boolean loadData();
 	
 	/**
-	 * A list of sensor types the movment sensor has.  
+	 * A list of sensor types the movement sensor has.  
 	 * <p>
 	 * List is as follows
 	 * <p>

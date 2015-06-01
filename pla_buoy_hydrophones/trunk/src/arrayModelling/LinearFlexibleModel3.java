@@ -139,7 +139,7 @@ public class LinearFlexibleModel3 extends LinearFlexibleModel {
 							double z = chunkFraction*(unitVectorVec2[2]-unitVectorVec1[2])+unitVectorVec1[2]; 
 							double magnitude=Math.sqrt(x*x+y*y+z*z);
 							
-							chunkUnitVectors[i][0]=x/magnitude; 
+							chunkUnitVectors[i][0]=x/magnitude;
 							chunkUnitVectors[i][1]=y/magnitude; 
 							chunkUnitVectors[i][2]=z/magnitude; 
 

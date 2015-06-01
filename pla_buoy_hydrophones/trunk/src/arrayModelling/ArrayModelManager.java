@@ -16,6 +16,9 @@ import main.ArrayModelControl;
  */
 public class ArrayModelManager {
 	
+	/**
+	 * No error has occured
+	 */
 	public final static int NO_ERROR=0; 
 	
 	/**
@@ -24,7 +27,7 @@ public class ArrayModelManager {
 	 * array which itself is a child of that array. For any array you should be able to trace
 	 * parent back to the reference array. 
 	 */
-	public final static int INCONSISTANT_TIER_ERROR=1; 
+	public final static int DUPLICATE_TIER_ERROR=1; 
 	
 	/**
 	 * The current array position. Note this is the position after transformation have taken place and all 
@@ -89,7 +92,7 @@ public class ArrayModelManager {
 		 * Now sanity check - are the number of arrays in the tiered array the same as the 
 		 * number of arrays in the observable list within the array manager?
 		 */
-		if (arrayCount!=arrayModelControl.getHArrayManager().getHArrayList().size()) return INCONSISTANT_TIER_ERROR;
+		if (arrayCount!=arrayModelControl.getHArrayManager().getHArrayList().size()) return DUPLICATE_TIER_ERROR;
 		
 		/**
 		 * Now we have the tier structure can calculate hydrophone positions.

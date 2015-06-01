@@ -57,8 +57,21 @@ public class ArrayModelControl {
 	 */
 	private ArrayModelManager arrayModelManager; 
 	
+	/**
+	 * Handles batch processing of data. 
+	 */
+	private ArrayBatchProcess arrayBatchProcess;
+
+	/**
+	 * Settings for the array manager. 
+	 */
+	private ArrayManagerSettings arrayManagerSettings; 
+
+
 	public ArrayModelControl(){
 		arrayControlInstance=this; 
+		
+		arrayManagerSettings=new ArrayManagerSettings(); 
 		
 		//create sensor and array managers. 
 		arrayManager=new ArrayManager(this);
@@ -80,10 +93,12 @@ public class ArrayModelControl {
 			this.notifyModelChanged(ChangeType.HYDROPHONE_CHANGED);
 		});
 		
+		arrayBatchProcess=new ArrayBatchProcess(this);
+		
 		TestArrays.createNERCKE2014(this);
 	
 	} 
-	
+
 	/**
 	 * Run the model. 
 	 */
@@ -231,6 +246,22 @@ public class ArrayModelControl {
 	
 	public ArrayModelManager getArrayModelManager(){
 		return this.arrayModelManager;
+	}
+
+	/**
+	 * Get the batch process Manager. 
+	 * @return batch process manager
+	 */
+	public ArrayBatchProcess getBatchProcess() {
+		return arrayBatchProcess;
+	}
+	
+	/**
+	 * Get settings
+	 * @return settings class. 
+	 */
+	public ArrayManagerSettings getArrayManagerSettings() {
+		return arrayManagerSettings;
 	}
 	
 
