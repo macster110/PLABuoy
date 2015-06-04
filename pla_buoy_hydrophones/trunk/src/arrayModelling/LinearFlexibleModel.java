@@ -457,6 +457,7 @@ public class LinearFlexibleModel implements ArrayModel {
 	 * @param heading- heading in RADIANS
 	 * @param pitch - pitch in RADIANS.
 	 * @return unit vector [x,y,z]. 
+	 *
 	 */
 	protected double[] calcVertUnitVector(double heading, double pitch){
 		//have to get heading into correct format here. 

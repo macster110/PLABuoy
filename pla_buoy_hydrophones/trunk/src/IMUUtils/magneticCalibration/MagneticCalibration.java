@@ -12,11 +12,8 @@ public class MagneticCalibration {
 	/**
 	 * The current ellipsoid fit for the magnetic calibration. 
 	 */
-	public FitPoints fitPoints=new FitPoints(); 
-
-
-
-
+	public FitPoints fitPoints=new FitPoints();
+	
 	/**
 	 * Calibrate 3 axis magnetometer data. This is an extends magnetic calibration which takes both hard iron and soft iron
 	 * distortions in account. 
