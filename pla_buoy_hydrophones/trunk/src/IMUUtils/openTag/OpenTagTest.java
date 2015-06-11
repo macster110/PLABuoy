@@ -5,7 +5,7 @@ import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import layout.utils.chart.AxisPane;
-import layout.utils.chart.ChartPane;
+import layout.utils.chart.PlotPane;
 
 /**
  * Test extended magnetic calibration. 
@@ -28,7 +28,7 @@ public class OpenTagTest extends Application {
 		
 		primaryStage.setTitle("Open Tag DSG to CSV");
 		//primaryStage.setScene(new Scene(openTagPane, 305,500));
-		primaryStage.setScene(new Scene(new ChartPane(), 305,500));
+		primaryStage.setScene(new Scene(new PlotPane(), 305,500));
 		primaryStage.show();
 	}
 	

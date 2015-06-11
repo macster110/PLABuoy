@@ -1,6 +1,7 @@
 package layout.utils.chart;
 
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Orientation;
@@ -18,17 +19,23 @@ public class AxisPane extends Pane {
 	/**
 	 * Orientation of axis.
 	 */
-	private Orientation orientation; 
+	private Orientation orientation=Orientation.VERTICAL;
 
 	/**
 	 * Background colour for axis
 	 */
-	private Color axisColour=new Color(0.1,0.85,0.85,1);
-	
+	private Color axisColour=Color.TRANSPARENT;
+
 	/**
-	 * Stroke colour
+	 * left inset property. 
 	 */
-	private Color strokeColor=Color.BLACK;
+	private DoubleProperty leftPaddingProperty=new AxisInsetProperty(0); 
+	
+
+	/**
+	 * left inset property. 
+	 */
+	private DoubleProperty rightPaddingProperty=new AxisInsetProperty(0); 
 
 	/**
 	 *The axis. This handles stores info on axis mon and max. 
@@ -41,16 +48,15 @@ public class AxisPane extends Pane {
 		createChart(axis);
 	}
 	
-	public AxisPane(PamAxisFX axis){
+	public AxisPane(PamAxisFX axis, Orientation orientation){
 		this.axis=axis;
+		this.orientation=orientation; 
 		createChart(axis);
 	}
 	
 	private void createChart(PamAxisFX axis){
 		//create the canvas
         canvas = new Canvas(50, 50);
-		//default orientation
-		orientation=Orientation.VERTICAL;
 		//add the canvas to the panel. 
 		this.getChildren().add(canvas);
 		//add listeners to allow canvas to resize and repaint with the graph changing size; 
@@ -94,8 +100,8 @@ public class AxisPane extends Pane {
 	 */
 	public void repaint(){
 		
-		canvas.getGraphicsContext2D().setStroke(strokeColor);
-		canvas.getGraphicsContext2D().setFill(Color.CYAN);
+		//canvas.getGraphicsContext2D().setStroke(strokeColor);
+		canvas.getGraphicsContext2D().setFill(this.axisColour);
 		canvas.getGraphicsContext2D().clearRect(0, 0,  canvas.getWidth(), canvas.getHeight());
 		canvas.getGraphicsContext2D().fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
@@ -108,7 +114,9 @@ public class AxisPane extends Pane {
 	 * @param canvas
 	 */
 	public void paintHorizontal(Canvas canvas){
-		axis.drawAxis(canvas.getGraphicsContext2D(), 0, 0, (int) canvas.getWidth(), 0);
+		if (axis.getTickPosition()==PamAxisFX.BELOW_RIGHT) axis.drawAxis(canvas.getGraphicsContext2D(), leftPaddingProperty.getValue(), 0, canvas.getWidth()-rightPaddingProperty.getValue(), 0);
+		if (axis.getTickPosition()==PamAxisFX.ABOVE_LEFT) axis.drawAxis(canvas.getGraphicsContext2D(),leftPaddingProperty.getValue(), canvas.getHeight(), canvas.getWidth()-rightPaddingProperty.getValue(), canvas.getHeight());
+
 	}
 	
 	/**
@@ -116,7 +124,9 @@ public class AxisPane extends Pane {
 	 * @param canvas
 	 */
 	public void paintVertical(Canvas canvas){
-		axis.drawAxis(canvas.getGraphicsContext2D(), (int) canvas.getWidth(), (int) canvas.getHeight(), (int) canvas.getWidth(), 0);
+		if (axis.getTickPosition()==PamAxisFX.ABOVE_LEFT) axis.drawAxis(canvas.getGraphicsContext2D(), canvas.getWidth(), canvas.getHeight(), canvas.getWidth(), 0);
+		if (axis.getTickPosition()==PamAxisFX.BELOW_RIGHT)
+			axis.drawAxis(canvas.getGraphicsContext2D(), 0, canvas.getHeight(), 0, 0);
 	}
 	
 	public DoubleProperty getWidthProperty(){
@@ -148,7 +158,7 @@ public class AxisPane extends Pane {
 	 * @return the stroke colour for the axis. 
 	 */
 	public Color getStrokeColor() {
-		return strokeColor;
+		return axis.getStrokeColor(); 
 	}
 
 	/**
@@ -156,6 +166,29 @@ public class AxisPane extends Pane {
 	 * @param strokeColor- the stroke colour for the axis. 
 	 */
 	public void setStrokeColor(Color strokeColor) {
-		this.strokeColor = strokeColor;
+		this.axis.setStrokeColor(strokeColor); 
+	}
+	
+	/**
+	 * Simple property class which repaints axis when changed. 
+	 * @author Jamie Macaulay
+	 *
+	 */
+	class AxisInsetProperty extends SimpleDoubleProperty{
+		
+		AxisInsetProperty(){
+			super();
+			super.addListener((obsval,oldVal, newVal)->{
+				repaint();
+			});
+		}
+		
+		AxisInsetProperty(double val){
+			super(val); 
+			super.addListener((obsval,oldVal, newVal)->{
+				repaint();
+			});
+		}
+		
 	}
 }

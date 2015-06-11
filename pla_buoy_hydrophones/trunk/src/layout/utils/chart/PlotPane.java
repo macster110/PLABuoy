@@ -14,13 +14,13 @@ import javafx.scene.layout.Priority;
 import javafx.scene.paint.Color;
 
 /**
- * A quick implementation of a chart. 
+ * A quick implementation of a chart/plot. 
  * <p>
  * Standard FX were too slow for the volume data to be plotted. 
  * @author Jamie Macaulay
  *
  */
-public class ChartPane extends BorderPane {
+public class PlotPane extends BorderPane {
 	
 	/**
 	 * Canvas for plotting data. 
@@ -57,20 +57,19 @@ public class ChartPane extends BorderPane {
 	 */
 	private ObservableList<DataSeries> data=FXCollections.observableArrayList();
 	
-	public ChartPane(){
+	public PlotPane(){
 		
 		//axis
-		xAxis=new PamAxisFX(0, 50, 50, 100, 0, 20, PamAxisFX.BELOW_RIGHT, "Graph Units", PamAxisFX.LABEL_NEAR_CENTRE, "%4d");
+		//xAxis=new PamAxisFX(0, 50, 50, 100, 0, 20, PamAxisFX.BELOW_RIGHT, "Graph Units", PamAxisFX.LABEL_NEAR_CENTRE, "%4d");
+		xAxis=new PamAxisFX(0, 50, 50, 50, 0, 20, PamAxisFX.ABOVE_LEFT, "Graph Units", PamAxisFX.LABEL_NEAR_CENTRE, "%4d");
 		xAxis.setCrampLabels(true);
-		yAxis=new PamAxisFX(0, 0, 50, 50, 0, 50 , PamAxisFX.ABOVE_LEFT, "Graph Units", PamAxisFX.LABEL_NEAR_CENTRE, "%4d");
+		yAxis=new PamAxisFX(0, 0, 50, 50, 50,0 , PamAxisFX.BELOW_RIGHT, "Graph Units", PamAxisFX.LABEL_NEAR_MAX, "%4d");
 		yAxis.setCrampLabels(true);
 
-		xAxisPane=new AxisPane(xAxis); 
-		xAxisPane.setOrientation(Orientation.HORIZONTAL);
+		xAxisPane=new AxisPane(xAxis, Orientation.HORIZONTAL); 
 		xAxisPane.setPrefHeight(75);
 
-		yAxisPane=new AxisPane(yAxis); 
-		yAxisPane.setOrientation(Orientation.VERTICAL);
+		yAxisPane=new AxisPane(yAxis,Orientation.VERTICAL); 
 		yAxisPane.setPrefWidth(75);
 
 		//because we're using a border layout the x axis pane needs a bit of space so it start at 0 on y axis instead of pixel 0
@@ -81,8 +80,8 @@ public class ChartPane extends BorderPane {
 		xAxisHolder.getChildren().addAll(space, xAxisPane);
 		
 		//add axis to chart
-		this.setBottom(xAxisHolder);
-		this.setLeft(yAxisPane);
+		this.setTop(xAxisHolder);
+		this.setRight(yAxisPane);
 		
 		//create canvas to plot data 
 		plotCanvas=new Canvas(50,50); 
@@ -90,7 +89,6 @@ public class ChartPane extends BorderPane {
 	    Pane pane = new Pane();
 	    pane.getChildren().add(plotCanvas);
 	    pane.getChildren().add(annotationCanvas);
-		
 		
 		this.setCenter(pane);
 		

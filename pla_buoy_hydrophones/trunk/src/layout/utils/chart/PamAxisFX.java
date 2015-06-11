@@ -90,7 +90,13 @@ public class PamAxisFX {
 
 	static public final int LABEL_NEAR_CENTRE = 2;
 
-	private int x1, x2, y1, y2;
+	private double x1, x2, y1, y2;
+	
+	/**
+	 * The stroke color, i.e. colour of text and labels. 
+	 */
+	private Color axisStrokeColor=Color.BLACK; 
+
 	
 	/**
 	 * Minimum axis value property. 
@@ -163,7 +169,7 @@ public class PamAxisFX {
 	 * @param format format for numbers printed on the display. This must be a standard 
 	 * format String such as "%d", "%f", "%3.1f", "%.2 seconds", etc. 
 	 */
-	public PamAxisFX(int x1, int y1, int x2, int y2, double minVal,
+	public PamAxisFX(double x1, double y1, double x2, double y2, double minVal,
 			double maxVal, int tickPosition, String label, int labelPos,
 			String format) {
 		this.x1 = x1;
@@ -195,7 +201,7 @@ public class PamAxisFX {
 	 * @param label axis label
 	 * @param format format of numbers
 	 */
-	public PamAxisFX(int x1, int y1, int x2, int y2, double minVal,
+	public PamAxisFX(double x1, double y1, double x2, double y2, double minVal,
 			double maxVal, boolean aboveLeft, String label, String format) {
 		this.x1 = x1;
 		this.x2 = x2;
@@ -224,7 +230,7 @@ public class PamAxisFX {
 	 * @param x2
 	 * @param y2
 	 */
-	public void setPosition(int x1, int y1, int x2, int y2) {
+	public void setPosition(double x1, double y1, double x2, double y2) {
 		this.x1 = x1;
 		this.x2 = x2;
 		this.y1 = y1;
@@ -262,7 +268,7 @@ public class PamAxisFX {
 	 * @param x2
 	 * @param y2
 	 */
-	public void drawAxis(GraphicsContext g, int x1, int y1, int x2, int y2) {
+	public void drawAxis(GraphicsContext g, double x1, double y1, double x2, double y2) {
 		setPosition(x1, y1, x2, y2);
 		drawAxis(g);
 	}
@@ -296,8 +302,7 @@ public class PamAxisFX {
 	 */
 	public void drawAxis(GraphicsContext g) {
 
-		if (overrideAxisColor==null) g.setFill(Color.RED);
-		else g.setFill(overrideAxisColor);
+		 g.setFill(axisStrokeColor);
 
 		fontMetrics = Toolkit.getToolkit().getFontLoader().getFontMetrics(g.getFont());
 
@@ -396,7 +401,6 @@ public class PamAxisFX {
 	
 	private ArrayList<Double> axisValues = new ArrayList<Double>();
 
-	private Color overrideAxisColor;
 	
 	/**
 	 * work out the coordinates of all tick marks using a linear scale
@@ -559,7 +563,7 @@ public class PamAxisFX {
 	 */
 	private void drawTickAndLabel(GraphicsContext g2d, double x, double y,
 			double value) {
-		int xt, yt;
+		double xt, yt;
 		String str;
 		int labelWidth, labelHeight;
 
@@ -580,11 +584,11 @@ public class PamAxisFX {
 			}
 		}
 		
-		g2d.strokeLine((int) x + tickLengthX[0], (int) y + tickLengthY[0], xt, yt);
+		g2d.strokeLine( x + tickLengthX[0],  y + tickLengthY[0], xt, yt);
 		// print the label
 		maxLabelWidth = Math.max(labelWidth, maxLabelWidth); // need this for drawing axistitles
-		g2d.fillText(str, (int) (xt - labelOffsetX * labelWidth),
-				(int) (yt + labelOffsetY));
+		g2d.fillText(str,  (xt - labelOffsetX * labelWidth),
+				(yt + labelOffsetY));
 	}
 	
 	/**
@@ -698,7 +702,7 @@ public class PamAxisFX {
 		Point2D p1, p2;
 		int x, y;
 		double sepX, sepY;
-		int gx1, gx2, gy1, gy2;
+		double gx1, gx2, gy1, gy2;
 		for (int i = 1; i < axisPoint2Ds.size(); i++) {
 			p1 = axisPoint2Ds.get(i-1);
 			p2 = axisPoint2Ds.get(i);
@@ -731,11 +735,11 @@ public class PamAxisFX {
 	}
 	
 	private void drawAxisTextItem(GraphicsContext g2d, String text, int position) {
-		int x = x1, y = y1;
+		double x = x1, y = y1;
 		// calculate for a simple x axis
 		switch (position) {
 		case LABEL_NEAR_MAX:
-			x = (int) (totalPixs
+			x =  (totalPixs
 					- fontMetrics.computeStringWidth(text));
 			break;
 		case LABEL_NEAR_MIN:
@@ -749,7 +753,8 @@ public class PamAxisFX {
 		// switch ()
 		if (tickPosition == BELOW_RIGHT) {
 			y = (int) (tickLength + maxLabelHeight + fontMetrics.getLineHeight());
-		} else {
+		} 
+		else {
 			y = (int) -(tickLength + maxLabelHeight + fontMetrics.getLineHeight());
 		}
 		if (x1==x2) {
@@ -1101,35 +1106,35 @@ public class PamAxisFX {
 		return axisValues;
 	}
 
-	public int getX1() {
+	public double getX1() {
 		return x1;
 	}
 
-	public void setX1(int x1) {
+	public void setX1(double x1) {
 		this.x1 = x1;
 	}
 
-	public int getX2() {
+	public double getX2() {
 		return x2;
 	}
 
-	public void setX2(int x2) {
+	public void setX2(double x2) {
 		this.x2 = x2;
 	}
 
-	public int getY1() {
+	public double getY1() {
 		return y1;
 	}
 
-	public void setY1(int y1) {
+	public void setY1(double y1) {
 		this.y1 = y1;
 	}
 
-	public int getY2() {
+	public double getY2() {
 		return y2;
 	}
 
-	public void setY2(int y2) {
+	public void setY2(double y2) {
 		this.y2 = y2;
 	}
 	
@@ -1296,14 +1301,6 @@ public class PamAxisFX {
 	}
 	
 	/**
-	 * Overrides the standard axis color;
-	 * @param color- null if default colour. 
-	 */
-	public void overrideAxisColour(Color color){
-		this.overrideAxisColor=color;
-	}
-	
-	/**
 	 * The size of the axis in pixels. 
 	 * <br>
 	 * e.g. if a horizontal axis this would be the width of the display. 
@@ -1311,5 +1308,19 @@ public class PamAxisFX {
 	 */
 	public double getTotalPixels() {
 		return totalPixs;
+	}
+
+	/**
+	 * Set the stroke colour. 
+	 * @param strokeColor
+	 */
+	public void setStrokeColor(Color strokeColor) {
+		this.axisStrokeColor=strokeColor; 
+		
+	}
+
+	public Color getStrokeColor() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
