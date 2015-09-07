@@ -104,23 +104,23 @@ void set_user_LED_status(int ledstatus){
 	/**Select led to switch on/off*/
 	switch (ledstatus){
 	case LED_USER1_GREEN:
-		//		printf("Switch USER1 LED green \n");
-		LED = fopen("/sys/class/leds/nizynqcpld:user1:green/brightness","w");
+//		printf("Switch USER1 LED green \n");
+		LED = fopen("/sys/class/leds/nilrt:user1:green/brightness","w");
 		on=true;
 		break;
 	case LED_USER1_YELLOW:
-		//		printf("Switch USER1 LED yellow \n");
-		LED = fopen("/sys/class/leds/nizynqcpld:user1:yellow/brightness","w");
+//		printf("Switch USER1 LED yellow \n");
+		LED = fopen("/sys/class/leds/nilrt:user1:yellow/brightness","w");
 		on=true;
 		break;
 	case LED_STATUS_YELLOW:
-		//		printf("Switch Status LED yellow \n");
-		LED = fopen("/sys/class/leds/nizynqcpld:status:yellow/brightness","w");
+//		printf("Switch Status LED yellow \n");
+		LED = fopen("/sys/class/leds/nilrt:status:yellow/brightness","w");
 		on=true;
 		break;
 	case LED_STATUS_RED:
-		//		printf("Switch Status LED red \n");
-		LED = fopen("/sys/class/leds/nizynqcpld:status:red/brightness","w");
+//		printf("Switch Status LED red \n");
+		LED = fopen("/sys/class/leds/nilrt:status:red/brightness","w");
 		on=true;
 		break;
 	}
@@ -138,7 +138,7 @@ void set_user_LED_status(int ledstatus){
 	#if defined(CRIO9067)
 		switch (ledstatus){
 		case LED_USER1_OFF:
-			//printf("Switch USER1 LED off 9067 \n");
+//			printf("Switch USER1 LED off 9067 \n");
 			LED = fopen("/sys/class/leds/nilrt:user1:green/brightness","w");
 			fwrite(LED_OFF,sizeof(char),2,LED);
 			fflush(LED);
@@ -150,23 +150,23 @@ void set_user_LED_status(int ledstatus){
 	#if defined(CRIO9068)
 		switch (ledstatus){
 		case LED_USER1_OFF:
-			//			printf("Switch USER1 LED off \n");
-			LED = fopen("/sys/class/leds/nizynqcpld:user1:green/brightness","w");
+//			printf("Switch USER1 LED off \n");
+			LED = fopen("/sys/class/leds/nilrt:user1:green/brightness","w");
 			fwrite(LED_OFF,sizeof(char),2,LED);
 			fflush(LED);
 			fclose(LED);
-			LED = fopen("/sys/class/leds/nizynqcpld:user1:yellow/brightness","w");
+			LED = fopen("/sys/class/leds/nilrt:user1:yellow/brightness","w");
 			fwrite(LED_OFF,sizeof(char),2,LED);
 			fflush(LED);
 			fclose(LED);
 			break;
 		case LED_STATUS_OFF:
-			//			printf("Switch STATUS LED off \n");
-			LED = fopen("/sys/class/leds/nizynqcpld:status:red/brightness","w");
+//			printf("Switch STATUS LED off \n");
+			LED = fopen("/sys/class/leds/nilrt:status:red/brightness","w");
 			fwrite(LED_OFF,sizeof(char),2,LED);
 			fflush(LED);
 			fclose(LED);
-			LED = fopen("/sys/class/leds/nizynqcpld:status:yellow/brightness","w");
+			LED = fopen("/sys/class/leds/nilrt:status:yellow/brightness","w");
 			fwrite(LED_OFF,sizeof(char),2,LED);
 			fflush(LED);
 			fclose(LED);

@@ -58,7 +58,7 @@ void processCreate() {
 	//add wav files to input process
 	plaProcesses[0]->addChildProcess(plaProcesses[1]);
 //	// attach net sender to output of wav files.
-	//plaProcesses[1]->addChildProcess(plaProcesses[2]);
+	plaProcesses[1]->addChildProcess(plaProcesses[2]);
 
 /********************************************/
 

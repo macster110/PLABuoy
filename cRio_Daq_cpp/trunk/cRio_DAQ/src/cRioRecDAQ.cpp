@@ -30,9 +30,6 @@
 #include "ReadSerial.h"
 #include "WriteWav.h"
 #include "nifpga/NiFpgaChoice.h"
-
-
-
 #include "command/UDPCommands.h"
 #include "daq/SimulatedDaq.h"
 #ifdef WINOWS
@@ -120,6 +117,7 @@ int main(int argc, char *argv[]){
 #else
 	daqSystem = new FPGADaqSystem();
 #endif
+
 //	RealTimer* rt = new RealTimer();
 //	printf("System clock has %11.9fs resolution\n", rt->getResolution());
 //	rt->start();
@@ -131,20 +129,24 @@ int main(int argc, char *argv[]){
 //	delete(rt);
 
 //	/**Make sure LED's are off**/
-//	set_user_LED_status(LED_USER1_OFF);
-//	set_user_LED_status(LED_STATUS_OFF);
+	set_user_LED_status(LED_USER1_OFF);
+	set_user_LED_status(LED_STATUS_OFF);
 
+	printf("Create watchdog\n");
 //	//create watch dog class.
-	cRioDAQWatchDog = new PLAWatchDog();
+	cRioWatchDog = new PLAWatchDog();
 
+	printf("Create process\n");
 	// create the data processes.
 	processCreate();
 
+	printf("UDP Commands\n");
 	/**
 	 * Create and launch the UDP command browser.
 	 */
 	udpCommands = new UDPCommands();
 
+	printf("Command line\n");
 	/*Send single long command string to the command manager. */
 	if (argc>=2) {
 		string allCommands = joinstrings(argc-1, &argv[1]);
@@ -155,15 +157,17 @@ int main(int argc, char *argv[]){
 //	string consoleOut=SAVE_LOCATION+ "/console_out.txt";
 //    freopen(consoleOut.c_str(),"w",stdout);
 
+	printf("USER LED \n");
 	/*Switch on LED to show program is on*/
 	set_user_LED_status(LED_USER1_GREEN);
 
+	printf("Get user commands \n");
 	/*Wait for commands on main thread;*/
 	get_user_commands();
 
 	/**Make sure LED's are off**/
-//	set_user_LED_status(LED_USER1_OFF);
-//	set_user_LED_status(LED_STATUS_OFF);
+	set_user_LED_status(LED_USER1_OFF);
+	set_user_LED_status(LED_STATUS_OFF);
 //	printf("Stop UDP Thread\n");
 	udpCommands->stopUDPThread(false);
 //	printf("Stoped UDP Thread\n");
@@ -211,7 +215,7 @@ void get_user_commands(){
 
 
 bool start() {
-	cRioDAQWatchDog->startWatchDog();
+	cRioWatchDog->startWatchDog();
 	if (acquire==true) {
 		printf("DAQ system is already running\n");
 		return false;

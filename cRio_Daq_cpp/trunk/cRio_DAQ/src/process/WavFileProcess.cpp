@@ -41,10 +41,12 @@ int WavFileProcess::initProcess(int nChan, int sampleRate) {
 
 int WavFileProcess::process(PLABuff* plaBuffer) {
 	//|| not wavFile
-	if (nCalls++ == 10000) {
+	if (nCalls++ == 5000) {
+		printf("WavProcess: Close old file \n");
 		//close the current sound file
 		close_Sound_File();
 		//create a new sound file.
+		printf("WavProcess: Create new file \n");
 		error=create_Sound_File(getNChan(), getSampleRate());
 		file_count++;
 		nCalls = 0;
@@ -53,7 +55,7 @@ int WavFileProcess::process(PLABuff* plaBuffer) {
 	error = write_Sound_File(plaBuffer->data, plaBuffer->soundFrames*plaBuffer->nChan);
 
 	if (error!=0){
-		//fprintf(stderr, "Error WavFileProcess: Error in file: ateempting to close file  \n");
+		fprintf(stderr, "Error WavFileProcess: Error in file: attempting` to close file  \n");
 		close_Sound_File();
 		//problem here is that the computer create thousands of empty sound files if there's an error
 		//create_Sound_File(getNChan(), getSampleRate());
