@@ -82,6 +82,8 @@ DECLARETHREAD(processWatchDogFunction, PLAWatchDog, watchdog_monitor)
  */
 int UserInput;
 
+class PLAWatchDog* cRioWatchDog = NULL;
+
 
 int main(int argc, char *argv[]){
 
@@ -129,8 +131,8 @@ int main(int argc, char *argv[]){
 //	delete(rt);
 
 //	/**Make sure LED's are off**/
-	set_user_LED_status(LED_USER1_OFF);
-	set_user_LED_status(LED_STATUS_OFF);
+//	set_user_LED_status(LED_USER1_OFF);
+//	set_user_LED_status(LED_STATUS_OFF);
 
 	printf("Create watchdog\n");
 //	//create watch dog class.

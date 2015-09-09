@@ -5,11 +5,11 @@
  *      Author: doug
  */
 
-#include "mythread.h"
-
 
 #ifndef CRIORECDAQ_H_
 #define CRIORECDAQ_H_
+
+#include "mythread.h"
 
 void exitTerminalLoop();
 
@@ -22,7 +22,7 @@ extern class DAQSystem* daqSystem;
 /*
  *WatchDog class which monitors processes and DAQ system
  */
-class PLAWatchDog* cRioWatchDog;
+extern class PLAWatchDog* cRioWatchDog;
 
 /**
  * Simple class for a watch dog- allows watch dog to be deployed in by in mythread class. .

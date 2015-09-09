@@ -310,7 +310,9 @@ typedef	struct SNDFILE_tag	SNDFILE ;
 ** On windows, we need to allow the same header file to be compiler by both GCC
 ** and the Microsoft compiler.
 */
-
+#ifndef __int64
+typedef long long __int64;
+#endif
 #if (defined (_MSCVER) || defined (_MSC_VER))
 typedef __int64		sf_count_t ;
 #define SF_COUNT_MAX		0x7fffffffffffffffi64

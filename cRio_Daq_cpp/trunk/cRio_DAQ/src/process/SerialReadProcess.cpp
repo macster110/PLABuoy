@@ -9,7 +9,6 @@
 #include "processdata.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <sndfile.h>
 #include "../ReadSerial.h"
 #include "../mythread.h"
 #include <termios.h>

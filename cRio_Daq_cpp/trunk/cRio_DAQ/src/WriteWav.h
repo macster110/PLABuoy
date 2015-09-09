@@ -11,10 +11,13 @@
 /*Sound file library installed on cRio through opkg package manager*/
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <inttypes.h>
+//#include <cstdint>
 #include <sndfile.h> // was sndfile.hh !!
 #include <fstream> // needed for string
 #include "Settings.h" // needed for string
-
+//stdint.h or <cstdint>
 
 using namespace std;
 
