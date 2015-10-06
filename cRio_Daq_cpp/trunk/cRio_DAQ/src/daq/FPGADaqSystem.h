@@ -12,7 +12,7 @@
 #include "../nifpga/NiFpga.h"
 #include "../mythread.h"
 
-#include <pthread.h>
+#include "../mythread.h"
 
 class FPGADaqSystem: public DAQSystem {
 public:

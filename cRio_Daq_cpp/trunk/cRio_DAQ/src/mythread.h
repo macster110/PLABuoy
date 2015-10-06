@@ -69,6 +69,41 @@ void* starterName (void* threadData) { \
 		pthread_join(threadId, &hiddenRetVal); \
 		threadReturnVal = (int) hiddenRetVal;
 
+#endif
+
+
+#ifdef WINDOWS
+#define DECLARE_LOCK(lockname) \
+		CRITICAL_SECTION lockname;
+
+#define PREPARE_LOCK(lockname) \
+		InitializeCriticalSection(&lockname);
+
+#define ENTER_LOCK(lockname) \
+		EnterCriticalSection( &lockname );
+
+#define LEAVE_LOCK(lockname) \
+		LeaveCriticalSection( &lockname );
+
+#define DELETE_LOCK(lockname) \
+		DeleteCriticalSection( &lockname );
+
+#else
+
+#define DECLARE_LOCK(lockname) \
+		pthread_mutex_t lockname;
+
+#define PREPARE_LOCK(lockname) \
+		pthread_mutex_init(&lockname, NULL);
+
+#define ENTER_LOCK(lockname) \
+		pthread_mutex_lock( &lockname );
+
+#define LEAVE_LOCK(lockname) \
+		pthread_mutex_unlock( &lockname );
+
+#define DELETE_LOCK(lockname) \
+		// do nothing in Linux
 
 #endif
 

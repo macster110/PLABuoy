@@ -69,6 +69,7 @@ std::string SetDestIP::interpretIp(std::string command, struct sockaddr_in* udpS
 SetDestPort::SetDestPort(NetSender* netSender) : Command(netSender, "destport") {
 
 }
+
 std::string SetDestPort::execute(std::string command, struct sockaddr_in* udpSock) {
 
 	int nW = countWords(command);

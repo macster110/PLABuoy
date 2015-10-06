@@ -42,7 +42,6 @@ std::string ipV4 = "localhost";
 std::string ipV4 = "192.168.2.101";
 #endif
 
-int ipPort = 8013;
 
 
 #ifdef WINDOWS
@@ -52,6 +51,7 @@ int sendFlags = MSG_NOSIGNAL;
 #endif
 
 DECLARETHREAD(netsendThreadFunction, NetSender, sendThreadLoop)
+DECLARETHREAD(socketThreadFunction, NetSender, socketWaitThread)
 //void *netsendThreadFunction(void *param)
 //{
 //	NetSender* obj = (NetSender*) param;
@@ -62,7 +62,9 @@ DECLARETHREAD(netsendThreadFunction, NetSender, sendThreadLoop)
 NetSender::NetSender() : PLAProcess("netsend", "NETTX") {
 	// launch the thread to connect to and send data to the
 	// other machine.
+	PREPARE_LOCK(socketLock);
 	socketId = 0;
+	listenSocket = 0;
 	hostEntity = NULL;
 	queuedBytes = 0;
 	conTimer = new RealTimer();
@@ -80,10 +82,12 @@ NetSender::NetSender() : PLAProcess("netsend", "NETTX") {
 	bool threadState;
 	STARTTHREAD(netsendThreadFunction, this, netsendThread, netSendThreadHandle, threadState)
 
+	startSocketThread();
+
 }
 
 NetSender::~NetSender() {
-
+	DELETE_LOCK(socketLock);
 }
 
 
@@ -101,6 +105,7 @@ bool NetSender::setDestinationIp(std::string newIpAddress) {
 bool NetSender::setDestinationPort(int portId) {
 	ipPort = portId;
 	closeConnection(); // will open again automatically next time data are sent.
+	startSocketThread();
 	return true;
 }
 
@@ -161,6 +166,69 @@ void NetSender::endProcess() {
 	return;
 }
 
+bool NetSender::startSocketThread() {
+	bool threadState;
+	STARTTHREAD(socketThreadFunction, this, netsendThread, netSendThreadHandle, threadState)
+	return threadState;
+}
+/**
+ * Thread which waits for a request to open a connection.
+ */
+int NetSender::socketWaitThread() {
+	int newsockfd;
+#ifdef WINDOWS
+	int clilen;
+#else
+	socklen_t clilen;
+#endif
+	char buffer[256];
+	struct sockaddr_in serv_addr, cli_addr;
+	int n;
+	/*
+	 * There may already be a listening socket, in which case we have to close it.
+	 */
+	if (listenSocket) {
+		close(listenSocket); // hopefully this will cause the other instance of this thread to crap out.
+	}
+	listenSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (listenSocket < 0) {
+		reporter->report(0, "ERROR opening socket\n", 0);
+		return -1;
+	}
+	memset((char *) &serv_addr, 0, sizeof(serv_addr));
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_addr.s_addr = INADDR_ANY;
+	serv_addr.sin_port = htons(ipPort);
+	if (bind(listenSocket, (struct sockaddr *) &serv_addr, sizeof(serv_addr))
+			< 0) {
+		sprintf(buffer, "Error on binding socket on port %d\n", ipPort);
+		reporter->report(0, buffer, 3);
+	}
+	listen(listenSocket, 5);
+	clilen = sizeof(cli_addr);
+	reporter->report(0, "TCP Listening socket opened on port %d\n", ipPort);
+	// that's it all set up and listening, now wait for connections.
+
+	while (1) {
+
+		newsockfd = accept(listenSocket, (struct sockaddr *) &cli_addr, &clilen);
+		/*
+		 * then create a new NetworkReceiver which will
+		 * read data from this socketfd.
+		 */
+		reporter->report(0, "TCP socket %d accepted \n", newsockfd);
+		if (newsockfd < 0) {
+			break;
+		}
+		ENTER_LOCK(socketLock)
+		socketId = newsockfd;
+		// as soon as we have the socket, send the header information.
+		sendX3Header(socketId);
+		LEAVE_LOCK(socketLock);
+	}
+	reporter->report(0, "TCP Listening socket closed on port %d\n", serv_addr.sin_port);
+	return 0;
+}
 int NetSender::sendThreadLoop() {
 	int calls = 0;
 	//	openConnection(); // let it happen automatically when first data are sent.
@@ -193,16 +261,20 @@ int NetSender::sendThreadLoop() {
 			myusleep(10000); // sleep for 10 millisecond.
 			continue;
 		}
-		data = networkQueue.front();
-
-		if (sendData(&data)) {
-			free(data.data);
-			queuedBytes -= data.dataBytes;
-			networkQueue.pop(); // remove from queue.
-
+		bool workDone = false;
+		ENTER_LOCK(socketLock)
+		if (socketId != 0) {
+			data = networkQueue.front();
+			if (sendData(&data)) {
+				free(data.data);
+				queuedBytes -= data.dataBytes;
+				networkQueue.pop(); // remove from queue.
+				workDone = true;
+			}
 		}
-		else {
-			myusleep(10000); // sleep for 10 millisecond.
+		LEAVE_LOCK(socketLock)
+		if (!workDone) {
+			myusleep(10); // sleep for 10 millisecond.
 		}
 	}
 	closeConnection();
@@ -221,10 +293,11 @@ int NetSender::sendData(PLABuff* data) {
 				bytesWrote, socketId, errno, strerror(errno));
 	}
 	if (bytesWrote <= 0) {
-		// try to open and send again
-		if (openConnection()) {
-			bytesWrote = send(socketId, (char*) data->data, data->dataBytes, sendFlags);
-		}
+		socketId = 0; // socket must have failed, so flag it as closed so nothing else is attempted.
+		// try to open and send again - no longer. Now acting as a server, so socket opened from remote host.
+		//		if (openConnection()) {
+		//			bytesWrote = send(socketId, (char*) data->data, data->dataBytes, sendFlags);
+		//		}
 	}
 	if (bytesWrote == data->dataBytes) {
 		nSends ++;
@@ -235,65 +308,71 @@ int NetSender::sendData(PLABuff* data) {
 	return false;
 }
 
-bool NetSender::openConnection() {
-	closeConnection();
-	conTimer->start();
-	static int errorCount = 0;
-	if (hostEntity == NULL) {
-		hostEntity = gethostbyname(ipV4.c_str());
-		printf ("Network host is %s\n", hostEntity->h_name);
-		if (hostEntity == NULL) {
-			reporter->report(0, "Unable to look up host name in gethostbyname for %s\n", ipV4.c_str());
-			return false;
-		}
-	}
-	sockaddr_in sockAddr;
-	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	if (sockfd <= 0) {
-		reporter->report(0, "Unable to open socket in NetworkSender->openConnection()\n");
-		return false;
-	}
-	/*
-	 * Set a 10s timeout.
-	 */
-	timeval timeout = {10, 0};
-	if (setsockopt (sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
-			sizeof(timeout)) < 0)
-		reporter->report(0, "setsockopt SO_RCVTIMEO failed\n");
-	if (setsockopt (sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
-			sizeof(timeout)) < 0)
-		reporter->report(0, "setsockopt SO_SNDTIMEO failed\n");
-
-
-	memset(&sockAddr, 0, sizeof(sockaddr_in));
-	sockAddr.sin_family = AF_INET;
-	memcpy((char *)&sockAddr.sin_addr.s_addr,
-			(char *)hostEntity->h_addr,
-			hostEntity->h_length);
-	sockAddr.sin_port = htons(ipPort);
-	if (connect(sockfd,(struct sockaddr *) &sockAddr,sizeof(sockAddr)) < 0) {
-		close(sockfd);
-		sockfd = 0;
-		if (errorCount%100 == 0 || errorCount < 5) {
-			reporter->report(0, "Unable to make network connection to %s on port %d after %3.2fs\n",
-					ipV4.c_str(), ipPort, conTimer->stop());
-		}
-		errorCount++;
-		return false;
-	}
-
-	socketId = sockfd;
-	//	printf("Network connection to %s on port %d is open\n", ipV4.c_str(), ipPort);
-	reporter->report(0, "Network connection %d to %s on port %d is open\n", socketId, ipV4.c_str(), ipPort);
-	errorCount = 0;
-	/*
-	 * Now send through details of how teh x3 compression is working.
-	 */
-	nSends = 0;
-	dataWritten = 0;
-	return sendX3Header(socketId);
-
-}
+/**
+ * This function is no longer uses. Instead connections are opened from
+ * the PAMGuard end, so as to avoid firewall issues. There is a listener thread
+ * chugging away somewhere waiting for socket open requests from the
+ * remote host.
+ */
+//bool NetSender::openConnection() {
+//	closeConnection();
+//	conTimer->start();
+//	static int errorCount = 0;
+//	if (hostEntity == NULL) {
+//		hostEntity = gethostbyname(ipV4.c_str());
+//		printf ("Network host is %s\n", hostEntity->h_name);
+//		if (hostEntity == NULL) {
+//			reporter->report(0, "Unable to look up host name in gethostbyname for %s\n", ipV4.c_str());
+//			return false;
+//		}
+//	}
+//	sockaddr_in sockAddr;
+//	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+//	if (sockfd <= 0) {
+//		reporter->report(0, "Unable to open socket in NetworkSender->openConnection()\n");
+//		return false;
+//	}
+//	/*
+//	 * Set a 10s timeout.
+//	 */
+//	timeval timeout = {10, 0};
+//	if (setsockopt (sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
+//			sizeof(timeout)) < 0)
+//		reporter->report(0, "setsockopt SO_RCVTIMEO failed\n");
+//	if (setsockopt (sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
+//			sizeof(timeout)) < 0)
+//		reporter->report(0, "setsockopt SO_SNDTIMEO failed\n");
+//
+//
+//	memset(&sockAddr, 0, sizeof(sockaddr_in));
+//	sockAddr.sin_family = AF_INET;
+//	memcpy((char *)&sockAddr.sin_addr.s_addr,
+//			(char *)hostEntity->h_addr,
+//			hostEntity->h_length);
+//	sockAddr.sin_port = htons(ipPort);
+//	if (connect(sockfd,(struct sockaddr *) &sockAddr,sizeof(sockAddr)) < 0) {
+//		close(sockfd);
+//		sockfd = 0;
+//		if (errorCount%100 == 0 || errorCount < 5) {
+//			reporter->report(0, "Unable to make network connection to %s on port %d after %3.2fs\n",
+//					ipV4.c_str(), ipPort, conTimer->stop());
+//		}
+//		errorCount++;
+//		return false;
+//	}
+//
+//	socketId = sockfd;
+//	//	printf("Network connection to %s on port %d is open\n", ipV4.c_str(), ipPort);
+//	reporter->report(0, "Network connection %d to %s on port %d is open\n", socketId, ipV4.c_str(), ipPort);
+//	errorCount = 0;
+//	/*
+//	 * Now send through details of how teh x3 compression is working.
+//	 */
+//	nSends = 0;
+//	dataWritten = 0;
+//	return sendX3Header(socketId);
+//
+//}
 
 /*
  * Send X3 header information through to the socket receiver.
@@ -310,7 +389,7 @@ bool NetSender::sendX3Header(int socketId) {
 	dataBytes += writeSendHeader(hData, dataBytes, NET_AUDIO_HEADINFO);
 
 	int bytesWrote = send(socketId, hData, dataBytes, sendFlags);
-//	reporter->report(0, "Wrote %d bytes %s\n", bytesWrote, hData+NET_HDR_LEN);
+	//	reporter->report(0, "Wrote %d bytes %s\n", bytesWrote, hData+NET_HDR_LEN);
 	return bytesWrote == dataBytes;
 }
 
@@ -345,5 +424,9 @@ ClearNetQueue::~ClearNetQueue() {
 
 std::string ClearNetQueue::execute(std::string command, struct sockaddr_in* udpSock) {
 	int n = netSender->clearQueue();
-	reporter->report(0, "Cleared %d packets from network send queue\n", n);
+	char ans[80];
+	sprintf(ans, "Cleared %d packets from network send queue", n);
+	//	reporter->report(0, "Cleared %d packets from network send queue\n", n);
+	return std::string(ans);
+
 }

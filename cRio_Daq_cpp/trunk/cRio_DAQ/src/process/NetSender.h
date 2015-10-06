@@ -51,6 +51,8 @@ public:
 
 	int sendThreadLoop();
 
+	int socketWaitThread();
+
 	bool setDestinationIp(std::string newIpAddress);
 
 	bool setDestinationPort(int portId);
@@ -60,7 +62,9 @@ public:
 private:
 	queue<PLABuff> networkQueue;
 
-	int socketId;
+	volatile int socketId; // socket for writing data to
+
+	volatile int listenSocket; // id of socket that waits for connections.
 
 	struct hostent* hostEntity;
 
@@ -74,6 +78,8 @@ private:
 
 	bool sendX3Header(int socketId);
 
+	bool startSocketThread();
+
 	int64_t queuedBytes;
 
 	RealTimer* conTimer;
@@ -81,9 +87,17 @@ private:
 	THREADID netsendThread;
 	THREADHANDLE netSendThreadHandle;
 
+	// handles etc. for the thread which waits for a socket open request.
+	THREADID socketThread;
+	THREADHANDLE socketThreadHandle;
+
+	DECLARE_LOCK(socketLock);
+
 	int nSends;
 
 	int64_t dataWritten;
+
+	volatile int ipPort = 8013;
 
 };
 

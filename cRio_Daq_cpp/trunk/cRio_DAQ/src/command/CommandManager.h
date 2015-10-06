@@ -10,7 +10,7 @@
 
 #include "CommandList.h"
 #include <string>
-#include <pthread.h>
+#include "../mythread.h"
 
 class CommandManager : public CommandList {
 public:
@@ -22,7 +22,7 @@ public:
 	void listAllCommands();
 
 private:
-	pthread_mutex_t commandLock;
+//	pthread_mutex_t commandLock;
 
 };
 

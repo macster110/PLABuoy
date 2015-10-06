@@ -7,6 +7,9 @@
 
 #ifndef READSERIAL_H_
 #define READSERIAL_H_
+
+#ifndef WINDOWS
+
 #include <iostream>
 #include <termios.h>
 #include "Settings.h" // needed for string
@@ -83,5 +86,5 @@ void setSerialGo(bool go);
  */
 void serialPortReadFunction(Serial_Port *port_ptr, const int n_lines, SerialReadProcess* readProcess);
 
-
+#endif
 #endif

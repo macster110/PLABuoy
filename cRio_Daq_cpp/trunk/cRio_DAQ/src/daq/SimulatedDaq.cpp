@@ -38,7 +38,7 @@ void* SimulatedDaq::simThread(){
 	uint64_t expectedSamples = 0;
 	short* p = bufstart;
 	short nextVal = 0;
-	short valStep = 13;
+	short valStep = 1;
 	simTimer->start();
 	daq_go = true;
 	samplesInBuff = 0;
@@ -92,10 +92,10 @@ bool SimulatedDaq::startSystem(){
 	fflush(stdout);
 	STARTTHREAD(SimThreadStarter, this, simThreadId, simThreadHandle, threadState)
 	if (threadState) {
-		printf("Simulatoin thread launched ok\n");
+		printf("Simulation thread launched ok\n");
 	}
 	else {
-		printf("Simulatoin thread failed ok\n");
+		printf("Simulation thread failed ok\n");
 
 	}
 	fflush(stdout);
