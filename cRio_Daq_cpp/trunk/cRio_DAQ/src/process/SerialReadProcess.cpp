@@ -4,7 +4,7 @@
  *  Created on: 7 Apr 2015
  *      Author: Jamioe Macaulay
  */
-
+#ifndef WINDOWS
 #include "SerialReadProcess.h"
 #include "processdata.h"
 #include <stdio.h>
@@ -108,5 +108,5 @@ int SerialReadProcess::getErrorStatus(){
 }
 
 
-
+#endif
 
