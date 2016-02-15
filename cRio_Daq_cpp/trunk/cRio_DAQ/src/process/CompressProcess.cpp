@@ -52,7 +52,7 @@ int CompressProcess::process(PLABuff* plaBuffer) {
 	short x3time[4];
 
 	short   *pb = PBUFF, cd ;
-	XBuff   pbuff = {PBUFF+X3_HDRLEN,MAXFRAME,1} ;
+	XBuff   pbuff = {PBUFF+X3_HDRLEN,MAXFRAME,plaBuffer->nChan} ;
 	int     ns, nw, k ;
 
 	ns = ibuff->nsamps * ibuff->nch ;

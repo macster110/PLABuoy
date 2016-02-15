@@ -126,9 +126,18 @@ int NetSender::initProcess(int nChan, int sampleRate) {
  */
 int NetSender::process(PLABuff* plaBuffer) {
 	static bool first = true;
+//	static float val = 0;
 	PLABuff qData;
 	char* buffer = (char*) malloc(NET_HDR_LEN + plaBuffer->dataBytes);
 	memcpy(buffer+NET_HDR_LEN, plaBuffer->data, plaBuffer->dataBytes);
+//	short* fudge = (short*) (buffer+NET_HDR_LEN);
+//	for (int i = 0; i <  plaBuffer->dataBytes/16; i++) {
+//		*fudge = val;
+//		fudge += 8;
+//		val += .1;
+//		if (val >= 32767) val = -32768;
+//	}
+
 	writeSendHeader(buffer, plaBuffer->dataBytes, NET_AUDIO_SOUND);
 	qData.data = (int16_t*) buffer;
 	qData.dataBytes = plaBuffer->dataBytes + NET_HDR_LEN;
@@ -138,10 +147,13 @@ int NetSender::process(PLABuff* plaBuffer) {
 
 	if (first) {
 		first = false;
-		printf("Mem loc written to queue = %p\n", &qData);
+		printf("Starting data send. Frames %d, Bytes %d, channels %d\n", qData.soundFrames, qData.dataBytes, qData.nChan);
 	}
+	ENTER_LOCK(socketLock)
 	networkQueue.push(qData);
 	queuedBytes += qData.dataBytes;
+	LEAVE_LOCK(socketLock)
+
 	return 0;
 }
 
@@ -150,13 +162,14 @@ int NetSender::process(PLABuff* plaBuffer) {
  * the buffer.
  */
 int NetSender::writeSendHeader(void* pBuff, int dataBytes, int32_t dataType2) {
+	static short packetNumber = 0;
 	int32_t* ints = (int32_t*) pBuff;
 	int16_t* shorts = (int16_t*) pBuff;
-	ints[0] = htonl(DATASTARTFLAG); // flag to id start of data incase it gets out of synch.
+	ints[0] = htonl(DATASTARTFLAG); // flag to id start of data in case it gets out of synch.
 	ints[1] = htonl(dataBytes + NET_HDR_LEN); // data + head length
 	shorts[4] = htons(1); // version
 	shorts[5] = htons(0); // stati0n Id 1
-	shorts[6] = htons(0); // station Id 2
+	shorts[6] = htons(packetNumber++ * 0); // station Id 2
 	shorts[7] = htons(NET_AUDIO_DATA); // data type 1
 	ints[4] = htonl(dataType2); // data type 2
 	ints[5] = htonl(dataBytes); // data length
@@ -244,6 +257,7 @@ int NetSender::sendThreadLoop() {
 		}
 		if (networkQueue.size() > 2000) {
 			nDumped = 0;
+			ENTER_LOCK(socketLock)
 			while (networkQueue.size() > 1500) {
 				data = networkQueue.front();
 				free(data.data);
@@ -251,6 +265,7 @@ int NetSender::sendThreadLoop() {
 				networkQueue.pop();
 				nDumped++;
 			}
+			LEAVE_LOCK(socketLock)
 			if (nDumped) {
 				reporter->report(1, "Dumped %d chunks from data queue, %d (%d MBytes) remaining\n",
 						nDumped, networkQueue.size(), (int) (queuedBytes>>20));
@@ -406,10 +421,18 @@ void NetSender::closeConnection() {
  */
 int NetSender::clearQueue() {
 	int n = 0;
-	while (!networkQueue.empty()) {
+	PLABuff data;
+	ENTER_LOCK(socketLock)
+	while (networkQueue.size() > 1500) {
+		data = networkQueue.front();
+		free(data.data);
+		queuedBytes -= data.dataBytes;
 		networkQueue.pop();
 		n++;
 	}
+	LEAVE_LOCK(socketLock)
+	queuedBytes = 0;
+	reporter->report(0, "Cleared %d objectcts from send queue\n", n);
 	return n;
 }
 
