@@ -224,11 +224,11 @@ bool start() {
 	}
 	acquire=true;
 	printf("Initiating cRio recording\n");
-	processInit(DEFAULTNCHANNELS, DEFAULTSAMPLERATE);
+	processInit(getProcess(0)->getNChan(), DEFAULTSAMPLERATE);
 	/*Start recording data from serial port*/
 	//			record_Serial(1,B4800);
 	/**Start FPGA tasks**/
-	daqSystem->prepare();
+	daqSystem->prepare(getProcess(0)->getNChan());
 	return daqSystem->start();
 }
 

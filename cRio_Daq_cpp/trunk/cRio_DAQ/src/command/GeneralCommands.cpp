@@ -14,6 +14,8 @@
 #include "../CRioRecDAQ.h"
 #include "../Reporter.h"
 #include "UDPCommands.h"
+#include "../process/processdata.h"
+#include "../nifpga/NiFpgaChoice.h"
 
 StartCommand::StartCommand() : Command(NULL, "start") {
 
@@ -91,6 +93,7 @@ std::string ExitCommand::execute(std::string command, struct sockaddr_in* udpSoc
 UDPPortCommand::UDPPortCommand() : Command(NULL, "udpport") {
 
 }
+
 std::string UDPPortCommand::execute(std::string command, struct sockaddr_in* udpSock) {
 	// look for an integer in the second word.
 	int nW = countWords(command);
@@ -110,4 +113,52 @@ std::string UDPPortCommand::execute(std::string command, struct sockaddr_in* udp
 	udpCommands->setUDPPort(p);
 
 	return "UDP Port set to  " + command;
+}
+
+
+NChanCommand::NChanCommand() : Command(NULL, "nchan") {
+
+}
+std::string NChanCommand::execute(std::string command, struct sockaddr_in* udpSock) {
+	// look for an integer in the second word.
+	int nW = countWords(command);
+	if (nW < 2) {
+		return "Invalid number of channels (8 or 12) " + command;
+	}
+	std::string w2 = nthword(command, 1);
+	if (w2.size() < 1) {
+		return "Invalid number of channels (8 or 12) " + command;
+	}
+//	return "Set verbose level to " + w2;
+	int p = atoi(w2.c_str());
+	if (p != 8 && p != 12) {
+		return "Invalid number of channels (8 or 12) " + command;
+	}
+	getFPGAChoice(getCurrentChassis(), p);
+	getProcess(0)->setNChan(p);
+
+	return "NChannels set to  " + command;
+}
+
+ChassisCommand::ChassisCommand() : Command(NULL, "chassis") {
+
+}
+std::string ChassisCommand::execute(std::string command, struct sockaddr_in* udpSock) {
+	// look for an integer in the second word.
+	int nW = countWords(command);
+	if (nW < 2) {
+		return "Invalid chassis type (9067 or 9068) " + command;
+	}
+	std::string w2 = nthword(command, 1);
+	if (w2.size() < 1) {
+		return "Invalid chassis type (9067 or 9068) " + command;
+	}
+//	return "Set verbose level to " + w2;
+	int p = atoi(w2.c_str());
+	if (p != 8 && p != 12) {
+		return "Invalid chassis type (9067 or 9068) " + command;
+	}
+	getFPGAChoice(p, getCurrentNChan());
+
+	return "NI chassis type set to  " + command;
 }

@@ -156,10 +156,10 @@ NiFpga_Status FPGADaqSystem::prepare_FPGA()
 	 */
 	int thisStat;
 	printf("FPGADAQSystem: FPGA Manager: Opening a Session... status %d\n",status_FPGA);
-	printf("FPGADAQSystem: NiFPga_Open with Bitfile %s and signature %s\n", FPGABITFILE,
-			FPGABITFILESIGNATURE);
-	NiFpga_MergeStatus(&status_FPGA, thisStat = NiFpga_Open(FPGABITFILE,
-			FPGABITFILESIGNATURE,
+	printf("FPGADAQSystem: NiFPga_Open with Bitfile %s and signature %s\n", fpgaChoice->getBitFileName(),
+			fpgaChoice->getBitFileSignature());
+	NiFpga_MergeStatus(&status_FPGA, thisStat = NiFpga_Open(fpgaChoice->getBitFileName(),
+			fpgaChoice->getBitFileSignature(),
 			"RIO0",
 			0,
 			&session_FPGA));
@@ -192,7 +192,7 @@ void FPGADaqSystem::read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status
 	printf("FPGADAQSystem: Set microsecond tick to %d\n", Sample_Rate_us);
 	// Set the sample rate
 	NiFpga_MergeStatus(status, NiFpga_WriteU32(session,
-			NiFpga_ControlU32_SamplePerioduSec,
+			fpgaChoice->NiFpga_ControlU32_SamplePerioduSec,
 			Sample_Rate_us));
 
 	/**
@@ -237,7 +237,7 @@ void FPGADaqSystem::read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status
 
 		/* Read FIFO data into the Fifo_Data array */
 		NiFpga_MergeStatus(status, NiFpga_ReadFifoI16(session,
-				NiFpga_TargetToHostFifoI16_FIFO,
+				fpgaChoice->NiFpga_TargetToHostFifoI16_FIFO,
 				Fifo_Data,
 				Number_Acquire,
 				Fifo_Timeout,
@@ -288,7 +288,7 @@ void FPGADaqSystem::read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status
 			myusleep(100);
 			weeKips++;
 			NiFpga_ReadFifoI16(session,
-					NiFpga_TargetToHostFifoI16_FIFO,
+					fpgaChoice->NiFpga_TargetToHostFifoI16_FIFO,
 					Fifo_Data,
 					0,
 					Fifo_Timeout,

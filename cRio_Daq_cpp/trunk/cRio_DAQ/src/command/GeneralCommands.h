@@ -78,4 +78,24 @@ public:
 		return "Set the UDP port for controlling the program";
 	}
 };
+
+class NChanCommand : public Command {
+public:
+	NChanCommand();
+	virtual ~NChanCommand() {};
+	std::string execute(std::string command, struct sockaddr_in* udpSock);
+	std::string getHint() {
+		return "Set the number of channels (8 or 12)";
+	}
+};
+
+class ChassisCommand : public Command {
+public:
+	ChassisCommand();
+	virtual ~ChassisCommand() {};
+	std::string execute(std::string command, struct sockaddr_in* udpSock);
+	std::string getHint() {
+		return "Set the type of chassis (9067 or 9068)";
+	}
+};
 #endif /* GENERALCOMMANDS_H_ */

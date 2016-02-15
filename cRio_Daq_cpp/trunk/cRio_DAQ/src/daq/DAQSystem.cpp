@@ -20,14 +20,18 @@
 DECLARETHREAD(read_Buffer_thread_function, DAQSystem, read_Data_Buffer)
 
 /*Number of samples to Aquire from FIFO on each loop iteration*/
-const unsigned int Number_Acquire = READBLOCKSIZE;
+//const unsigned int Number_Acquire = READBLOCKSIZE;
+//int readBlockSize = 4096;
+//int NumberAcquire = 4096;
 
 DAQSystem::DAQSystem(std::string name) {
 	this->name = name;
 	dataBufVec = NULL;
 	bufend = bufstart = NULL;
 	write_data_thread = 0;
-	bufferSize=READBUFFERLENGTH; //5MSample buffer
+	nChan = DEFAULTNCHANNELS;
+	bufferSize=0;//READBUFFERLENGTH; //5MSample buffer
+	readBlockSize = 0;
 	PREPARE_LOCK(bufferLock);
 }
 
@@ -36,7 +40,8 @@ DAQSystem::~DAQSystem() {
 }
 
 
-bool DAQSystem::prepare() {
+bool DAQSystem::prepare(int nChan) {
+	this->nChan = nChan;
 	deleteBuffer();
 	createBuffer();
 	return prepareSystem();
@@ -73,10 +78,12 @@ bool DAQSystem::stop() {
 
 bool DAQSystem::createBuffer()
 {
+	bufferSize = (nChan * 4 * 1024 * 1024);
 	dataBufVec=(int16_t*) malloc(bufferSize*sizeof(int16_t));
 	bufstart=dataBufVec;
 	bufend=dataBufVec+bufferSize;
 	samplesInBuff = 0;
+	readBlockSize = 512*nChan;
 	return dataBufVec != NULL;
 }
 
@@ -99,7 +106,6 @@ void DAQSystem::read_Data_Buffer(){
 	/*Need to represent sample rate as no. samples per second*/
 	//	int SR=(1./(double)Sample_Rate_us) *1000*1000;
 
-	int toWrite=0;
 	int count=0;
 	/*Sound file error*/
 	int error=0;
@@ -134,10 +140,10 @@ void DAQSystem::read_Data_Buffer(){
 		 */
 		if (count++ % 10000 == 0) {
 			reporter->report(3, "DAQSystem::read_Data_Buffer(): Loop %d samples in buffer %d of %d, last read %d samples\n",
-					count, samplesInBuff, bufend-bufstart, toWrite);
+					count, samplesInBuff, bufend-bufstart, readBlockSize);
 		}
 		//		samplesInBuff = 0;
-		if (samplesInBuff<READBLOCKSIZE){
+		if (samplesInBuff<readBlockSize){
 			myusleep(100); //10000us seems to work well for high sample rates.
 			continue;
 		}
@@ -146,12 +152,12 @@ void DAQSystem::read_Data_Buffer(){
 
 		/**
 		 * Need to get an expression for the number of samples to read but we don't want to read samples beyond the end of the array
-		 * toWrite is the number of samples to read until we reach the end of the array. Once the end of the ring buffer has been reached
+		 * readBlockSize is the number of samples to read until we reach the end of the array. Once the end of the ring buffer has been reached
 		 * we reset the cpr pointer and go round the loop again to grab the data from the buffer.
 		 */
 //		int toEnd=bufend-cpr;
 		// change so it's always reading 1024 samples
-		toWrite = READBLOCKSIZE;
+//		toWrite = READBLOCKSIZE;
 		//		toWrite=samplesInBuff;
 		//		if (toWrite>toEnd){
 		//			cout << "Reached end of buffer: going to start: => samples to write " << toWrite <<" To buffer end: " << toEnd << std::endl;
@@ -173,8 +179,8 @@ void DAQSystem::read_Data_Buffer(){
 		if (getStatus() == DAQ_STATUS_RUNNING){
 //			printf("processData %d samples at 0x%x\n", toWrite, cpr);
 //			fflush(stdout);
-			error = processData(cpr, toWrite, addMicroseconds(daqStart, totalSamples * 1000000L / getProcess(0)->getSampleRate()));
-			totalSamples += toWrite / 8;
+			error = processData(cpr, readBlockSize, addMicroseconds(daqStart, totalSamples * 1000000L / getProcess(0)->getSampleRate()));
+			totalSamples += readBlockSize / nChan;
 		}
 		else{
 //			printf("processEnd\n");
@@ -186,9 +192,9 @@ void DAQSystem::read_Data_Buffer(){
 		//		if (error) NiFpga_MergeStatus(&status_DAQ, NiFpga_Status_External_Storage);
 
 		/*Move the current read pointer along*/
-		cpr+=toWrite;
+		cpr+=readBlockSize;
 		ENTER_LOCK(bufferLock)
-		samplesInBuff-=toWrite;
+		samplesInBuff-=readBlockSize;
 		LEAVE_LOCK(bufferLock)
 		if (cpr==bufend){
 			cpr=bufstart;

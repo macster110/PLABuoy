@@ -27,7 +27,7 @@ public:
 
 	virtual ~DAQSystem();
 
-	bool prepare();
+	bool prepare(int nChan);
 
 	bool start();
 
@@ -44,6 +44,15 @@ public:
 	const std::string& getName() const {
 		return name;
 	}
+
+	int getChan() const {
+		return nChan;
+	}
+
+	void setChan(int chan) {
+		nChan = chan;
+	}
+
 protected:
 
 	virtual bool prepareSystem() = 0;
@@ -79,6 +88,10 @@ private:
 	bool createBuffer();
 
 	bool deleteBuffer();
+
+	int nChan;
+
+	int readBlockSize;
 };
 
 #endif /* DAQSYSTEM_H_ */

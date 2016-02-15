@@ -129,7 +129,7 @@ int create_Sound_File(int channels, int SR)
 	/*Create file for out file*/
 	// Set file settings, 16bit Mono PCM
 	info.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
-	info.channels = DEFAULTNCHANNELS;
+	info.channels = channels;
 	info.samplerate = SR;
 	sndFile = sf_open(outfile_char, SFM_WRITE, &info);
 
