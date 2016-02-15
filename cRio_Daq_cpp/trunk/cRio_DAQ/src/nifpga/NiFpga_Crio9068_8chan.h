@@ -19,12 +19,12 @@
  *
  *    static const char* const Bitfile = "C:\\" NiFpga_Crio9068_8chan_Bitfile;
  */
-#define NiFpga_Crio9068_8chan_Bitfile "/home/admin/cRioKE/NiFpga_Crio9068_8Chan.lvbitx"
+#define NiFpga_Crio9068_8chan_Bitfile "NiFpga_Crio9068_8chan.lvbitx"
 
 /**
  * The signature of the FPGA bitfile.
  */
-static const char* const NiFpga_Crio9068_8chan_Signature = "29041BA900CAD7E9D5D1B6DC4BE95D23";
+static const char* const NiFpga_Crio9068_8chan_Signature = "159D8811A5321DF26D7FEB80E739E9C3";
 
 typedef enum
 {

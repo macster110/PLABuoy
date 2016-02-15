@@ -44,7 +44,7 @@ int CompressProcess::initProcess(int nChan, int sampleRate) {
 }
 
 int CompressProcess::process(PLABuff* plaBuffer) {
-	static int count = 0;
+//	static int count = 0;
 	XBuff ibuff[1];
 	ibuff->data = plaBuffer->data;
 	ibuff->nch = plaBuffer->nChan;
@@ -84,8 +84,14 @@ int CompressProcess::process(PLABuff* plaBuffer) {
 	outBuff.dataBytes = nw*2;
 	outBuff.timeStamp = plaBuffer->timeStamp;
 
+//	static int count = 0;
+//	if (count++<5) {
+//		printf("in CompressProcess::process. nChan=%d, nFrames = %d\n", ibuff->nch, ibuff->nsamps);
+//		fflush(stdout);
+//	}
 //	if (++count % 10000 == 0) {
 //		printf("Compression count %d: %d bytes to %d\n", count, plaBuffer->dataBytes, outBuff.dataBytes);
+//		fflush(stdout);
 //	}
 	return forwardData(&outBuff);
 }

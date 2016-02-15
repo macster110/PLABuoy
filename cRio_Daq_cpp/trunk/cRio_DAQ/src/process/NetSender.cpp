@@ -125,7 +125,12 @@ int NetSender::initProcess(int nChan, int sampleRate) {
  * and then package them up.
  */
 int NetSender::process(PLABuff* plaBuffer) {
-	static bool first = true;
+//	static int count = 0;
+//	if (count++ < 5) {
+//		printf("Starting data send. Frames %d, Bytes %d, channels %d\n", plaBuffer->soundFrames, plaBuffer->dataBytes, plaBuffer->nChan);
+//		fflush(stdout);
+//		return 0;
+//	}
 //	static float val = 0;
 	PLABuff qData;
 	char* buffer = (char*) malloc(NET_HDR_LEN + plaBuffer->dataBytes);
@@ -145,14 +150,11 @@ int NetSender::process(PLABuff* plaBuffer) {
 	qData.soundFrames = plaBuffer->soundFrames;
 	qData.timeStamp = plaBuffer->timeStamp;
 
-	if (first) {
-		first = false;
-		printf("Starting data send. Frames %d, Bytes %d, channels %d\n", qData.soundFrames, qData.dataBytes, qData.nChan);
-	}
 	ENTER_LOCK(socketLock)
 	networkQueue.push(qData);
 	queuedBytes += qData.dataBytes;
 	LEAVE_LOCK(socketLock)
+
 
 	return 0;
 }

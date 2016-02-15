@@ -36,7 +36,7 @@ void ChassisTemperature(NiFpga_Session session, NiFpga_Status *status)
 	printf("Acquiring Chassis Temperature...\n");
 
 	NiFpga_MergeStatus(status, NiFpga_ReadI16(session,
-			NiFpga_IndicatorI16_ChassisTemperature,
+			fpgaChoice->NiFpga_IndicatorI16_ChassisTemperature,
 											 &RawTemperature));
 	//To convert temperature returned from the FPGA to Celsius, divide by 4
 	Temperature = RawTemperature;

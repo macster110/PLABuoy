@@ -18,6 +18,7 @@
 #include "../mxml/mxml.h"
 #include "../Settings.h"
 #include "../AudioLevels.h";
+#include "../nifpga/NiFpgaChoice.h"
 #include <sstream>      // std::stringstream, std::stringbuf
 
 
@@ -25,8 +26,6 @@
 PLAProcess** plaProcesses;
 
 static int globalProcessId = 0;
-
-int nChannels = 0;
 
 /**
  * Average levels in units (2^16/2=max -2^16/2=min)
@@ -40,7 +39,7 @@ volatile int16_t* avrgLevels;
 long count=0;
 
 
-#define NPROCESSES (4) //number of process
+#define NPROCESSES (3) //number of process
 
 /*
  * Create the processes
@@ -50,31 +49,32 @@ void processCreate() {
 	plaProcesses = (PLAProcess**) malloc(sizeof(PLAProcess*) * NPROCESSES);
 
 /***Processes setup to record raw wav files**/
-	plaProcesses[0] = new PLAProcess("Audio", "AUDIO");
-	plaProcesses[1] = new WavFileProcess();
-	plaProcesses[2] = new NetSender();
-	plaProcesses[3] = new SerialReadProcess();
-
-	//add wav files to input process
-	plaProcesses[0]->addChildProcess(plaProcesses[1]);
+//	plaProcesses[0] = new PLAProcess("Audio", "AUDIO");
+//	plaProcesses[1] = new WavFileProcess();
+//	plaProcesses[2] = new NetSender();
+//	plaProcesses[3] = new SerialReadProcess();
+//
+//	//add wav files to input process
+//	plaProcesses[0]->addChildProcess(plaProcesses[1]);
 //	// attach net sender to output of wav files.
-	plaProcesses[1]->addChildProcess(plaProcesses[2]);
+//	plaProcesses[1]->addChildProcess(plaProcesses[2]);
 
 /********************************************/
 
 
 /***Processes set up for record and X3*******/
 
-//	plaProcesses[0] = new PLAProcess("Audio", "AUDIO");
-//	plaProcesses[1] = new CompressProcess();
+	plaProcesses[0] = new PLAProcess("Audio", "AUDIO");
+	plaProcesses[1] = new CompressProcess();
 //	plaProcesses[2] = new X3FileProcess();
-//	plaProcesses[3] = new NetSender();
+//	plaProcesses[1] = new WavFileProcess();
+	plaProcesses[2] = new NetSender();
 //	/*
 //	 * Add both the wav writing and the compression process to the
 //	 * input process.
 //	 */
-//	plaProcesses[0]->addChildProcess(plaProcesses[1]);
-//
+	plaProcesses[0]->addChildProcess(plaProcesses[1]);
+	plaProcesses[1]->addChildProcess(plaProcesses[2]);
 ////#ifndef WINDOWS
 //	// attach x3 write process to compressor.
 //	plaProcesses[1]->addChildProcess(plaProcesses[2]);
@@ -88,6 +88,7 @@ void processCreate() {
 	// set the default sample rates, etc.
 	plaProcesses[0]->setSampleRate(DEFAULTSAMPLERATE);
 	plaProcesses[0]->setNChan(DEFAULTNCHANNELS);
+	getFPGAChoice(getCurrentChassis(), DEFAULTNCHANNELS);
 
 //	mxml_node_t *doc = mxmlNewXML("1.0");
 //	mxml_node_t *mainEl = mxmlNewElement(doc, "PLABuoy");
@@ -120,8 +121,6 @@ PLAProcess* getProcess(int iProcess) {
  * Initialise the processes
  */
 bool processInit(int nChan, int sampleRate) {
-	nChannels = nChan;
-
 	for (int i = 0; i < NPROCESSES; i++) {
 		plaProcesses[i]->initProcess(nChan, sampleRate);
 	}
@@ -148,10 +147,25 @@ bool processData(int16_t* data, int nSamples, timeval daqTime) {
 
 	PLABuff plaBuff;
 	plaBuff.data = data;
-	plaBuff.nChan = nChannels;
-	plaBuff.soundFrames = nSamples / nChannels;
+	plaBuff.nChan = getProcess(0)->getNChan();
+	plaBuff.soundFrames = nSamples / plaBuff.nChan;
 	plaBuff.dataBytes = sizeof(int16_t) * nSamples;
 	plaBuff.timeStamp = daqTime;
+
+//	static int count = 0;
+//	if (count++<2) {
+//		printf("in processdata. nChan=%d, nFrames = %d\n", plaBuff.nChan, plaBuff.soundFrames);
+//	}
+
+//	static float val = 0;
+//	short* fudge = (short*) (data + 1);
+//	for (int i = 0; i <  plaBuff.soundFrames; i++) {
+//		*fudge = val;
+//		fudge += 8;
+//		val += .1;
+//		if (val >= 32767) val = -32768;
+//	}
+
 	return plaProcesses[0]->process(&plaBuff);
 }
 
@@ -231,8 +245,14 @@ int PLAProcess::process(PLABuff* plaBuffer) {
 }
 
 int PLAProcess::forwardData(PLABuff* plaBuffer) {
+//	static int count = 0;
 	int errors = 0;
 	for (int i = 0; i < nChildProcesses; i++) {
+//		if (count++ < 20) {
+//			printf("Forward data from %s to %s enabled = %d\n",
+//					this->getProcessName().c_str(), childProcesses[i]->getProcessName().c_str(), (int) childProcesses[i]->isEnabled());
+//			fflush(stdout);
+//		}
 		if (childProcesses[i]->isEnabled()) {
 			errors += childProcesses[i]->process(plaBuffer);
 		}

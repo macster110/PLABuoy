@@ -145,6 +145,10 @@ public:
 
 	virtual void setNChan(int chan);
 
+	int getNChan() {
+		return nChan;
+	}
+
 	virtual void setSampleRate(int sampleRate);
 
 protected:
