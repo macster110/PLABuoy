@@ -163,6 +163,11 @@ NiFpga_Status FPGADaqSystem::prepare_FPGA()
 			"RIO0",
 			0,
 			&session_FPGA));
+	/**
+	 * Sometimes, after a segmentation fault, this persistently returns with Error -52005
+	 * http://digital.ni.com/public.nsf/allkb/8A49034C699AA6FF862577D2007D9970
+	 * recommends installing additional software on the cRio - NI Scan Engine x.x.
+	 */
 	reporter->report(0, "FPGADAQSystem: NiFpga_Open() returned %d\n", thisStat);
 
 	/* reserve a context for this thread to wait on IRQs */
@@ -202,6 +207,7 @@ void FPGADaqSystem::read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status
 	uint32_t irqTimeout = 2000; //2 seconds
 	NiFpga_Bool TimedOut = false;
 	int weeKips = 0;
+//	static float val = 0;
 
 	//Wait on IRQ to ensure FPGA is ready
 	NiFpga_MergeStatus(status, NiFpga_WaitOnIrqs(session,
@@ -237,6 +243,15 @@ void FPGADaqSystem::read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status
 				Fifo_Timeout,
 				&Elements_Remaining));
 
+
+//		short* fudge = (short*) (Fifo_Data + 2);
+//		for (int i = 0; i <  Number_Acquire/8; i++) {
+//			*fudge = val;
+//			fudge += 8;
+//			val += .1;
+//			if (val >= 32767) val = -32768;
+//		}
+
 		/*Check for an error*/
 		if (!NiFpga_IsNotError(*status) ){
 			printf("FPGADAQSystem: Error in read FIFO thread %d!\n", *status);
@@ -249,16 +264,19 @@ void FPGADaqSystem::read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status
 		/*Move the pointer along to the correct point in the buffer*/
 		cpw+=Number_Acquire;
 		/*Record the total number of samples in the array that haven't been saved.*/
+		ENTER_LOCK(bufferLock)
 		samplesInBuff+=Number_Acquire;
-		if (cpw>=bufend){
+		LEAVE_LOCK(bufferLock)
+		if (cpw==bufend){
+
 //			std::cout << "Reset write buffer on call " << count <<std::endl;
 			cpw=bufstart;
 		}
 
-		if (Elements_Remaining < 1024) {
+		while (Elements_Remaining < Number_Acquire) {
 			/**
 			 * can afford to have a bit of a kip and free up some CPU.
-			 * Having a week kip like this when the buffer is near empty massively
+			 * Having a wee kip like this when the buffer is near empty massively
 			 * reduces CPU load since it seems that the blocking NiFpga_ReadFifoI16
 			 * eats up CPU like nobodies business. For an 8 channel, 500kHz system
 			 * this has reduced CPU usage on the acquisition from 50% (i.e. an entire
@@ -267,22 +285,31 @@ void FPGADaqSystem::read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status
 			 * The 500ms value seems to let if have a kip about one time in three indicating
 			 * that it couldn't sleep much more.
 			 */
-			myusleep(500);
+			myusleep(100);
 			weeKips++;
+			NiFpga_ReadFifoI16(session,
+					NiFpga_TargetToHostFifoI16_FIFO,
+					Fifo_Data,
+					0,
+					Fifo_Timeout,
+					&Elements_Remaining);
 		}
+//		else if (Elements_Remaining > 4000) {
+//			reporter->report(0, "Fifo buffer dangerously full contains : %d elements, loop count: %d\n", Elements_Remaining, count);
+//		}
 
 		/*Check we don't have more samples than the buffer*/
 		if (samplesInBuff>bufferSize){
-			printf("FPGADAQSystem: Error in read FIFO thread. Buffer overflow error! buffer samples: %d loop count: %d", samplesInBuff, count);
+			reporter->report(0, "FPGADAQSystem: Error in read FIFO thread. Buffer overflow error! buffer samples: %d loop count: %d\n", samplesInBuff, count);
 			*status=NiFpga_Status_Read_Buffer_Overflow; //tell status there has been an error.
 			errorCount_FPGA++;
 			break;
 		}
 
 		/*print some info every 5000 counts*/
-		if (count%5000==0){
-			printf("FPGADAQSystem: FIFO Read Loop count = %dk, samples in buffer %d, %d remain in FIFO, managed %d wee kips\n",
-					(int) (count/1000), samplesInBuff, Elements_Remaining, weeKips);
+		if (count%10000==0){
+			reporter->report(3, "FPGADAQSystem: FIFO Read Loop count = %dk, samples in buffer %d of %d, %d remain in FIFO, managed %d wee kips\n",
+					(int) (count/1000), samplesInBuff, bufferSize, Elements_Remaining, weeKips);
 			weeKips = 0;
 			//errorCount_FPGA++; //test for watch_dog..
 		}
@@ -326,6 +353,21 @@ void FPGADaqSystem::record_DAQ()
 //	int thread_var1 = 0, thread_var2 = 0;
 	bool threadState;
 	STARTTHREAD(FIFO_thread_function, this, read_FIFO_thread, read_fifo_thread_handle, threadState)
+//	% set the FIFO thread priority to super high.
+	int policy, s;
+	struct sched_param param;
+	s = pthread_getschedparam(read_FIFO_thread, &policy, &param);
+	policy = SCHED_FIFO;
+	param.sched_priority = 10;
+	s = pthread_setschedparam(read_FIFO_thread, policy, &param);
+	s = pthread_getschedparam(read_FIFO_thread, &policy, &param);
+	printf("Updated DAQ thread policy=%s, priority=%d\n",
+        (policy == SCHED_FIFO)  ? "SCHED_FIFO" :
+        (policy == SCHED_RR)    ? "SCHED_RR" :
+        (policy == SCHED_OTHER) ? "SCHED_OTHER" :
+        "???",
+        param.sched_priority);
+
 	/**Create thread to read FIFO data*/
 //	if(pthread_create(&read_FIFO_thread, NULL, FIFO_thread_function, this)){
 //		fprintf(stderr, "Error creating thread to read data from FIFO\n");

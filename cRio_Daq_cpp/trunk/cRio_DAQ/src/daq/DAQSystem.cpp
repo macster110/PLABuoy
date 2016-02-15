@@ -28,10 +28,11 @@ DAQSystem::DAQSystem(std::string name) {
 	bufend = bufstart = NULL;
 	write_data_thread = 0;
 	bufferSize=READBUFFERLENGTH; //5MSample buffer
+	PREPARE_LOCK(bufferLock);
 }
 
 DAQSystem::~DAQSystem() {
-	// TODO Auto-generated destructor stub
+	DELETE_LOCK(bufferLock);
 }
 
 
@@ -131,13 +132,13 @@ void DAQSystem::read_Data_Buffer(){
 		 * Don't want to have this while loop going at full pelt so wait for a number of us and then
 		 * try again. Ignore unsigned int warning as samplesInBuff is always positive.
 		 */
-		if (count++ % 100000 == 0) {
-			reporter->report(3, "Loop %d samples in buffer %d, last read %d samples\n",
-					count, samplesInBuff, toWrite);
+		if (count++ % 10000 == 0) {
+			reporter->report(3, "DAQSystem::read_Data_Buffer(): Loop %d samples in buffer %d of %d, last read %d samples\n",
+					count, samplesInBuff, bufend-bufstart, toWrite);
 		}
 		//		samplesInBuff = 0;
 		if (samplesInBuff<READBLOCKSIZE){
-			myusleep(10000); //10000us seems to work well for high sample rates.
+			myusleep(100); //10000us seems to work well for high sample rates.
 			continue;
 		}
 
@@ -186,8 +187,10 @@ void DAQSystem::read_Data_Buffer(){
 
 		/*Move the current read pointer along*/
 		cpr+=toWrite;
+		ENTER_LOCK(bufferLock)
 		samplesInBuff-=toWrite;
-		if (cpr>=bufend){
+		LEAVE_LOCK(bufferLock)
+		if (cpr==bufend){
 			cpr=bufstart;
 		}
 

@@ -66,6 +66,8 @@ protected:
 
 	timeval daqStart;
 
+	DECLARE_LOCK(bufferLock);
+
 private:
 
 	std::string name;
