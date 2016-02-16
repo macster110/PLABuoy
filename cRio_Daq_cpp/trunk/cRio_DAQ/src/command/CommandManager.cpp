@@ -22,6 +22,8 @@ CommandManager::CommandManager() : CommandList() {
 	addCommand(new StopCommand());
 	addCommand(new ExitCommand());
 	addCommand(new UDPPortCommand());
+	addCommand(new NChanCommand());
+	addCommand(new ChassisCommand());
 }
 
 CommandManager::~CommandManager() {

@@ -155,7 +155,7 @@ std::string ChassisCommand::execute(std::string command, struct sockaddr_in* udp
 	}
 //	return "Set verbose level to " + w2;
 	int p = atoi(w2.c_str());
-	if (p != 8 && p != 12) {
+	if (p != 9067 && p != 9068) {
 		return "Invalid chassis type (9067 or 9068) " + command;
 	}
 	getFPGAChoice(p, getCurrentNChan());

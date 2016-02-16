@@ -434,7 +434,7 @@ int NetSender::clearQueue() {
 	}
 	LEAVE_LOCK(socketLock)
 	queuedBytes = 0;
-	reporter->report(0, "Cleared %d objectcts from send queue\n", n);
+	reporter->report(0, "Cleared %d objects from send queue\n", n);
 	return n;
 }
 

@@ -7,6 +7,7 @@
 
 #include "NiFpgaChoice.h"
 #include "NiFpga_Crio9067_8chan.h"
+#include "NiFpga_Crio9067_12chan.h"
 #include "NiFpga_Crio9068_8chan.h"
 
 #include <stdio.h>
@@ -69,10 +70,11 @@ FpgaChoice* getFPGAChoice(int chassis, int nChan) {
 	}
 	if (fpgaChoice == NULL) {
 		printf("*****************************************************************************************");
-		printf("********** No FPGA control available for %d chassis with %d data channels *********");
+		printf("********** No FPGA control available for %d chassis with %d data channels *********", currentChassis, currentNChan);
 		printf("*****************************************************************************************");
 		fflush(stdout);
 	}
+	return fpgaChoice;
 }
 
 Fpga9067_8chan::Fpga9067_8chan() : FpgaChoice() {
@@ -95,6 +97,21 @@ Fpga9067_8chan::Fpga9067_8chan() : FpgaChoice() {
 }
 Fpga9067_12chan::Fpga9067_12chan() : FpgaChoice() {
 
+	bitFileName = (char*) NiFpga_Crio9067_12chan_Bitfile;
+	bitFileSignature = (char*) NiFpga_Crio9067_12chan_Signature;
+	NiFpga_IndicatorBool_Overwrite = NiFpga_Crio9067_12chan_IndicatorBool_Overwrite;
+	NiFpga_IndicatorBool_SampleGated = NiFpga_Crio9067_12chan_IndicatorBool_SampleGated;
+	NiFpga_IndicatorBool_Stopped = NiFpga_Crio9067_12chan_IndicatorBool_Stopped;
+	NiFpga_IndicatorBool_TimedOut = NiFpga_Crio9067_12chan_IndicatorBool_TimedOut;
+
+	NiFpga_IndicatorI16_ChassisTemperature = NiFpga_Crio9067_12chan_IndicatorI16_ChassisTemperature;
+	NiFpga_IndicatorI32_nChannels = NiFpga_Crio9067_12chan_IndicatorI32_nChannels;
+	NiFpga_ControlBool_Boolean = NiFpga_Crio9067_12chan_ControlBool_Boolean;
+	NiFpga_ControlBool_SystemReset = NiFpga_Crio9067_12chan_ControlBool_SystemReset;
+	NiFpga_ControlBool_USERFPGALED = NiFpga_Crio9067_12chan_ControlBool_USERFPGALED;
+	NiFpga_ControlBool_UserFpgaLed = NiFpga_Crio9067_12chan_ControlBool_UserFpgaLed;
+	NiFpga_ControlU32_SamplePerioduSec = NiFpga_Crio9067_12chan_ControlU32_SamplePerioduSec;
+	NiFpga_TargetToHostFifoI16_FIFO = NiFpga_Crio9067_12chan_TargetToHostFifoI16_FIFO;
 }
 
 Fpga9068_8chan::Fpga9068_8chan() : FpgaChoice() {

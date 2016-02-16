@@ -195,6 +195,7 @@ void FPGADaqSystem::read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status
 			fpgaChoice->NiFpga_ControlU32_SamplePerioduSec,
 			Sample_Rate_us));
 
+	printf("FPGADAQSystem: Current Status in read FIFO thread %d!\n", *status);
 	/**
 	 * Set the size of the depth buffer
 	 */
