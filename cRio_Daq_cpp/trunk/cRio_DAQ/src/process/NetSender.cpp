@@ -221,7 +221,7 @@ int NetSender::socketWaitThread() {
 	}
 	listen(listenSocket, 5);
 	clilen = sizeof(cli_addr);
-	reporter->report(0, "TCP Listening socket opened on port %d\n", ipPort);
+	reporter->report(1, "TCP Listening socket opened on port %d\n", ipPort);
 	// that's it all set up and listening, now wait for connections.
 
 	while (1) {
@@ -241,7 +241,7 @@ int NetSender::socketWaitThread() {
 		sendX3Header(socketId);
 		LEAVE_LOCK(socketLock);
 	}
-	reporter->report(0, "TCP Listening socket closed on port %d\n", serv_addr.sin_port);
+	reporter->report(1, "TCP Listening socket closed on port %d\n", serv_addr.sin_port);
 	return 0;
 }
 int NetSender::sendThreadLoop() {
@@ -257,10 +257,10 @@ int NetSender::sendThreadLoop() {
 					networkQueue.size(), (int) (queuedBytes>>20));
 			msgTimer->start();
 		}
-		if (networkQueue.size() > 2000) {
+		if (networkQueue.size() > 4000) {
 			nDumped = 0;
 			ENTER_LOCK(socketLock)
-			while (networkQueue.size() > 1500) {
+			while (networkQueue.size() > 3500) {
 				data = networkQueue.front();
 				free(data.data);
 				queuedBytes -= data.dataBytes;
@@ -269,7 +269,7 @@ int NetSender::sendThreadLoop() {
 			}
 			LEAVE_LOCK(socketLock)
 			if (nDumped) {
-				reporter->report(1, "Dumped %d chunks from data queue, %d (%d MBytes) remaining\n",
+				reporter->report(0, "Dumped %d chunks from data queue, %d (%d MBytes) remaining\n",
 						nDumped, networkQueue.size(), (int) (queuedBytes>>20));
 				myusleep(10000); // sleep for 10 millisecond.
 			}
@@ -279,17 +279,17 @@ int NetSender::sendThreadLoop() {
 			continue;
 		}
 		bool workDone = false;
-		ENTER_LOCK(socketLock)
 		if (socketId != 0) {
 			data = networkQueue.front();
 			if (sendData(&data)) {
+				ENTER_LOCK(socketLock)
 				free(data.data);
 				queuedBytes -= data.dataBytes;
 				networkQueue.pop(); // remove from queue.
 				workDone = true;
+				LEAVE_LOCK(socketLock)
 			}
 		}
-		LEAVE_LOCK(socketLock)
 		if (!workDone) {
 			myusleep(10); // sleep for 10 millisecond.
 		}
@@ -434,7 +434,7 @@ int NetSender::clearQueue() {
 	}
 	LEAVE_LOCK(socketLock)
 	queuedBytes = 0;
-	reporter->report(0, "Cleared %d objects from send queue\n", n);
+	reporter->report(1, "Cleared %d objects from send queue\n", n);
 	return n;
 }
 

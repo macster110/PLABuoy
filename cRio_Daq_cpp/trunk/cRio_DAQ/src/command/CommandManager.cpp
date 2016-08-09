@@ -11,6 +11,8 @@
 
 #include <stdio.h>
 
+#include "../Reporter.h"
+
 using namespace std;
 
 CommandManager::CommandManager() : CommandList() {
@@ -31,15 +33,15 @@ CommandManager::~CommandManager() {
 }
 
 void CommandManager::listAllCommands() {
-	printf("List of available general commands: \n");
+	reporter->report(0,"List of available general commands: \n");
 	int n = getnCommands();
 	for (int i = 0; i < n; i++) {
 		std::string ahint = getCommand(i)->getHint();
 		if (ahint.length() > 0) {
-			printf("       %s - %s\n", getCommand(i)->getName().c_str(), ahint.c_str());
+			reporter->report(0,"       %s - %s\n", getCommand(i)->getName().c_str(), ahint.c_str());
 		}
 		else {
-			printf("       %s\n", getCommand(i)->getName().c_str());
+			reporter->report(0,"       %s\n", getCommand(i)->getName().c_str());
 		}
 	}
 	// now work through the modules, listing all commands for each module.
@@ -48,17 +50,17 @@ void CommandManager::listAllCommands() {
 		std::string procState = aProcess->isEnabled() ? "Enabled" : "Disabled";
 		int n = aProcess->getnCommands();
 		if (n == 0) {
-			printf("Process %s (%s) has no optional commands\n", aProcess->getProcessName().c_str(), procState.c_str());
+			reporter->report(0, "Process %s (%s) has no optional commands\n", aProcess->getProcessName().c_str(), procState.c_str());
 		}
 		else {
-			printf("Process %s (%s) has the following commands: \n", aProcess->getProcessName().c_str(), procState.c_str());
+			reporter->report(0, "Process %s (%s) has the following commands: \n", aProcess->getProcessName().c_str(), procState.c_str());
 			for (int i = 0; i < n; i++) {
 				std::string hint = aProcess->getCommand(i)->getHint();
 				if (hint.length() > 0) {
-					printf("       %s - %s\n", aProcess->getCommand(i)->getName().c_str(), hint.c_str());
+					reporter->report(0, "       %s - %s\n", aProcess->getCommand(i)->getName().c_str(), hint.c_str());
 				}
 				else {
-					printf("       %s\n", aProcess->getCommand(i)->getName().c_str());
+					reporter->report(0, "       %s\n", aProcess->getCommand(i)->getName().c_str());
 				}
 			}
 		}
@@ -78,7 +80,7 @@ std::string CommandManager::processCommand(std::string command, struct sockaddr_
 	 * If this has come in from the command line it may have comma delinated
 	 * multiple commands in it, so check for commas and break it up.
 	 */
-	printf("Process command %s\n", command.c_str());
+	reporter->report(2, "Process command %s\n", command.c_str());
 	size_t comPos = command.find(',');
 	size_t nCom = 0;
 	size_t prevCom = 0;

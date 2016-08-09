@@ -32,6 +32,7 @@
 #include "nifpga/NiFpgaChoice.h"
 #include "command/UDPCommands.h"
 #include "daq/SimulatedDaq.h"
+#include "Reporter.h"
 #ifdef WINOWS
 #include "daq/DaqMxSystem.h"
 #include "winsock.h"
@@ -87,18 +88,18 @@ class PLAWatchDog* cRioWatchDog = NULL;
 
 int main(int argc, char *argv[]){
 
-//create_Sound_File(8, 500000);
-//testWavWrite();
+	//create_Sound_File(8, 500000);
+	//testWavWrite();
 
 
-//	cout<<"Number of arguments "<<argc<<endl;
-//	for (int i=0; i<argc ; i++){
-//		cout<<"Argument "<<i<<" "<<*argv[i]<<endl;
-//	}
-	printf("Current time = %s\n", currentDateTime().c_str());
+	//	cout<<"Number of arguments "<<argc<<endl;
+	//	for (int i=0; i<argc ; i++){
+	//		cout<<"Argument "<<i<<" "<<*argv[i]<<endl;
+	//	}
+	//	printf("Current time = %s\n", currentDateTime().c_str());
 
 	// initialise winsock straight away if it's Windows
-	#ifdef WINDOWS
+#ifdef WINDOWS
 	WORD wVersionRequested;
 	WSADATA wsaData;
 	int err;
@@ -115,68 +116,68 @@ int main(int argc, char *argv[]){
 
 #ifdef WINDOWS
 	daqSystem = new SimulatedDaq();
-//	daqSystem = new DaqMxSystem();
+	//	daqSystem = new DaqMxSystem();
 #else
 	daqSystem = new FPGADaqSystem();
 #endif
 
-//	RealTimer* rt = new RealTimer();
-//	printf("System clock has %11.9fs resolution\n", rt->getResolution());
-//	rt->start();
-//	for (int i = 0; i < 100; i++) {
-//		myusleep(10000);
-//		printf("tic %d, time %4.5f\n", i, rt->stop());
-//		fflush(stdout);
-//	}
-//	delete(rt);
+	//	RealTimer* rt = new RealTimer();
+	//	printf("System clock has %11.9fs resolution\n", rt->getResolution());
+	//	rt->start();
+	//	for (int i = 0; i < 100; i++) {
+	//		myusleep(10000);
+	//		printf("tic %d, time %4.5f\n", i, rt->stop());
+	//		fflush(stdout);
+	//	}
+	//	delete(rt);
 
-//	/**Make sure LED's are off**/
-//	set_user_LED_status(LED_USER1_OFF);
-//	set_user_LED_status(LED_STATUS_OFF);
+	//	/**Make sure LED's are off**/
+	//	set_user_LED_status(LED_USER1_OFF);
+	//	set_user_LED_status(LED_STATUS_OFF);
 
-	printf("Create watchdog\n");
-//	//create watch dog class.
+	//	printf("Create watchdog\n");
+	//	//create watch dog class.
 	cRioWatchDog = new PLAWatchDog();
 
-	printf("Create process\n");
+	//	printf("Create process\n");
 	// create the data processes.
 	processCreate();
 
-	printf("UDP Commands\n");
+	//	printf("UDP Commands\n");
 	/**
 	 * Create and launch the UDP command browser.
 	 */
 	udpCommands = new UDPCommands();
 
-	printf("Command line\n");
+	//	printf("Command line\n");
 	/*Send single long command string to the command manager. */
 	if (argc>=2) {
 		string allCommands = joinstrings(argc-1, &argv[1]);
 		commandManager->processCommand(allCommands, NULL);
 	}
 
-//	/*Print console to output file*/
-//	string consoleOut=SAVE_LOCATION+ "/console_out.txt";
-//    freopen(consoleOut.c_str(),"w",stdout);
+	//	/*Print console to output file*/
+	//	string consoleOut=SAVE_LOCATION+ "/console_out.txt";
+	//    freopen(consoleOut.c_str(),"w",stdout);
 
-	printf("USER LED \n");
+	//	printf("USER LED \n");
 	/*Switch on LED to show program is on*/
 	set_user_LED_status(LED_USER1_GREEN);
 
-	printf("Get user commands \n");
+	//	printf("Get user commands \n");
 	/*Wait for commands on main thread;*/
 	get_user_commands();
 
 	/**Make sure LED's are off**/
 	set_user_LED_status(LED_USER1_OFF);
 	set_user_LED_status(LED_STATUS_OFF);
-//	printf("Stop UDP Thread\n");
+	//	printf("Stop UDP Thread\n");
 	udpCommands->stopUDPThread(false);
-//	printf("Stoped UDP Thread\n");
+	//	printf("Stoped UDP Thread\n");
 	// clean up processes.
 	processDelete();
 
-//	printf("This is the last line of the program !\n");
+	//	printf("This is the last line of the program !\n");
 	return 0;
 }
 
@@ -190,40 +191,40 @@ void get_user_commands(){
 	while (go || count==0)
 	{
 		/* Generate Menu */
-//		printf("\n");
-		printf("|---------------------------------------------------------------|\n");
-		printf("|             type help for a list of commands                  |\n");
-		printf("|---------------------------------------------------------------|\n");
+		//		printf("\n");
+		reporter->report(1,"|---------------------------------------------------------------|\n");
+		reporter->report(1,"|             type help for a list of commands                  |\n");
+		reporter->report(1,"|---------------------------------------------------------------|\n");
 		fflush(stdout);
 
-//		UserInput = get_user_input_num();
-//		if (UserInput >= 0) {
-//			user_command(UserInput);
-//		}
+		//		UserInput = get_user_input_num();
+		//		if (UserInput >= 0) {
+		//			user_command(UserInput);
+		//		}
 		while (go) {
-		cmd = get_user_input_string();
-		cmd = trimstring(cmd);
-		if (cmd.size()) break;
+			cmd = get_user_input_string();
+			cmd = trimstring(cmd);
+			if (cmd.size()) break;
 		}
 		string ans = commandManager->processCommand(cmd, NULL);
-//		fflush(stdout);
-		printf("Command \"%s\" answered \"%s\"\n", cmd.c_str(), ans.c_str());
-//		fflush(stdout);
+		//		fflush(stdout);
+		reporter->report(1,"Command \"%s\" answered \"%s\"\n", cmd.c_str(), ans.c_str());
+		//		fflush(stdout);
 
 		count++;
 	}
-	printf("Leaving terminal control loop\n");
+	reporter->report(1,"Leaving terminal control loop\n");
 }
 
 
 bool start() {
 	cRioWatchDog->startWatchDog();
 	if (acquire==true) {
-		printf("DAQ system is already running\n");
+		reporter->report(1,"DAQ system is already running\n");
 		return false;
 	}
 	acquire=true;
-	printf("Initiating cRio recording\n");
+	reporter->report(1,"Initiating cRio recording\n");
 	processInit(getProcess(0)->getNChan(), DEFAULTSAMPLERATE);
 	/*Start recording data from serial port*/
 	//			record_Serial(1,B4800);
@@ -240,9 +241,9 @@ bool stop(bool restart) {
 	if (acquire == false) return false;
 	acquire=false;
 	bool ans = daqSystem->stop();
-//	set_FPGA_go(false);
-//	set_serial_go(false);
-//	pthread_join(get_FPGA_thread(), NULL);
+	//	set_FPGA_go(false);
+	//	set_serial_go(false);
+	//	pthread_join(get_FPGA_thread(), NULL);
 	processEnd();
 
 	if (ans && restart){
@@ -314,10 +315,10 @@ int get_user_input_num()
 std::string get_user_input_string() {
 	const int slen = 256;
 	static char cmd[slen];
-//	printf("waiting for user nput\n");
+	//	printf("waiting for user nput\n");
 	fgets(cmd, slen-1, stdin);
-//	scanf(cmd, "%s");
-//	printf("have user input\n");
+	//	scanf(cmd, "%s");
+	//	printf("have user input\n");
 	int lStr = strlen(cmd);
 	if (lStr > 0 && cmd[lStr-1] == '\n') {
 		cmd[lStr-1] = 0;
@@ -325,7 +326,7 @@ std::string get_user_input_string() {
 	if (lStr > 1 && cmd[lStr-1] == '\r') {
 		cmd[lStr-1] = 0;
 	}
-//	printf("\"%s\" %d chars %d\n", cmd, strlen(cmd), (int) cmd[0]);
+	//	printf("\"%s\" %d chars %d\n", cmd, strlen(cmd), (int) cmd[0]);
 	return string(cmd);
 }
 
@@ -408,11 +409,11 @@ void PLAWatchDog::watchdog_monitor(){
 			printf("PLAWatchDog: FPGA error count>0: daq: %d processes: %d total error count %d\n", daqSystem->getErrorCount(), isProcessError(),errorCount);
 			errorCount++;
 			//led flag to yellow if possible, otherwise switch off
-			#if defined(CRIO9068)
+#if defined(CRIO9068)
 			led=LED_USER1_YELLOW;
-			#else
+#else
 			led=LED_USER1_OFF;
-			#endif
+#endif
 		}
 		else{
 			//reset error counter.
@@ -432,55 +433,55 @@ void PLAWatchDog::watchdog_monitor(){
 		}
 
 
-//		cout<< "Hello! I'm a running watchdog daqSystemError %d\n" << daqSystem->getErrorCount() << endl;
-//		cout<< "Hello! I'm a running watchdog processError %d\n" << isProcessError() << endl;
+		//		cout<< "Hello! I'm a running watchdog daqSystemError %d\n" << daqSystem->getErrorCount() << endl;
+		//		cout<< "Hello! I'm a running watchdog processError %d\n" << isProcessError() << endl;
 
 	}
 
 	set_user_LED_status(LED_USER1_OFF);
 
 
-//	int countuSecs=500000; //us for each while loop iteration
-//	int erroruSec=15000000; //us for checking total errors -10 exceeding threshold.
-//	int errorThreshold=5; //number of errors in erruSec before a system restart.
-//	int count=0;
-//	int countCheck=erroruSec/countuSecs;
-//	int led=0;
-//	return;
-//	while(acquire){
-//		myusleep(500000); //sleep for half a second
-//		if (daqSystem->getErrorCount()>0){
-//			printf("Watchdog: FPGA error count>0: %d!\n",daqSystem->getErrorCount());
-//			led=1;
-//		}
-//		else{
-//			led=LED_USER1_GREEN;
-//		}
-//
-//		set_user_LED_status(LED_USER1_OFF);
-//		set_user_LED_status(led);
-//
-//		/*keep track of the total while loop iterations*/
-//		count++;
-//
-//		if (count%countCheck==0 ){
-//			printf(currentDateTime().c_str());
-//			printf(" Watchdog: Checking error count. Total Errors = %d\n", daqSystem->getErrorCount());
-//			if (daqSystem->getErrorCount()>errorThreshold){
-//				/*
-//				 * Gone over the max number of errors allowed in error period. Restart the cRio.
-//				 * Although this can be achived using FPGA, if it is broken for whatever need to perform a restart using
-//				 * OS.
-//				 */
-////				acquire=false;
-////				set_FPGA_go(false);
-////				set_serial_go(false);
-//				stop(false);
-//				myusleep(500000); //sleep for half a second to allow things to finish up.
-//				system("/sbin/reboot");
-//			}
-//			daqSystem->resetErrorCount(); //return the error count to zero.
-//		}
-//
-//	}
+	//	int countuSecs=500000; //us for each while loop iteration
+	//	int erroruSec=15000000; //us for checking total errors -10 exceeding threshold.
+	//	int errorThreshold=5; //number of errors in erruSec before a system restart.
+	//	int count=0;
+	//	int countCheck=erroruSec/countuSecs;
+	//	int led=0;
+	//	return;
+	//	while(acquire){
+	//		myusleep(500000); //sleep for half a second
+	//		if (daqSystem->getErrorCount()>0){
+	//			printf("Watchdog: FPGA error count>0: %d!\n",daqSystem->getErrorCount());
+	//			led=1;
+	//		}
+	//		else{
+	//			led=LED_USER1_GREEN;
+	//		}
+	//
+	//		set_user_LED_status(LED_USER1_OFF);
+	//		set_user_LED_status(led);
+	//
+	//		/*keep track of the total while loop iterations*/
+	//		count++;
+	//
+	//		if (count%countCheck==0 ){
+	//			printf(currentDateTime().c_str());
+	//			printf(" Watchdog: Checking error count. Total Errors = %d\n", daqSystem->getErrorCount());
+	//			if (daqSystem->getErrorCount()>errorThreshold){
+	//				/*
+	//				 * Gone over the max number of errors allowed in error period. Restart the cRio.
+	//				 * Although this can be achived using FPGA, if it is broken for whatever need to perform a restart using
+	//				 * OS.
+	//				 */
+	////				acquire=false;
+	////				set_FPGA_go(false);
+	////				set_serial_go(false);
+	//				stop(false);
+	//				myusleep(500000); //sleep for half a second to allow things to finish up.
+	//				system("/sbin/reboot");
+	//			}
+	//			daqSystem->resetErrorCount(); //return the error count to zero.
+	//		}
+	//
+	//	}
 }

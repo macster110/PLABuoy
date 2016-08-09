@@ -102,7 +102,7 @@ void UDPCommands::stopUDPThread(bool wait) {
 
 bool UDPCommands::openConnection() {
 
-	reporter->report(0, "Prepare for UDP commands on port %d\n", portId);
+//	reporter->report(0, "Prepare for UDP commands on port %d\n", portId);
 
 	udpSocket = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP );
 		if (udpSocket <= 0) {
@@ -131,7 +131,7 @@ bool UDPCommands::openConnection() {
 		}
 
 
-		reporter->report(0, "Wait for UDP commands on port %d\n", portId);
+		reporter->report(1, "Wait for UDP commands on port %d\n", portId);
 		return udpSocket > 0;
 
 }

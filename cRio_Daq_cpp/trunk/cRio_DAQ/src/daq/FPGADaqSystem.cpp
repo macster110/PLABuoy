@@ -92,7 +92,7 @@ bool FPGADaqSystem::startSystem() {
 
 void FPGADaqSystem::run_FPGA_tasks()
 {
-	printf("FPGADAQSystem: Starting to run_FPGA_tasks\n");
+	reporter->report(1, "FPGADAQSystem: Starting to run_FPGA_tasks\n");
 	FPGA_Go=true;
 	/*Create while loops so recording restartes after error*/
 	while (FPGA_Go){
@@ -108,7 +108,7 @@ void FPGADaqSystem::run_FPGA_tasks()
 
 		/*Check to make sure no errors during FPGA start up*/
 		if (!NiFpga_IsNotError(status_FPGA)){
-			printf("FPGADAQSystem: Error preparing FPGA %d!\n", status_FPGA);
+			reporter->report(0, "FPGADAQSystem: Error preparing FPGA %d!\n", status_FPGA);
 			close_FPGA();
 			errorCount_FPGA++;
 			exit(0); // bomb if there is an error
@@ -133,9 +133,9 @@ void FPGADaqSystem::read_FIFO_threadFunction() {
 	NiFpga_Status status_DAQ=0;
 	/*Merge with error from FPGA manager just in case something has been flagged up there*/
 	status_DAQ=NiFpga_MergeStatus(&status_DAQ, get_Status_FPGA());
-	printf("FPGADAQSystem: start to read_FIFO_Data .....\n");
+	reporter->report(1, "FPGADAQSystem: start to read_FIFO_Data .....\n");
 	read_FIFO_Data(session_FPGA, &status_DAQ, &irqContext_FPGA);
-	printf("FPGADAQSystem: Completed read_FIFO_Data....errors: %d\n", errorCount_FPGA);
+	reporter->report(1, "FPGADAQSystem: Completed read_FIFO_Data....errors: %d\n", errorCount_FPGA);
 }
 
 
@@ -143,7 +143,7 @@ NiFpga_Status FPGADaqSystem::prepare_FPGA()
 {
 	resetErrorCount();
 
-	printf("FPGADAQSystem: Attempting to connect to cRio...\n");
+	reporter->report(1, "FPGADAQSystem: Attempting to connect to cRio...\n");
 
 	/**
 	 * Initialise the FPGA- errors are stored in status.
@@ -155,8 +155,8 @@ NiFpga_Status FPGADaqSystem::prepare_FPGA()
 	 * The names of the .lvbitx file and signature values are stored in the /cRioTestC/NiFpga_NI_9222_Anologue_DAQ2_FPGA.h file.
 	 */
 	int thisStat;
-	printf("FPGADAQSystem: FPGA Manager: Opening a Session... status %d\n",status_FPGA);
-	printf("FPGADAQSystem: NiFPga_Open with Bitfile %s and signature %s\n", fpgaChoice->getBitFileName(),
+	reporter->report(1, "FPGADAQSystem: FPGA Manager: Opening a Session... status %d\n",status_FPGA);
+	reporter->report(1, "FPGADAQSystem: NiFPga_Open with Bitfile %s and signature %s\n", fpgaChoice->getBitFileName(),
 			fpgaChoice->getBitFileSignature());
 	NiFpga_MergeStatus(&status_FPGA, thisStat = NiFpga_Open(fpgaChoice->getBitFileName(),
 			fpgaChoice->getBitFileSignature(),
@@ -168,7 +168,7 @@ NiFpga_Status FPGADaqSystem::prepare_FPGA()
 	 * http://digital.ni.com/public.nsf/allkb/8A49034C699AA6FF862577D2007D9970
 	 * recommends installing additional software on the cRio - NI Scan Engine x.x.
 	 */
-	reporter->report(0, "FPGADAQSystem: NiFpga_Open() returned %d\n", thisStat);
+	reporter->report(1, "FPGADAQSystem: NiFpga_Open() returned %d\n", thisStat);
 
 	/* reserve a context for this thread to wait on IRQs */
 	NiFpga_MergeStatus(&status_FPGA, NiFpga_ReserveIrqContext(session_FPGA, &irqContext_FPGA));
@@ -189,19 +189,19 @@ void FPGADaqSystem::read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status
 	uint32_t fifo=0;
 	size_t depth=100000; //need to make this this size to prevent overflow errors in FIFO.
 	uint32_t Sample_Rate_us = 1000000/getProcess(0)->getSampleRate();
-	printf("FPGADAQSystem: Set microsecond tick to %d\n", Sample_Rate_us);
+	reporter->report(1, "FPGADAQSystem: Set microsecond tick to %d\n", Sample_Rate_us);
 	// Set the sample rate
 	NiFpga_MergeStatus(status, NiFpga_WriteU32(session,
 			fpgaChoice->NiFpga_ControlU32_SamplePerioduSec,
 			Sample_Rate_us));
 
-	printf("FPGADAQSystem: Current Status in read FIFO thread %d!\n", *status);
+	reporter->report(1, "FPGADAQSystem: Current Status in read FIFO thread %d!\n", *status);
 	/**
 	 * Set the size of the depth buffer
 	 */
 	NiFpga_MergeStatus(status, NiFpga_ConfigureFifo(session,fifo,depth));
 
-	printf("FPGADAQSystem: Current Status in read FIFO thread %d!\n", *status);
+	reporter->report(1, "FPGADAQSystem: Current Status in read FIFO thread %d!\n", *status);
 
 	/* IRQ related variables */
 	uint32_t irqsAsserted;
@@ -255,7 +255,7 @@ void FPGADaqSystem::read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status
 
 		/*Check for an error*/
 		if (!NiFpga_IsNotError(*status) ){
-			printf("FPGADAQSystem: Error in read FIFO thread %d!\n", *status);
+			reporter->report(0, "FPGADAQSystem: Error in read FIFO thread %d!\n", *status);
 			errorCount_FPGA++;
 			continue;
 		}
@@ -332,11 +332,11 @@ void FPGADaqSystem::read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status
 	 * Error-50400 : timeout FPGA
 	 */
 	if (!NiFpga_IsNotError(status_DAQ)){
-		printf("FPGADAQSystem: Error in read FIFO thread %d!\n", *status);
+		reporter->report(0, "FPGADAQSystem: Error in read FIFO thread %d!\n", *status);
 		errorCount_FPGA++;
 	}
 	else {
-		printf("FPGADAQSystem: Leaving read FIFO thread status %d, daqgo %d, timout %d\n", *status, (int) daq_go, (int) TimedOut);
+		reporter->report(1, "FPGADAQSystem: Leaving read FIFO thread status %d, daqgo %d, timout %d\n", *status, (int) daq_go, (int) TimedOut);
 	}
 
 }
@@ -362,7 +362,7 @@ void FPGADaqSystem::record_DAQ()
 	param.sched_priority = 10;
 	s = pthread_setschedparam(read_FIFO_thread, policy, &param);
 	s = pthread_getschedparam(read_FIFO_thread, &policy, &param);
-	printf("Updated DAQ thread policy=%s, priority=%d\n",
+	reporter->report(1, "Updated DAQ thread policy=%s, priority=%d\n",
         (policy == SCHED_FIFO)  ? "SCHED_FIFO" :
         (policy == SCHED_RR)    ? "SCHED_RR" :
         (policy == SCHED_OTHER) ? "SCHED_OTHER" :
@@ -374,7 +374,7 @@ void FPGADaqSystem::record_DAQ()
 //		fprintf(stderr, "Error creating thread to read data from FIFO\n");
 //		return;
 //	}
-	printf("FPGADAQSystem: FIFO thread has initialised...\n");
+	reporter->report(1, "FPGADAQSystem: FIFO thread has initialised...\n");
 
 
 	/*Wait for both threads to finish before closing up*/
@@ -398,7 +398,7 @@ bool FPGADaqSystem::stopSystem() {
 
 	/*If an error has occured during reading writing then print error*/
 	if (!NiFpga_IsNotError(status_FPGA)){
-		printf("FPGADAQSystem: Error during DAQ record %d!\n", status_FPGA);
+		reporter->report(0, "FPGADAQSystem: Error during DAQ record %d!\n", status_FPGA);
 		errorCount_FPGA++;
 	}
 
@@ -407,7 +407,7 @@ bool FPGADaqSystem::stopSystem() {
 
 	/*Check for any errors whilst closing the FPGA*/
 	if (!NiFpga_IsNotError(status_FPGA)){
-		printf("FPGADAQSystem: Error on FPGA close %d!\n", status_FPGA);
+		reporter->report(0, "FPGADAQSystem: Error on FPGA close %d!\n", status_FPGA);
 		errorCount_FPGA++;
 	}
 
@@ -432,7 +432,7 @@ NiFpga_Status FPGADaqSystem::close_FPGA()
 	/* Finalise must be called before exiting program and after closing FPGA session */
 	NiFpga_MergeStatus(&status_FPGA, NiFpga_Finalize());
 
-	printf("FPGADAQSystem: FPGA closed\n");
+	reporter->report(1, "FPGADAQSystem: FPGA closed\n");
 
 	return status_FPGA;
 }
