@@ -207,7 +207,7 @@ int NetSender::socketWaitThread() {
 	}
 	listenSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (listenSocket < 0) {
-		reporter->report(0, "ERROR opening socket\n", 0);
+		reporter->report(0, "Error opening TCP socket\n", 0);
 		return -1;
 	}
 	memset((char *) &serv_addr, 0, sizeof(serv_addr));
@@ -216,7 +216,7 @@ int NetSender::socketWaitThread() {
 	serv_addr.sin_port = htons(ipPort);
 	if (bind(listenSocket, (struct sockaddr *) &serv_addr, sizeof(serv_addr))
 			< 0) {
-		sprintf(buffer, "Error on binding socket on port %d\n", ipPort);
+		sprintf(buffer, "Error binding TCP socket on port %d\n", ipPort);
 		reporter->report(0, buffer, 3);
 	}
 	listen(listenSocket, 5);
