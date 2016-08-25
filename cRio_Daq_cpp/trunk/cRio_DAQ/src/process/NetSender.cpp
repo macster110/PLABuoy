@@ -280,7 +280,11 @@ int NetSender::sendThreadLoop() {
 		}
 		bool workDone = false;
 		if (socketId != 0) {
+			ENTER_LOCK(socketLock)
 			data = networkQueue.front();
+			LEAVE_LOCK(socketLock)
+			// make sure we leave the lock for the send call since this can
+			// take time and we mustn't block the DAQ from writing to the queue.
 			if (sendData(&data)) {
 				ENTER_LOCK(socketLock)
 				free(data.data);
