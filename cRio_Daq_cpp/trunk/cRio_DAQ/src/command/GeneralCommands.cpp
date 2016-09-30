@@ -162,3 +162,15 @@ std::string ChassisCommand::execute(std::string command, struct sockaddr_in* udp
 
 	return "NI chassis type set to  " + command;
 }
+
+TempCommand::TempCommand() : Command(NULL, "temp") {
+
+}
+std::string TempCommand::execute(std::string command, struct sockaddr_in* udpSock) {
+	// look for an integer in the second word.
+	float temp = getChassisTemp();
+	static char t[20];
+	sprintf(t, "%3.2f", temp);
+	return t;
+//	return "NI chassis type set to  " + com%mand;
+}

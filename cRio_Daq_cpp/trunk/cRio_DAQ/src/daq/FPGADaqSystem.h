@@ -42,6 +42,8 @@ public:
 
 	void record_DAQ();
 
+	float getTemp();
+
 	NiFpga_Status close_FPGA();
 
 	NiFpga_Status get_Status_DAQ();

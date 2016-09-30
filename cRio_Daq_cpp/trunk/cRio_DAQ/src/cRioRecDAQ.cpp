@@ -254,6 +254,18 @@ bool stop(bool restart) {
 	return ans;
 }
 
+float getChassisTemp() {
+	if (daqSystem == NULL) {
+		return 9999;
+	}
+#ifdef WINDOWS
+	return 0;
+	//	daqSystem = new DaqMxSystem();
+#else
+	return ((FPGADaqSystem*)daqSystem)->getTemp();
+#endif
+}
+
 /**
  * Perform an operation based on command flag.
  */

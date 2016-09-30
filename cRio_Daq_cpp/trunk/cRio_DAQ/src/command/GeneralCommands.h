@@ -98,4 +98,14 @@ public:
 		return "Set the type of chassis (9067 or 9068)";
 	}
 };
+
+class TempCommand : public Command {
+public:
+	TempCommand();
+	virtual ~TempCommand() {};
+	std::string execute(std::string command, struct sockaddr_in* udpSock);
+	std::string getHint() {
+		return "Get the chassis temperature in degrees";
+	}
+};
 #endif /* GENERALCOMMANDS_H_ */

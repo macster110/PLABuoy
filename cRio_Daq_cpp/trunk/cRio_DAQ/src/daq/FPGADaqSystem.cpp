@@ -19,6 +19,7 @@
 
 //#include "../mythread.h"
 #include "../nifpga/NiFpgaChoice.h"
+#include "../nifpga/UtilsNiFpga.h"
 //#include "../NIFpgaManager.h"
 #include "../Reporter.h"
 #include "../Settings.h"
@@ -75,6 +76,14 @@ FPGADaqSystem::~FPGADaqSystem() {
 
 bool FPGADaqSystem::prepareSystem() {
 	return true;
+}
+
+float FPGADaqSystem::getTemp() {
+	if (session_FPGA == NULL) {
+		return -9999;
+	}
+	NiFpga_Status status;
+	return ChassisTemperature(session_FPGA, &status);
 }
 
 bool FPGADaqSystem::startSystem() {

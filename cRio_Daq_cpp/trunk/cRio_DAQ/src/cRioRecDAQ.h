@@ -19,6 +19,8 @@ bool stop(bool restart);
 
 extern class DAQSystem* daqSystem;
 
+float getChassisTemp();
+
 /*
  *WatchDog class which monitors processes and DAQ system
  */
