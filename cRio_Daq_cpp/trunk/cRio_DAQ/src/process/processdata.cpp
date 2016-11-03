@@ -156,6 +156,11 @@ bool processData(int16_t* data, int nSamples, timeval daqTime) {
 //	if (count++<2) {
 //		printf("in processdata. nChan=%d, nFrames = %d\n", plaBuff.nChan, plaBuff.soundFrames);
 //	}
+	// magnify the data up to stop it compressing so well.
+//	int16_t* pDat = data;
+//	for (int i = 0; i < nSamples; i++) {
+//		*pDat++ *= 100;
+//	}
 
 //	static float val = 0;
 //	short* fudge = (short*) (data + 1);

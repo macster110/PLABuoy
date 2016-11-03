@@ -18,6 +18,6 @@
  * @param[in]		session		Uses FPGA session reference
  * @param[in,out]	status		Uses and updates error status
 */
-void ChassisTemperature(NiFpga_Session session, NiFpga_Status *status);
+float ChassisTemperature(NiFpga_Session session, NiFpga_Status *status);
 
 #endif /* UTILSNIFPGA_H_ */

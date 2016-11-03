@@ -136,6 +136,9 @@ int		x3blkencode(BPack *b, short *ip, int *T, int n, int nch)
 	//			bfp_encode blk       - block floating point encode filtered stream
 
 	ma = sdiffmaxs(DBUFF,ip,n,nch) ;	 // apply filter and get max block magnitude
+//	if (ma < 256) {
+//		ma = 256; // force no compression.
+//	}
 //	if (ma != 104) {
 //		printf("Max diff signal = %d\n", ma);
 //		fflush(stdout);
