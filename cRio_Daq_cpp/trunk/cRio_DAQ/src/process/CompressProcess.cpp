@@ -44,7 +44,7 @@ int CompressProcess::initProcess(int nChan, int sampleRate) {
 }
 
 int CompressProcess::process(PLABuff* plaBuffer) {
-//	static int count = 0;
+	static int count = 0;
 	XBuff ibuff[1];
 	ibuff->data = plaBuffer->data;
 	ibuff->nch = plaBuffer->nChan;

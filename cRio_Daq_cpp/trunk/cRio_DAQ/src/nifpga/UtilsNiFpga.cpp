@@ -33,7 +33,7 @@ float ChassisTemperature(NiFpga_Session session, NiFpga_Status *status)
 	float Temperature = 0;
 	int16_t RawTemperature = -9996;
 
-//	printf("Acquiring Chassis Temperature...\n");
+//	printf("Acquiring Chassis Temperature on session 0x%x...\n", session);
 
 	NiFpga_MergeStatus(status, NiFpga_ReadI16(session,
 			fpgaChoice->NiFpga_IndicatorI16_ChassisTemperature,

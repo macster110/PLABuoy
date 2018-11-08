@@ -9,13 +9,14 @@
 #include "NiFpga_Crio9067_8chan.h"
 #include "NiFpga_Crio9067_12chan.h"
 #include "NiFpga_Crio9068_8chan.h"
+#include "NiFpga_CRio9063_4chan_9223.h"
 
 #include <stdio.h>
 
 
 FpgaChoice* fpgaChoice = 0;
 
-int currentChassis = 9067;
+int currentChassis = 9063;
 int currentNChan = DEFAULTNCHANNELS;
 
 int getCurrentChassis() {
@@ -51,6 +52,7 @@ FpgaChoice::~FpgaChoice() {
 }
 
 FpgaChoice* getFPGAChoice(int chassis, int nChan) {
+	printf("Find FPGA control for chassis %d, %d channels\n", chassis, nChan);
 	currentChassis = chassis;
 	currentNChan = nChan;
 	if (fpgaChoice) {
@@ -68,6 +70,11 @@ FpgaChoice* getFPGAChoice(int chassis, int nChan) {
 	else if (chassis == 9068) {
 		fpgaChoice = new Fpga9068_8chan();
 	}
+	else if (chassis == 9063) {
+		if (nChan == 4) {
+			fpgaChoice = new Fpga9063_4chan();
+		}
+	}
 	if (fpgaChoice == NULL) {
 		printf("*****************************************************************************************");
 		printf("********** No FPGA control available for %d chassis with %d data channels *********", currentChassis, currentNChan);
@@ -75,6 +82,23 @@ FpgaChoice* getFPGAChoice(int chassis, int nChan) {
 		fflush(stdout);
 	}
 	return fpgaChoice;
+}
+Fpga9063_4chan::Fpga9063_4chan() : FpgaChoice() {
+	bitFileName = (char*) NiFpga_CRio9063_4chan_9223_Bitfile;
+	bitFileSignature = (char*) NiFpga_CRio9063_4chan_9223_Signature;
+	NiFpga_IndicatorBool_Overwrite = NiFpga_CRio9063_4chan_9223_IndicatorBool_Overwrite;
+	NiFpga_IndicatorBool_SampleGated = NiFpga_CRio9063_4chan_9223_IndicatorBool_SampleGated;
+	NiFpga_IndicatorBool_Stopped = NiFpga_CRio9063_4chan_9223_IndicatorBool_Stopped;
+	NiFpga_IndicatorBool_TimedOut = NiFpga_CRio9063_4chan_9223_IndicatorBool_TimedOut;
+
+	NiFpga_IndicatorI16_ChassisTemperature = NiFpga_CRio9063_4chan_9223_IndicatorI16_ChassisTemperature;
+	NiFpga_IndicatorI32_nChannels = NiFpga_CRio9063_4chan_9223_IndicatorI32_nChannels;
+	NiFpga_ControlBool_Boolean = NiFpga_CRio9063_4chan_9223_ControlBool_Boolean;
+	NiFpga_ControlBool_SystemReset = NiFpga_CRio9063_4chan_9223_ControlBool_SystemReset;
+	NiFpga_ControlBool_USERFPGALED = NiFpga_CRio9063_4chan_9223_ControlBool_USERFPGALED;
+	NiFpga_ControlBool_UserFpgaLed = NiFpga_CRio9063_4chan_9223_ControlBool_UserFpgaLed;
+	NiFpga_ControlU32_SamplePerioduSec = NiFpga_CRio9063_4chan_9223_ControlU32_SamplePerioduSec;
+	NiFpga_TargetToHostFifoI16_FIFO = NiFpga_CRio9063_4chan_9223_TargetToHostFifoI16_FIFO;
 }
 
 Fpga9067_8chan::Fpga9067_8chan() : FpgaChoice() {
