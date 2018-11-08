@@ -168,7 +168,7 @@ int UDPCommands::udpThread() {
 //			char str[INET_ADDRSTRLEN];
 //		inet_ntop( AF_INET, ntohl(cli_addr.sin_addr), str, INET_ADDRSTRLEN );
 			rxBuffer[received] = 0; // null terminate the data in case it's text.
-			reporter->report(1, "UDP Command %s sent from %s\n", rxBuffer, inet_ntoa(cli_addr.sin_addr));
+			reporter->report(2, "UDP Command %s sent from %s\n", rxBuffer, inet_ntoa(cli_addr.sin_addr));
 
 			std::string retCmd = commandManager->processCommand(std::string(rxBuffer), &cli_addr);
 			sent = sendto(udpSocket, retCmd.c_str(), retCmd.length(), 0,

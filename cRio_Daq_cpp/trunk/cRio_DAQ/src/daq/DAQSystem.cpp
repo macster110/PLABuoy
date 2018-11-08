@@ -102,7 +102,7 @@ bool DAQSystem::deleteBuffer()
  * @param[in] channels. The number of channels contained as interleaved samples in the data buffer.
  */
 void DAQSystem::read_Data_Buffer(){
-	int channels = 8;
+//	int channels = 8;
 	/*Need to represent sample rate as no. samples per second*/
 	//	int SR=(1./(double)Sample_Rate_us) *1000*1000;
 
@@ -138,10 +138,10 @@ void DAQSystem::read_Data_Buffer(){
 		 * Don't want to have this while loop going at full pelt so wait for a number of us and then
 		 * try again. Ignore unsigned int warning as samplesInBuff is always positive.
 		 */
-		if (count++ % 10000 == 0) {
-			reporter->report(3, "DAQSystem::read_Data_Buffer(): Loop %d samples in buffer %d of %d, last read %d samples\n",
-					count, samplesInBuff, bufend-bufstart, readBlockSize);
-		}
+//		if (count++ % 10000 == 0) {
+//			reporter->report(3, "DAQSystem::read_Data_Buffer(): Loop %d samples in buffer %d of %d, last read %d samples\n",
+//					count, samplesInBuff, bufend-bufstart, readBlockSize);
+//		}
 		//		samplesInBuff = 0;
 		if (samplesInBuff<readBlockSize){
 			myusleep(100); //10000us seems to work well for high sample rates.
@@ -177,7 +177,7 @@ void DAQSystem::read_Data_Buffer(){
 		 *
 		 */
 		if (getStatus() == DAQ_STATUS_RUNNING){
-//			printf("processData %d samples at 0x%x\n", toWrite, cpr);
+//			printf("processData %d samples at 0x%x\n", readBlockSize, cpr);
 //			fflush(stdout);
 			error = processData(cpr, readBlockSize, addMicroseconds(daqStart, totalSamples * 1000000L / getProcess(0)->getSampleRate()));
 			totalSamples += readBlockSize / nChan;

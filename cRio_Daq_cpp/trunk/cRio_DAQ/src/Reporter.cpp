@@ -11,7 +11,7 @@
 #include "stdarg.h"
 
 Reporter::Reporter() {
-	verbosity = 1;
+	verbosity = 2;
 }
 
 Reporter::~Reporter() {

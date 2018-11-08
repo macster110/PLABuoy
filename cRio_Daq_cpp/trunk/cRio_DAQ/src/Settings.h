@@ -21,7 +21,7 @@
 /*
  * Number of channels for acquisition.
  */
-#define DEFAULTNCHANNELS (8)
+#define DEFAULTNCHANNELS (4)
 
 /*
  * Number of samples to acquire each loop much be a multiple of NCHANNELS

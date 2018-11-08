@@ -92,11 +92,11 @@ int main(int argc, char *argv[]){
 	//testWavWrite();
 
 
-	//	cout<<"Number of arguments "<<argc<<endl;
-	//	for (int i=0; i<argc ; i++){
-	//		cout<<"Argument "<<i<<" "<<*argv[i]<<endl;
-	//	}
-	//	printf("Current time = %s\n", currentDateTime().c_str());
+		cout<<"Number of arguments "<<argc<<endl;
+		for (int i=0; i<argc ; i++){
+			printf("Argument %d \"%s\"\n", i, argv[i]);
+		}
+		printf("Current time = %s\n", currentDateTime().c_str());
 
 	// initialise winsock straight away if it's Windows
 #ifdef WINDOWS

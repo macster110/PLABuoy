@@ -131,7 +131,7 @@ std::string NChanCommand::execute(std::string command, struct sockaddr_in* udpSo
 	}
 //	return "Set verbose level to " + w2;
 	int p = atoi(w2.c_str());
-	if (p != 8 && p != 12) {
+	if (p != 4 && p != 8 && p != 12) {
 		return "Invalid number of channels (8 or 12) " + command;
 	}
 	getFPGAChoice(getCurrentChassis(), p);
@@ -147,16 +147,16 @@ std::string ChassisCommand::execute(std::string command, struct sockaddr_in* udp
 	// look for an integer in the second word.
 	int nW = countWords(command);
 	if (nW < 2) {
-		return "Invalid chassis type (9067 or 9068) " + command;
+		return "Invalid chassis type (9063, 9067 or 9068) " + command;
 	}
 	std::string w2 = nthword(command, 1);
 	if (w2.size() < 1) {
-		return "Invalid chassis type (9067 or 9068) " + command;
+		return "Invalid chassis type (9063, 9067 or 9068) " + command;
 	}
 //	return "Set verbose level to " + w2;
 	int p = atoi(w2.c_str());
-	if (p != 9067 && p != 9068) {
-		return "Invalid chassis type (9067 or 9068) " + command;
+	if (p != 9063 && p != 9067 && p != 9068) {
+		return "Invalid chassis type (9063, 9067 or 9068) " + command;
 	}
 	getFPGAChoice(p, getCurrentNChan());
 

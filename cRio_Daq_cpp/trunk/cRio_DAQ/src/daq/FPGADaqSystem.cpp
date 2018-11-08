@@ -167,17 +167,19 @@ NiFpga_Status FPGADaqSystem::prepare_FPGA()
 	reporter->report(1, "FPGADAQSystem: FPGA Manager: Opening a Session... status %d\n",status_FPGA);
 	reporter->report(1, "FPGADAQSystem: NiFPga_Open with Bitfile %s and signature %s\n", fpgaChoice->getBitFileName(),
 			fpgaChoice->getBitFileSignature());
-	NiFpga_MergeStatus(&status_FPGA, thisStat = NiFpga_Open(fpgaChoice->getBitFileName(),
-			fpgaChoice->getBitFileSignature(),
-			"RIO0",
-			0,
-			&session_FPGA));
+	thisStat = NiFpga_Open(fpgaChoice->getBitFileName(),
+				fpgaChoice->getBitFileSignature(),
+				"RIO0",
+				0,
+				&session_FPGA);
+	reporter->report(1, "FPGADAQSystem: NiFpga_Open() returned %d, session %d\n", thisStat, session_FPGA);
+	NiFpga_MergeStatus(&status_FPGA, status_FPGA);
 	/**
 	 * Sometimes, after a segmentation fault, this persistently returns with Error -52005
 	 * http://digital.ni.com/public.nsf/allkb/8A49034C699AA6FF862577D2007D9970
 	 * recommends installing additional software on the cRio - NI Scan Engine x.x.
 	 */
-	reporter->report(1, "FPGADAQSystem: NiFpga_Open() returned %d\n", thisStat);
+//	reporter->report(1, "FPGADAQSystem: NiFpga_Open() returned %d, session %d\n", thisStat, session_FPGA);
 
 	/* reserve a context for this thread to wait on IRQs */
 	NiFpga_MergeStatus(&status_FPGA, NiFpga_ReserveIrqContext(session_FPGA, &irqContext_FPGA));
