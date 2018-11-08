@@ -1,0 +1,15 @@
+[cRioKE]
+cRioKE = "138.251.164.235"
+
+[cRioKE 2]
+cRioKE 2 = "192.168.2.211"
+
+[My Computer]
+My Computer = "192.168.0.223"
+
+[NI-cRIO-9063-01d5629a]
+NI-cRIO-9063-01d5629a = "192.168.0.204"
+
+[NI-cRIO-9067-0307a8d1]
+NI-cRIO-9067-0307a8d1 = "169.254.88.87"
+
