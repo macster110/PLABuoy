@@ -71,7 +71,13 @@ protected:
 	/*The number of sample in the ring buffer*/
 	int volatile samplesInBuff;
 
+	/*
+	 * daq_go is a flag set as soon as the FPGA is loaded since acquisition will start immediately.
+	 * However, data will be dumped and not used (i.e. sent) until the additional daq_use flag
+	 * is set.
+	 */
 	volatile bool daq_go;
+	volatile bool daq_use;
 
 	timeval daqStart;
 

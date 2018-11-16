@@ -20,6 +20,7 @@ CommandManager::CommandManager() : CommandList() {
 	addCommand(new HelpCommand());
 	addCommand(new PingCommand());
 	addCommand(new VerboseCommand());
+	addCommand(new PrepareCommand());
 	addCommand(new StartCommand());
 	addCommand(new StopCommand());
 	addCommand(new ExitCommand());

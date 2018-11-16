@@ -75,7 +75,9 @@ FPGADaqSystem::~FPGADaqSystem() {
 }
 
 bool FPGADaqSystem::prepareSystem() {
-	return true;
+	bool threadState;
+	STARTTHREAD(FPGA_input_function, this, fpga_task_thread, fpga_task_thread_handle, threadState);
+	return threadState;
 }
 
 float FPGADaqSystem::getTemp() {
@@ -87,16 +89,7 @@ float FPGADaqSystem::getTemp() {
 }
 
 bool FPGADaqSystem::startSystem() {
-	bool threadState;
-	STARTTHREAD(FPGA_input_function, this, fpga_task_thread, fpga_task_thread_handle, threadState);
-	return threadState;
-//	if(pthread_create(&fpga_task_thread, NULL, FPGA_input_function, this)){
-//		fprintf(stderr, "FPGA monitor: creating input thread\n");
-//		return false;
-//	}
-//	else {
-//		return true;
-//	}
+	return true;
 }
 
 void FPGADaqSystem::run_FPGA_tasks()
@@ -255,34 +248,25 @@ void FPGADaqSystem::read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status
 				Fifo_Timeout,
 				&Elements_Remaining));
 
-
-//		short* fudge = (short*) (Fifo_Data + 2);
-//		for (int i = 0; i <  Number_Acquire/8; i++) {
-//			*fudge = val;
-//			fudge += 8;
-//			val += .1;
-//			if (val >= 32767) val = -32768;
-//		}
-
 		/*Check for an error*/
 		if (!NiFpga_IsNotError(*status) ){
 			reporter->report(0, "FPGADAQSystem: Error in read FIFO thread %d!\n", *status);
 			errorCount_FPGA++;
 			continue;
 		}
-
-		/*Add the data to the buffer. Pointer for start of FIFO array and size of FIFO array in bytes*/
-		memcpy(cpw, Fifo_Data, sizeof(int16_t)*Number_Acquire);
-		/*Move the pointer along to the correct point in the buffer*/
-		cpw+=Number_Acquire;
-		/*Record the total number of samples in the array that haven't been saved.*/
-		ENTER_LOCK(bufferLock)
-		samplesInBuff+=Number_Acquire;
-		LEAVE_LOCK(bufferLock)
-		if (cpw==bufend){
-
-//			std::cout << "Reset write buffer on call " << count <<std::endl;
-			cpw=bufstart;
+		if (daq_use) {
+			/*Add the data to the buffer. Pointer for start of FIFO array and size of FIFO array in bytes*/
+			memcpy(cpw, Fifo_Data, sizeof(int16_t)*Number_Acquire);
+			/*Move the pointer along to the correct point in the buffer*/
+			cpw+=Number_Acquire;
+			/*Record the total number of samples in the array that haven't been saved.*/
+			ENTER_LOCK(bufferLock)
+			samplesInBuff+=Number_Acquire;
+			LEAVE_LOCK(bufferLock)
+			if (cpw==bufend){
+				//			std::cout << "Reset write buffer on call " << count <<std::endl;
+				cpw=bufstart;
+			}
 		}
 
 		while (Elements_Remaining < Number_Acquire) {

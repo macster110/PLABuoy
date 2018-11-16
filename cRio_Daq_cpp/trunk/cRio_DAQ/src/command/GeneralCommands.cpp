@@ -17,6 +17,19 @@
 #include "../process/processdata.h"
 #include "../nifpga/NiFpgaChoice.h"
 
+PrepareCommand::PrepareCommand() : Command(NULL, "prepare") {
+
+}
+std::string PrepareCommand::execute(std::string command, struct sockaddr_in* udpSock) {
+
+	bool ok = prepare();
+	if (ok) {
+		return "prepare ok";
+	}
+	else {
+		return "won't prepare";
+	}
+}
 StartCommand::StartCommand() : Command(NULL, "start") {
 
 }
