@@ -13,6 +13,8 @@
 
 void exitTerminalLoop();
 
+bool prepare();
+
 bool start();
 
 bool stop(bool restart);
