@@ -62,6 +62,8 @@ std::string get_user_input_string();
  */
 bool volatile go=true;
 
+bool prepared = false;
+
 /**
  * Indicator for continuing to acquire data.
  */
@@ -216,8 +218,7 @@ void get_user_commands(){
 	reporter->report(1,"Leaving terminal control loop\n");
 }
 
-
-bool start() {
+bool prepare() {
 	cRioWatchDog->startWatchDog();
 	if (acquire==true) {
 		reporter->report(1,"DAQ system is already running\n");
@@ -229,7 +230,16 @@ bool start() {
 	/*Start recording data from serial port*/
 	//			record_Serial(1,B4800);
 	/**Start FPGA tasks**/
-	daqSystem->prepare(getProcess(0)->getNChan());
+	prepared = daqSystem->prepare(getProcess(0)->getNChan());
+	return prepared;
+}
+
+bool start() {
+	if (!prepared) {
+		if (!prepare()) {
+			return false;
+		}
+	}
 	return daqSystem->start();
 }
 
