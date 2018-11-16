@@ -9,6 +9,16 @@
 #define GENERALCOMMANDS_H_
 #include "Command.h"
 
+class PrepareCommand : public Command {
+public:
+	PrepareCommand();
+	virtual ~PrepareCommand() {};
+	std::string execute(std::string command, struct sockaddr_in* udpSock);
+	std::string getHint() {
+		return "Prepare processing";
+	}
+};
+
 class StartCommand : public Command {
 public:
 	StartCommand();

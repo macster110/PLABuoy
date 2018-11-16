@@ -32,6 +32,7 @@ DAQSystem::DAQSystem(std::string name) {
 	nChan = DEFAULTNCHANNELS;
 	bufferSize=0;//READBUFFERLENGTH; //5MSample buffer
 	readBlockSize = 0;
+	daq_go = daq_use = false;
 	PREPARE_LOCK(bufferLock);
 }
 
@@ -44,28 +45,33 @@ bool DAQSystem::prepare(int nChan) {
 	this->nChan = nChan;
 	deleteBuffer();
 	createBuffer();
-	return prepareSystem();
-}
-
-bool DAQSystem::start() {
 	daq_go = true;
-	/**Create thread to read data from FIFO buffer and save data to .wav file*/
+	bool prep =  prepareSystem();
 
 	reporter->report(3, "Buffer Read thread is initialising...\n");
 	bool threadState;
 	STARTTHREAD(read_Buffer_thread_function, this, write_data_thread, write_thread_handle, threadState)
 	if (!threadState) {
-//	if(pthread_create(&write_data_thread, NULL, read_Buffer_thread_function, this)){
 		reporter->report(0, "Error creating thread to read data buffer\n");
 		return false;
 	}
 	reporter->report(3, "Buffer Read thread has initialised...\n");
+
+	return prep;
+}
+
+bool DAQSystem::start() {
+//	daq_go = true;
+	/**Create thread to read data from FIFO buffer and save data to .wav file*/
+
+	daq_use = true;
 	gettimeofday(&daqStart, 0);
 	return startSystem();
 }
 
 bool DAQSystem::stop() {
 	daq_go = false;
+	daq_use = false;
 	int threadReturn;
 //	printf("Wait for daq loop to complete *********************\n");
 //	fflush(stdout);
