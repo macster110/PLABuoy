@@ -254,6 +254,11 @@ void FPGADaqSystem::read_FIFO_Data(NiFpga_Session session, NiFpga_Status *status
 			errorCount_FPGA++;
 			continue;
 		}
+		/**
+		 * Bit of a problem here that needs to be fixed. Because read is in chunks of 1024 samples, when we start reading it may not
+		 * be on a sample 0, but on some random multiple of 512 samples. It's Ok on the four channel and probably OK on 8 channel
+		 * systems, but not on 12. Will need to fix before this can be use with 12 channels.
+		 */
 		if (daq_use) {
 			/*Add the data to the buffer. Pointer for start of FIFO array and size of FIFO array in bytes*/
 			memcpy(cpw, Fifo_Data, sizeof(int16_t)*Number_Acquire);
