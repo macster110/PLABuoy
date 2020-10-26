@@ -85,6 +85,11 @@ public:
 	Fpga9063_4chan();
 };
 
+class Fpga9063_9222_4chan : public FpgaChoice {
+public:
+	Fpga9063_9222_4chan();
+};
+
 
 //#define CRIO9067
 //
